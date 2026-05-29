@@ -14,13 +14,19 @@ namespace DAL.Configurations
             // 2. Cấu hình Khóa chính và các ràng buộc cột
             builder.HasKey(p => p.ProductId);
             builder.Property(p => p.ProductName).IsRequired().HasMaxLength(200);
-            builder.Property(p => p.Price).IsRequired();
+            builder.Property(p => p.Brand).IsRequired().HasMaxLength(100);
 
             // 3. Cấu hình quan hệ (Relationship)
             builder.HasOne(p => p.Category)
                    .WithMany()
                    .HasForeignKey(p => p.CategoryId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            // 4. Cấu hình xóa mềm (Soft Delete)
+            builder.HasQueryFilter(p => !p.IsDeleted);
+
+            // 5. Cấu hình chỉ mục (Index)s
+            builder.HasIndex(p => p.ProductName).HasDatabaseName("IX_Product_ProductName");
         }
     }
 }

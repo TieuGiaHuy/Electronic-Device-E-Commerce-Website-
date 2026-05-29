@@ -9,6 +9,7 @@ namespace DAL.Data
         }
         public DbSet<Models.Product> Products { get; set; }
         public DbSet<Models.Category> Categories { get; set; }
+        public DbSet<Models.ProductVariant> ProductVariants { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
