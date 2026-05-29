@@ -1,3 +1,5 @@
+using BLL.Services;
+using BLL.Services.Interfaces;
 using DAL;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +12,8 @@ namespace BLL
         {
             services.AddDataAccessLayer(connectionString);
             // Register business logic services here
-            // e.g., services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IProductVariantService, ProductVariantService>();
             return services.BuildServiceProvider();
         }
     }

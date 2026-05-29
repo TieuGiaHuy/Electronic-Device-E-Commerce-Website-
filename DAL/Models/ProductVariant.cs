@@ -21,5 +21,45 @@ namespace DAL.Models
         public bool IsDeleted { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+
+        public static ProductVariant Create(string sku, string color, string? cpu, string? ram, string? storage, string? screenSize, decimal price, int stockQuantity, string? imageUrl, int productId)
+        {
+            var productVariant = new ProductVariant
+            {
+                Sku = sku,
+                Color = color,
+                Cpu = cpu,
+                Ram = ram,
+                Storage = storage,
+                ScreenSize = screenSize,
+                Price = price,
+                StockQuantity = stockQuantity,
+                ImageUrl = imageUrl,
+                ProductId = productId,
+                CreatedAt = DateTime.UtcNow
+            };
+            return productVariant;
+        }
+        public void Update(string sku, string color, string? cpu, string? ram, string? storage, string? screenSize, decimal price, int stockQuantity, string? imageUrl, int productId)
+        {
+            Sku = sku;
+            Color = color;
+            Cpu = cpu;
+            Ram = ram;
+            Storage = storage;
+            ScreenSize = screenSize;
+            Price = price;
+            StockQuantity = stockQuantity;
+            ImageUrl = imageUrl;
+            ProductId = productId;
+
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void Delete()
+        {
+            IsDeleted = true;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using DAL.Data;
+using DAL.Repositories;
+using DAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,8 +14,11 @@ namespace DAL
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString)
                 .UseSnakeCaseNamingConvention()); // Sử dụng SnakeCaseNamingConvention để tự động chuyển đổi tên bảng và cột sang snake_case
-            // Register repositories or other services here if needed
-            // e.g., services.AddScoped<IProductRepository, ProductRepository>();
+            
+            // Đăng ký các repository của bạn ở đây
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
+
             return services.BuildServiceProvider();
         }
     }
