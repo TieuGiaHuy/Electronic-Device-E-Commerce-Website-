@@ -205,13 +205,18 @@ namespace DAL.Migrations
             modelBuilder.Entity("DAL.Models.ProductVariant", b =>
                 {
                     b.HasOne("DAL.Models.Product", "Product")
-                        .WithMany()
+                        .WithMany("ProductVariants")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_product_variants_products_product_id");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("DAL.Models.Product", b =>
+                {
+                    b.Navigation("ProductVariants");
                 });
 #pragma warning restore 612, 618
         }
