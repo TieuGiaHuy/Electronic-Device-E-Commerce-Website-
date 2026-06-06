@@ -18,6 +18,9 @@ namespace DAL
             // Đăng ký các repository của bạn ở đây
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
+            services.AddScoped<IStaffUserRepository, StaffUserRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
 
             return services.BuildServiceProvider();
         }
