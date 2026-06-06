@@ -22,7 +22,17 @@ namespace DAL.Models
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
-        public static ProductVariant Create(string sku, string color, string? cpu, string? ram, string? storage, string? screenSize, decimal price, int stockQuantity, string? imageUrl, int productId)
+        public static ProductVariant Create(
+            string sku, 
+            string color, 
+            string? cpu, 
+            string? ram, 
+            string? storage, 
+            string? screenSize, 
+            decimal price, 
+            int stockQuantity, 
+            string? imageUrl, 
+            int productId)
         {
             var productVariant = new ProductVariant
             {
@@ -40,7 +50,17 @@ namespace DAL.Models
             };
             return productVariant;
         }
-        public void Update(string sku, string color, string? cpu, string? ram, string? storage, string? screenSize, decimal price, int stockQuantity, string? imageUrl, int productId)
+        public void Update(
+            string sku, 
+            string color, 
+            string? cpu, 
+            string? ram, 
+            string? storage, 
+            string? screenSize, 
+            decimal price, 
+            int stockQuantity, 
+            string? imageUrl, 
+            int productId)
         {
             Sku = sku;
             Color = color;
