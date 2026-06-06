@@ -7,7 +7,7 @@ namespace BLL.Services.Interfaces
     public interface IProductVariantService
     {
         Task<List<ProductVariantDto>> GetAllProductVariantsAsync();
-        Task<ProductVariantDto?> GetProductVariantByIdAsync(int productVariantId);
+        Task<ProductVariantDto?> GetProductVariantByIdAsync(Guid productVariantId);
         Task<ProductVariantDto> CreateProductVariantAsync(ProductVariantCreateDto productVariant);
         Task<bool> UpdateProductVariantAsync(ProductVariantUpdateDto productVariant);
         Task<bool> DeleteProductVariantAsync(ProductVariantDeleteDto productVariant);

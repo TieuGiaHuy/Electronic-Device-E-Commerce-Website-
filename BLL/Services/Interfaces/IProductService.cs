@@ -10,7 +10,7 @@ namespace BLL.Services.Interfaces
         Task<bool> UpdateProductAsync(ProductUpdateDto productUpdateDto);
         Task<bool> DeleteProductAsync(ProductDeleteDto productDeleteDto);
 
-        Task<ProductDto?> GetProductWithVariantsAsync(int productVariantId);
+        Task<ProductDto?> GetProductWithVariantsAsync(Guid productVariantId);
         Task<List<ProductDto>> SearchByNameAsync(string keyword);
         Task<List<ProductDto>> GetProductsByCategoryIdAsync(int categoryId);
 

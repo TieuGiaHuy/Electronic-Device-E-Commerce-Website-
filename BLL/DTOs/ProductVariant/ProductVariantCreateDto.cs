@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace BLL.DTOs.ProductVariant
 {
     public class ProductVariantCreateDto
     {
-        public string Sku { get; set; }
+        public string ProductCode { get; set; }
         public string Color { get; set; }
         public string? Cpu { get; set; }
         public string? Ram { get; set; }

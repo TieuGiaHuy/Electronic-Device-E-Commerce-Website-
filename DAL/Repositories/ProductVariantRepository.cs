@@ -18,7 +18,7 @@ namespace DAL.Repositories
             return productVariants;  
         }
 
-        public async Task<ProductVariant?> GetProductVariantByIdAsync(int productVariantId)
+        public async Task<ProductVariant?> GetProductVariantByIdAsync(Guid productVariantId)
         {
             var productVariant = await _context.ProductVariants.FindAsync(productVariantId);
             return productVariant;
@@ -35,18 +35,18 @@ namespace DAL.Repositories
             var existingProductVariant = await _context.ProductVariants.FindAsync(productVariant.ProductVariantId);
             if (existingProductVariant != null)
             {
-                var sku = existingProductVariant.Sku;
-                var color = existingProductVariant.Color;
-                var cpu = existingProductVariant.Cpu;
-                var ram = existingProductVariant.Ram;
-                var storage = existingProductVariant.Storage;
-                var screenSize = existingProductVariant.ScreenSize;
-                var price = existingProductVariant.Price;
-                var stockQuantity = existingProductVariant.StockQuantity;
-                var imageUrl = existingProductVariant.ImageUrl;
-                var productId = existingProductVariant.ProductId;
+                var productCode = productVariant.ProductCode;
+                var color = productVariant.Color;
+                var cpu = productVariant.Cpu;
+                var ram = productVariant.Ram;
+                var storage = productVariant.Storage;
+                var screenSize = productVariant.ScreenSize;
+                var price = productVariant.Price;
+                var stockQuantity = productVariant.StockQuantity;
+                var imageUrl = productVariant.ImageUrl;
+                var productId = productVariant.ProductId;
 
-                existingProductVariant.Update(sku, color, cpu, ram, storage, screenSize, price, stockQuantity, imageUrl, productId);
+                existingProductVariant.Update(productCode, color, cpu, ram, storage, screenSize, price, stockQuantity, imageUrl, productId);
                 _context.ProductVariants.Update(existingProductVariant);
                 _context.SaveChanges();
 
@@ -55,7 +55,7 @@ namespace DAL.Repositories
             return false;
         }
 
-        public async Task<bool> DeleteProductVariantAsync(int productVariantId)
+        public async Task<bool> DeleteProductVariantAsync(Guid productVariantId)
         {
             var existingProductVariant = await _context.ProductVariants.FindAsync(productVariantId);
             if (existingProductVariant != null)

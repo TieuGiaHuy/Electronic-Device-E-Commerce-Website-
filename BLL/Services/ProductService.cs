@@ -173,7 +173,7 @@ namespace BLL.Services
             return productDtos;
         }
 
-        public async Task<ProductDto?> GetProductWithVariantsAsync(int productVariantId)
+        public async Task<ProductDto?> GetProductWithVariantsAsync(Guid productVariantId)
         {
             var product = await _productRepository.GetProductWithVariantsAsync(productVariantId);
             if (product != null)

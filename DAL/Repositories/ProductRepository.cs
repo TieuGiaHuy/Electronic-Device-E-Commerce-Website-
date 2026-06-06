@@ -79,7 +79,7 @@ namespace DAL.Repositories
             return products;
         }
 
-        public async Task<Product?> GetProductWithVariantsAsync(int productVariantId)
+        public async Task<Product?> GetProductWithVariantsAsync(Guid productVariantId)
         {
             var product = await _context.Products
                 .Include(p => p.Category)
