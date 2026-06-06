@@ -1,4 +1,4 @@
-﻿using DAL.Data;
+using DAL.Data;
 using DAL.Repositories;
 using DAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +18,7 @@ namespace DAL
             // Đăng ký các repository của bạn ở đây
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             return services.BuildServiceProvider();
         }

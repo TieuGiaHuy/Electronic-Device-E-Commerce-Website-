@@ -1,4 +1,4 @@
-﻿using DAL.Models;
+using DAL.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,6 +15,17 @@ namespace DAL.Configurations
             builder.HasKey(p => p.ProductId);
             builder.Property(p => p.ProductName).IsRequired().HasMaxLength(200);
             builder.Property(p => p.Brand).IsRequired().HasMaxLength(100);
+            builder.Property(p => p.Sku).IsRequired().HasMaxLength(50);
+            builder.Property(p => p.Color).IsRequired().HasMaxLength(50);
+            builder.Property(p => p.Cpu).HasMaxLength(100);
+            builder.Property(p => p.Ram).HasMaxLength(50);
+            builder.Property(p => p.Storage).HasMaxLength(50);
+            builder.Property(p => p.ScreenSize).HasMaxLength(50);
+            builder.Property(p => p.Price).IsRequired().HasColumnType("decimal(18,2)");
+            builder.Property(p => p.StockQuantity).IsRequired();
+            builder.Property(p => p.ImageUrl).HasMaxLength(1000);
+
+            builder.HasIndex(p => p.Sku).IsUnique().HasDatabaseName("IX_Product_Sku");
 
             // 3. Cấu hình quan hệ (Relationship)
             builder.HasOne(p => p.Category)

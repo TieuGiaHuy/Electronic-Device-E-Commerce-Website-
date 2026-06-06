@@ -23,6 +23,16 @@ namespace BLL.Services
                 ProductName = p.ProductName,
                 Brand = p.Brand,
                 CategoryId = p.CategoryId,
+                CategoryName = p.Category != null ? p.Category.Name : string.Empty,
+                Sku = p.Sku,
+                Color = p.Color,
+                Cpu = p.Cpu,
+                Ram = p.Ram,
+                Storage = p.Storage,
+                ScreenSize = p.ScreenSize,
+                Price = p.Price,
+                StockQuantity = p.StockQuantity,
+                ImageUrl = p.ImageUrl,
                 IsDeleted = p.IsDeleted,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt
@@ -42,6 +52,16 @@ namespace BLL.Services
                     ProductName = product.ProductName,
                     Brand = product.Brand,
                     CategoryId = product.CategoryId,
+                    CategoryName = product.Category != null ? product.Category.Name : string.Empty,
+                    Sku = product.Sku,
+                    Color = product.Color,
+                    Cpu = product.Cpu,
+                    Ram = product.Ram,
+                    Storage = product.Storage,
+                    ScreenSize = product.ScreenSize,
+                    Price = product.Price,
+                    StockQuantity = product.StockQuantity,
+                    ImageUrl = product.ImageUrl,
                     IsDeleted = product.IsDeleted,
                     CreatedAt = product.CreatedAt,
                     UpdatedAt = product.UpdatedAt
@@ -54,10 +74,25 @@ namespace BLL.Services
             var newProduct = Product.Create(
                  productCreateDto.ProductName,
                  productCreateDto.Brand,
-                 productCreateDto.CategoryId
+                 productCreateDto.CategoryId,
+                 productCreateDto.Sku,
+                 productCreateDto.Color,
+                 productCreateDto.Cpu,
+                 productCreateDto.Ram,
+                 productCreateDto.Storage,
+                 productCreateDto.ScreenSize,
+                 productCreateDto.Price,
+                 productCreateDto.StockQuantity,
+                 productCreateDto.ImageUrl
             );
 
             var createdProduct = await _productRepository.CreateProductAsync(newProduct);
+
+            var populatedProduct = await GetProductByIdAsync(createdProduct.ProductId);
+            if (populatedProduct != null)
+            {
+                return populatedProduct;
+            }
 
             return new ProductDto
             {
@@ -65,6 +100,16 @@ namespace BLL.Services
                 ProductName = createdProduct.ProductName,
                 Brand = createdProduct.Brand,
                 CategoryId = createdProduct.CategoryId,
+                CategoryName = string.Empty,
+                Sku = createdProduct.Sku,
+                Color = createdProduct.Color,
+                Cpu = createdProduct.Cpu,
+                Ram = createdProduct.Ram,
+                Storage = createdProduct.Storage,
+                ScreenSize = createdProduct.ScreenSize,
+                Price = createdProduct.Price,
+                StockQuantity = createdProduct.StockQuantity,
+                ImageUrl = createdProduct.ImageUrl,
                 IsDeleted = createdProduct.IsDeleted,
                 CreatedAt = createdProduct.CreatedAt,
                 UpdatedAt = createdProduct.UpdatedAt
@@ -81,7 +126,16 @@ namespace BLL.Services
             product.Update(
                 productUpdateDto.ProductName,
                 productUpdateDto.Brand,
-                productUpdateDto.CategoryId
+                productUpdateDto.CategoryId,
+                productUpdateDto.Sku,
+                productUpdateDto.Color,
+                productUpdateDto.Cpu,
+                productUpdateDto.Ram,
+                productUpdateDto.Storage,
+                productUpdateDto.ScreenSize,
+                productUpdateDto.Price,
+                productUpdateDto.StockQuantity,
+                productUpdateDto.ImageUrl
             );
             
             return await _productRepository.UpdateProductAsync(product); ;
@@ -101,6 +155,16 @@ namespace BLL.Services
                 ProductName = p.ProductName,
                 Brand = p.Brand,
                 CategoryId = p.CategoryId,
+                CategoryName = p.Category != null ? p.Category.Name : string.Empty,
+                Sku = p.Sku,
+                Color = p.Color,
+                Cpu = p.Cpu,
+                Ram = p.Ram,
+                Storage = p.Storage,
+                ScreenSize = p.ScreenSize,
+                Price = p.Price,
+                StockQuantity = p.StockQuantity,
+                ImageUrl = p.ImageUrl,
                 IsDeleted = p.IsDeleted,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt
@@ -120,6 +184,16 @@ namespace BLL.Services
                     ProductName = product.ProductName,
                     Brand = product.Brand,
                     CategoryId = product.CategoryId,
+                    CategoryName = product.Category != null ? product.Category.Name : string.Empty,
+                    Sku = product.Sku,
+                    Color = product.Color,
+                    Cpu = product.Cpu,
+                    Ram = product.Ram,
+                    Storage = product.Storage,
+                    ScreenSize = product.ScreenSize,
+                    Price = product.Price,
+                    StockQuantity = product.StockQuantity,
+                    ImageUrl = product.ImageUrl,
                     IsDeleted = product.IsDeleted,
                     CreatedAt = product.CreatedAt,
                     UpdatedAt = product.UpdatedAt
@@ -137,6 +211,16 @@ namespace BLL.Services
                 ProductName = p.ProductName,
                 Brand = p.Brand,
                 CategoryId = p.CategoryId,
+                CategoryName = p.Category != null ? p.Category.Name : string.Empty,
+                Sku = p.Sku,
+                Color = p.Color,
+                Cpu = p.Cpu,
+                Ram = p.Ram,
+                Storage = p.Storage,
+                ScreenSize = p.ScreenSize,
+                Price = p.Price,
+                StockQuantity = p.StockQuantity,
+                ImageUrl = p.ImageUrl,
                 IsDeleted = p.IsDeleted,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt

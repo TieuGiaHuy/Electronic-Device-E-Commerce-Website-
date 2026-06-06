@@ -15,14 +15,15 @@ namespace DAL.Repositories
 
         public async Task<List<Product>> GetAllProductsAsync()
         {
-            var products = await _context.Products.ToListAsync();
+            var products = await _context.Products.Include(p => p.Category).ToListAsync();
             return products;
         }
 
         public async Task<Product?> GetProductByIdAsync(int productId)
         {
             return await _context.Products
-                .FindAsync(productId);
+                .Include(p => p.Category)
+                .FirstOrDefaultAsync(p => p.ProductId == productId);
         }
 
         public async Task<Product> CreateProductAsync(Product product)
@@ -37,7 +38,20 @@ namespace DAL.Repositories
             var existingProduct = await _context.Products.FindAsync(product.ProductId);
             if (existingProduct != null)
             {
-                existingProduct.Update(product.ProductName, product.Brand, product.CategoryId);
+                existingProduct.Update(
+                    product.ProductName, 
+                    product.Brand, 
+                    product.CategoryId,
+                    product.Sku,
+                    product.Color,
+                    product.Cpu,
+                    product.Ram,
+                    product.Storage,
+                    product.ScreenSize,
+                    product.Price,
+                    product.StockQuantity,
+                    product.ImageUrl
+                );
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -59,6 +73,7 @@ namespace DAL.Repositories
         public async Task<List<Product>> GetProductsByCategoryIdAsync(int categoryId)
         {
             var products = await _context.Products
+                .Include(p => p.Category)
                 .Where(p => p.CategoryId == categoryId)
                 .ToListAsync();
             return products;
@@ -67,6 +82,7 @@ namespace DAL.Repositories
         public async Task<Product?> GetProductWithVariantsAsync(int productVariantId)
         {
             var product = await _context.Products
+                .Include(p => p.Category)
                 .Include(p => p.ProductVariants)
                 .FirstOrDefaultAsync(p => p.ProductVariants.Any(pv => pv.ProductVariantId == productVariantId));
             return product;
@@ -75,6 +91,7 @@ namespace DAL.Repositories
         public async Task<List<Product>> SearchByNameAsync(string keyword)
         {
             return await _context.Products
+                .Include(p => p.Category)
                 .Where(p => p.ProductName.Contains(keyword))
                 .ToListAsync();
         }

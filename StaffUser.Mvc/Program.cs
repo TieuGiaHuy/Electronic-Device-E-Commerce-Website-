@@ -1,4 +1,4 @@
-﻿using BLL;
+using BLL;
 using BLL.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +24,19 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+var sharedUploadsFolder = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, "..", "shared-uploads"));
+if (!Directory.Exists(sharedUploadsFolder))
+{
+    Directory.CreateDirectory(sharedUploadsFolder);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(sharedUploadsFolder),
+    RequestPath = "/uploads"
+});
+
 app.UseRouting();
 
 app.UseAuthorization();
