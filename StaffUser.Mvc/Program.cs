@@ -54,20 +54,20 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-// Seed staff user if not exists (for testing)
+// Seed customer user if not exists (for testing)
 using (var scope = app.Services.CreateScope())
 {
     var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-    var existing = userService.GetByEmailAsync("staff@local").GetAwaiter().GetResult();
+    var existing = userService.GetByEmailAsync("customer@local").GetAwaiter().GetResult();
     if (existing == null)
     {
         var createDto = new UserCreateDto
         {
-            FullName = "Staff User",
-            Email = "staff@local",
+            FullName = "Customer User",
+            Email = "customer@local",
             PhoneNumber = "0123456789",
             Password = "P@ssw0rd",
-            Role = 2 // Staff
+            Role = 1 // Customer
         };
         userService.CreateAsync(createDto).GetAwaiter().GetResult();
     }
