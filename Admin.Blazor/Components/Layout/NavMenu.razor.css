@@ -46,9 +46,18 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-list-nested' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M4.5 11.5A.5.5 0 0 1 5 11h10a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm-2-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm-2-4A.5.5 0 0 1 1 3h10a.5.5 0 0 1 0 1H1a.5.5 0 0 1-.5-.5z'/%3E%3C/svg%3E");
 }
 
+.bi-category-nav-menu {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-grid-fill' viewBox='0 0 16 16'%3E%3Cpath d='M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 8A1.5 1.5 0 0 1 10.5 9h3A1.5 1.5 0 0 1 15 10.5v3A1.5 1.5 0 0 1 13.5 15h-3A1.5 1.5 0 0 1 9 13.5v-3z'/%3E%3C/svg%3E");
+}
+
+.bi-product-nav-menu {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-box-seam-fill' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M15.528 2.973a.75.75 0 0 1 .472.696v8.662a.75.75 0 0 1-.472.696l-7.25 2.9a.75.75 0 0 1-.557 0l-7.25-2.9A.75.75 0 0 1 0 12.331V3.669a.75.75 0 0 1 .471-.696L7.443.184a.75.75 0 0 1 .514 0l7.57 2.79zM9 1.58L14.776 3.7 9 5.82V1.58zM8 1.58v4.24L2.224 3.7 8 1.58zM1 4.708v7.054l6 2.4v-6.953l-6-2.501zm8 2.501v6.953l6-2.4V4.708l-6 2.501z'/%3E%3C/svg%3E");
+}
+
 .nav-item {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     padding-bottom: 0.5rem;
+    font-weight: 500;
 }
 
     .nav-item:first-of-type {
@@ -60,25 +69,29 @@
     }
 
     .nav-item ::deep .nav-link {
-        color: #d7d7d7;
+        color: #e2e8f0;
         background: none;
         border: none;
-        border-radius: 4px;
+        border-radius: 6px;
         height: 3rem;
         display: flex;
         align-items: center;
         line-height: 3rem;
         width: 100%;
+        transition: all 0.2s ease-in-out;
+        padding-left: 1.25rem;
     }
 
 .nav-item ::deep a.active {
-    background-color: rgba(255,255,255,0.37);
-    color: white;
+    background-color: #d70018 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(215, 0, 24, 0.3);
 }
 
 .nav-item ::deep .nav-link:hover {
-    background-color: rgba(255,255,255,0.1);
+    background-color: rgba(255, 255, 255, 0.08);
     color: white;
+    padding-left: 1.5rem;
 }
 
 .nav-scrollable {

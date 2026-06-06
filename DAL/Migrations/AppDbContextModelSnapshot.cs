@@ -74,19 +74,64 @@ namespace DAL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("category_id");
 
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("color");
+
+                    b.Property<string>("Cpu")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("cpu");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("image_url");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit")
                         .HasColumnName("is_deleted");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("price");
 
                     b.Property<string>("ProductName")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)")
                         .HasColumnName("product_name");
+
+                    b.Property<string>("Ram")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("ram");
+
+                    b.Property<string>("ScreenSize")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("screen_size");
+
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("sku");
+
+                    b.Property<int>("StockQuantity")
+                        .HasColumnType("int")
+                        .HasColumnName("stock_quantity");
+
+                    b.Property<string>("Storage")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("storage");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2")
@@ -100,6 +145,10 @@ namespace DAL.Migrations
 
                     b.HasIndex("ProductName")
                         .HasDatabaseName("IX_Product_ProductName");
+
+                    b.HasIndex("Sku")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Product_Sku");
 
                     b.ToTable("products", (string)null);
                 });

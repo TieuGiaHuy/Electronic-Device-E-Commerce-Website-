@@ -14,6 +14,7 @@ namespace BLL
             // Register business logic services here
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IProductVariantService, ProductVariantService>();
+            services.AddScoped<ICategoryService, CategoryService>();
             return services.BuildServiceProvider();
         }
     }
