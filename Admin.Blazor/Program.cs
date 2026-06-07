@@ -1,6 +1,12 @@
 using Admin.Blazor.Components;
 using BLL;
 using BLL.Settings;
+using BLL.Services.Interfaces;
+using BLL.Services;
+using DAL.Repositories.Interfaces;
+using DAL.Repositories;
+using DAL.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +20,15 @@ builder.Services.AddRazorComponents()
 builder.Services.AddBusinessLogicLayer(connectionString!);
 builder.Services.Configure<VnpaySettings>(builder.Configuration.GetSection("VNPAY"));
 
+// Register promotion service & repository (fix missing DI)
+builder.Services.AddScoped<IPromotionService, PromotionService>();
+builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
+
 var app = builder.Build();
+
+using var scope = app.Services.CreateScope();
+var db = scope.ServiceProvider.GetRequiredService<DAL.Data.AppDbContext>();
+db.EnsureSeedData();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

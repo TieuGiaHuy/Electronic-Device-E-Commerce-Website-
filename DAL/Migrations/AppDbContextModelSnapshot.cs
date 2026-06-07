@@ -239,6 +239,56 @@ namespace DAL.Migrations
                     b.ToTable("product_variants", (string)null);
                 });
 
+            modelBuilder.Entity("DAL.Models.Promotion", b =>
+                {
+                    b.Property<int>("PromotionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("promotion_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PromotionId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("EndAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("end_at");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<int>("MaxReservedStock")
+                        .HasColumnType("int")
+                        .HasColumnName("max_reserved_stock");
+
+                    b.Property<int>("ProductVariantId")
+                        .HasColumnType("int")
+                        .HasColumnName("product_variant_id");
+
+                    b.Property<decimal>("SalePrice")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("sale_price");
+
+                    b.Property<DateTime>("StartAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("start_at");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("PromotionId")
+                        .HasName("pk_promotions");
+
+                    b.HasIndex("ProductVariantId")
+                        .HasDatabaseName("ix_promotions_product_variant_id");
+
+                    b.ToTable("promotions", (string)null);
+                });
+
             modelBuilder.Entity("DAL.Models.Product", b =>
                 {
                     b.HasOne("DAL.Models.Category", "Category")
@@ -261,6 +311,18 @@ namespace DAL.Migrations
                         .HasConstraintName("fk_product_variants_products_product_id");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("DAL.Models.Promotion", b =>
+                {
+                    b.HasOne("DAL.Models.ProductVariant", "ProductVariant")
+                        .WithMany()
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_promotions_product_variants_product_variant_id");
+
+                    b.Navigation("ProductVariant");
                 });
 
             modelBuilder.Entity("DAL.Models.Product", b =>

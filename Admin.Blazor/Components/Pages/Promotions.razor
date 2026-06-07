@@ -1,0 +1,181 @@
+@page "/promotions"
+@rendermode InteractiveServer
+@using BLL.DTOs.Promotion
+@using BLL.Services.Interfaces
+@inject IPromotionService PromotionService
+@inject IProductVariantService ProductVariantService
+
+<PageTitle>Manage Promotions - ElectroNexus Admin</PageTitle>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark m-0">Golden Hours</h2>
+            <p class="text-muted m-0">Create timeboxed promotions. Select a product variant, set sale price and reserved stock.</p>
+        </div>
+        <div class="badge bg-danger px-3 py-2 fs-7" style="border-radius: 6px;">Role: Administrator</div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="admin-card p-4">
+                <h5 class="fw-bold text-secondary mb-3">Create Promotion</h5>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger">@errorMessage</div>
+                }
+
+                <EditForm Model="@createModel" OnValidSubmit="CreatePromotion">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label class="form-label">Product Variant <span class="text-danger">*</span></label>
+                        <InputSelect class="form-select" @bind-Value="createModel.ProductVariantId">
+                            <option value="0">-- Select variant --</option>
+                            @foreach (var v in variants)
+                            {
+                                <option value="@v.ProductVariantId">#@v.ProductVariantId - @v.Sku - @v.Color - @v.Price.ToString("N0") $</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Sale Price ($) <span class="text-danger">*</span></label>
+                        <InputNumber class="form-control" @bind-Value="createModel.SalePrice" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Max Reserved Stock <span class="text-danger">*</span></label>
+                        <InputNumber class="form-control" @bind-Value="createModel.MaxReservedStock" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Start At <span class="text-danger">*</span></label>
+                        <InputDate class="form-control" @bind-Value="createModel.StartAt" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">End At <span class="text-danger">*</span></label>
+                        <InputDate class="form-control" @bind-Value="createModel.EndAt" />
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-light" @onclick="ClearForm">Clear</button>
+                        <button type="submit" class="btn btn-danger text-white">Create Promotion</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="admin-card p-4">
+                <h5 class="fw-bold text-secondary mb-3">Existing Promotions (@promotions.Count)</h5>
+
+                @if (!promotions.Any())
+                {
+                    <div class="text-muted">No promotions defined.</div>
+                }
+                else
+                {
+                    <div class="list-group">
+                        @foreach (var p in promotions)
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="fw-bold">#@p.PromotionId — Variant #@p.ProductVariantId</div>
+                                    <div class="small text-muted">Sale: @p.SalePrice.ToString("N0") $ • Reserved: @p.MaxReservedStock • @p.StartAt.ToString("g") — @p.EndAt.ToString("g")</div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeletePromotion(p.PromotionId)">Delete</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<BLL.DTOs.ProductVariant.ProductVariantDto> variants = new();
+    private List<PromotionDto> promotions = new();
+    private string errorMessage = string.Empty;
+
+    private PromotionCreateDto createModel { get; set; } = new()
+    {
+        StartAt = DateTime.UtcNow,
+        EndAt = DateTime.UtcNow.AddHours(1)
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        variants = await ProductVariantService.GetAllProductVariantsAsync();
+        promotions = await PromotionService.GetAllPromotionsAsync();
+    }
+
+    private void ClearForm()
+    {
+        createModel = new PromotionCreateDto
+        {
+            StartAt = DateTime.UtcNow,
+            EndAt = DateTime.UtcNow.AddHours(1)
+        };
+        errorMessage = string.Empty;
+    }
+
+    private async Task CreatePromotion()
+    {
+        errorMessage = string.Empty;
+
+        if (createModel.ProductVariantId <= 0)
+        {
+            errorMessage = "Please select a product variant.";
+            return;
+        }
+        if (createModel.SalePrice <= 0)
+        {
+            errorMessage = "Sale price must be greater than 0.";
+            return;
+        }
+        if (createModel.MaxReservedStock < 0)
+        {
+            errorMessage = "Max reserved stock must be 0 or positive.";
+            return;
+        }
+        if (createModel.EndAt <= createModel.StartAt)
+        {
+            errorMessage = "End time must be after start time.";
+            return;
+        }
+
+        try
+        {
+            await PromotionService.CreatePromotionAsync(createModel);
+            await LoadData();
+            ClearForm();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Unable to create promotion: {ex.Message}";
+        }
+    }
+
+    private async Task DeletePromotion(int id)
+    {
+        try
+        {
+            await PromotionService.DeletePromotionAsync(id);
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Unable to delete promotion: {ex.Message}";
+        }
+    }
+}
