@@ -1,7 +1,8 @@
-﻿using System;
-using System.Linq;
-using DAL.Models;
+﻿using DAL.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Data;
+using System.Linq;
 
 namespace DAL.Data
 {
