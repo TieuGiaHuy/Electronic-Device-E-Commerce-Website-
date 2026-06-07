@@ -10,7 +10,7 @@ namespace DAL.Repositories.Interfaces
         Task<bool> UpdateProductAsync(Product product);
         Task<bool> DeleteProductAsync(int productId);
 
-        Task<Product?> GetProductWithVariantsAsync(int productVariantId);
+        Task<Product?> GetProductWithVariantsAsync(Guid productVariantId);
         Task<List<Product>> SearchByNameAsync(string keyword);
         Task<List<Product>> GetProductsByCategoryIdAsync(int categoryId);
     }

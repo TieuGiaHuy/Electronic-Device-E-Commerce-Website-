@@ -4,29 +4,41 @@
     ViewData["Title"] = "Quản lý sản phẩm";
 }
 
-<h2>Danh sách sản phẩm</h2>
-<a asp-page="Create" class="btn btn-primary mb-3">Thêm sản phẩm</a>
-
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Tên sản phẩm</th>
-            <th>Hãng</th>
-            <th>Hành động</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var product in Model.Products)
-        {
-            <tr>
-                <td>@product.ProductId</td>
-                <td>@product.ProductName</td>
-                <td>@product.Brand</td>
-                <td>
-                    <a asp-page="./Edit" asp-route-itemid="@product.ProductId" class="btn btn-warning btn-sm">Sửa</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="card shadow-sm border-0 rounded-3">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-borderless align-middle mb-0">
+                <thead class="table-light border-bottom">
+                    <tr>
+                        <th class="py-3 px-4">Tên sản phẩm (ID)</th>
+                        <th>Danh mục</th>
+                        <th class="text-end">Giá bán (VNĐ)</th>
+                        <th class="text-end px-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Products.Count == 0)
+                    {
+                        <tr><td colspan="5" class="text-center py-4 text-muted">Chưa có dữ liệu sản phẩm.</td></tr>
+                    }
+                    @foreach (var product in Model.Products)
+                    {
+                        <tr class="border-bottom">
+                            <td class="px-4">
+                                <div class="fw-bold text-dark">@product.ProductName</div>
+                                <div class=" text-muted accept-policy small">ID: @product.ProductId</div>
+                            </td>
+                            <td>@product.CategoryName</td>
+                            <td class="text-end fw-bold text-danger">@product.Price.ToString("N0") đ</td>
+                            <td class="text-end px-4">
+                                <a asp-page="/ProductVariants/Index" asp-route-productId="@product.ProductId" class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-eye"></i> Xem chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -21,6 +21,7 @@ namespace BLL.Services
             {
                 ProductVariantId = pv.ProductVariantId,
                 Sku = pv.Sku,
+                ProductCode = pv.ProductCode,
                 Color = pv.Color,
                 Cpu = pv.Cpu,
                 Ram = pv.Ram,
@@ -36,7 +37,7 @@ namespace BLL.Services
             }).ToList();
         }
 
-        public async Task<ProductVariantDto?> GetProductVariantByIdAsync(int productVariantId)
+        public async Task<ProductVariantDto?> GetProductVariantByIdAsync(Guid productVariantId)
         {
             var productVariant = await _productVariantRepository.GetProductVariantByIdAsync(productVariantId);
             if (productVariant != null)
@@ -45,6 +46,7 @@ namespace BLL.Services
                 {
                     ProductVariantId = productVariant.ProductVariantId,
                     Sku = productVariant.Sku,
+                    ProductCode = productVariant.ProductCode,
                     Color = productVariant.Color,
                     Cpu = productVariant.Cpu,
                     Ram = productVariant.Ram,
@@ -64,7 +66,7 @@ namespace BLL.Services
         public async Task<ProductVariantDto> CreateProductVariantAsync(ProductVariantCreateDto productVariant)
         {
             var newVariant = ProductVariant.Create(
-                productVariant.Sku,
+                productVariant.ProductCode,
                 productVariant.Color,
                 productVariant.Cpu,
                 productVariant.Ram,
@@ -104,7 +106,7 @@ namespace BLL.Services
             };
 
             existingVariant.Update(
-                productVariant.Sku,
+                productVariant.ProductCode,
                 productVariant.Color,
                 productVariant.Cpu,
                 productVariant.Ram,
@@ -113,7 +115,7 @@ namespace BLL.Services
                 productVariant.Price,
                 productVariant.StockQuantity,
                 productVariant.ImageUrl,
-                existingVariant.ProductId
+                productVariant.ProductId
             );
 
             return await _productVariantRepository.UpdateProductVariantAsync(existingVariant);
@@ -144,6 +146,11 @@ namespace BLL.Services
                 CreatedAt = v.CreatedAt,
                 UpdatedAt = v.UpdatedAt
             }).ToList();
+        }
+
+        public async Task<bool> StockInAsync(Guid variantId, int increaseAmount)
+        {
+            return await _productVariantRepository.StockInAsync(variantId, increaseAmount);
         }
     }
 }
