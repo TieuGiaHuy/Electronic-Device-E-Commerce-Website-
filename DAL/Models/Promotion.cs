@@ -5,7 +5,7 @@ namespace DAL.Models
     public class Promotion : IBaseEntity
     {
         public int PromotionId { get; set; }
-        public int ProductVariantId { get; set; }
+        public Guid ProductVariantId { get; set; }
         public decimal SalePrice { get; set; }
         public int MaxReservedStock { get; set; }
         public DateTime StartAt { get; set; }
@@ -18,7 +18,7 @@ namespace DAL.Models
         // Navigation
         public virtual ProductVariant? ProductVariant { get; set; }
 
-        public static Promotion Create(int productVariantId, decimal salePrice, int maxReservedStock, DateTime startAt, DateTime endAt)
+        public static Promotion Create(Guid productVariantId, decimal salePrice, int maxReservedStock, DateTime startAt, DateTime endAt)
         {
             return new Promotion
             {

@@ -268,8 +268,8 @@ namespace DAL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("max_reserved_stock");
 
-                    b.Property<int>("ProductVariantId")
-                        .HasColumnType("int")
+                    b.Property<Guid>("ProductVariantId")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("product_variant_id");
 
                     b.Property<decimal>("SalePrice")

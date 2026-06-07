@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260607032351_PromotionEntity")]
-    partial class PromotionEntity
+    [Migration("20260607075532_InitDatabase")]
+    partial class InitDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -158,12 +158,10 @@ namespace DAL.Migrations
 
             modelBuilder.Entity("DAL.Models.ProductVariant", b =>
                 {
-                    b.Property<int>("ProductVariantId")
+                    b.Property<Guid>("ProductVariantId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("product_variant_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductVariantId"));
 
                     b.Property<string>("Color")
                         .IsRequired()
@@ -192,6 +190,12 @@ namespace DAL.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("price");
+
+                    b.Property<string>("ProductCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("product_code");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int")
@@ -267,8 +271,8 @@ namespace DAL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("max_reserved_stock");
 
-                    b.Property<int>("ProductVariantId")
-                        .HasColumnType("int")
+                    b.Property<Guid>("ProductVariantId")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("product_variant_id");
 
                     b.Property<decimal>("SalePrice")

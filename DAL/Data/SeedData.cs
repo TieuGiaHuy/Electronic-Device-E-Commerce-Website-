@@ -68,7 +68,7 @@ namespace DAL.Data
                 var prod2 = context.Products.First(p => p.ProductName == "PocketPhone Z");
 
                 var v1 = ProductVariant.Create(
-                    sku: "XB14-STD-BLK",
+                    productCode: "XB14-STD-BLK",
                     color: "Black",
                     cpu: "Intel i5",
                     ram: "8GB",
@@ -81,7 +81,7 @@ namespace DAL.Data
                 );
 
                 var v2 = ProductVariant.Create(
-                    sku: "PPZ-128-SLV",
+                    productCode: "PPZ-128-SLV",
                     color: "Silver",
                     cpu: "ARM Octa",
                     ram: "6GB",

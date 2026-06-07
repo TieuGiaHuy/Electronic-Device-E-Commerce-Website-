@@ -136,7 +136,7 @@
     {
         errorMessage = string.Empty;
 
-        if (createModel.ProductVariantId <= 0)
+        if (createModel.ProductVariantId == Guid.Empty)
         {
             errorMessage = "Please select a product variant.";
             return;
