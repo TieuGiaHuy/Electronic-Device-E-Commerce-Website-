@@ -69,7 +69,10 @@
 
         <div class="col-lg-6">
             <div class="admin-card p-4">
-                <h5 class="fw-bold text-secondary mb-3">Existing Promotions (@promotions.Count)</h5>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-secondary m-0">Existing Promotions (@promotions.Count)</h5>
+                    <a class="btn btn-sm btn-outline-primary" href="/promoted-products">View Promoted Products</a>
+                </div>
 
                 @if (!promotions.Any())
                 {
