@@ -12,5 +12,6 @@ namespace DAL.Repositories.Interfaces
 
 
         Task<List<ProductVariant>> GetVariantsByProductIdAsync(int productId);
+        Task<bool> StockInAsync(Guid variantId, int increaseAmount);
     }
 }

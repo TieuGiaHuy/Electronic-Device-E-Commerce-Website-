@@ -1,6 +1,5 @@
 ﻿using DAL.Models.Base;
 using DAL.Utilities;
-using Microsoft.VisualBasic;
 
 namespace DAL.Models
 {
@@ -98,6 +97,12 @@ namespace DAL.Models
         public void Delete()
         {
             IsDeleted = true;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void StockIn(int increaseAmount)
+        {
+            StockQuantity += increaseAmount;
             UpdatedAt = DateTime.UtcNow;
         }
     }

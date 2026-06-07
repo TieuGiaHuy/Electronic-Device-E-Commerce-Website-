@@ -70,10 +70,23 @@ namespace DAL.Repositories
 
         public async Task<List<ProductVariant>> GetVariantsByProductIdAsync(int productId)
         {
-            var productVariants = await _context.ProductVariants
+            var variants = await _context.ProductVariants
                 .Where(pv => pv.ProductId == productId)
                 .ToListAsync();
-            return productVariants;
+            return variants;
+        }
+
+        public async Task<bool> StockInAsync(Guid variantId, int increaseAmount)
+        {
+            var existingVariant = await _context.ProductVariants.FindAsync(variantId);
+            if (existingVariant == null)
+                return false;
+
+            existingVariant.StockIn(increaseAmount);
+            _context.ProductVariants.Update(existingVariant);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
 }

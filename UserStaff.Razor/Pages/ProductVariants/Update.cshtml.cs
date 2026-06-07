@@ -56,9 +56,11 @@ namespace UserStaff.Razor.Pages.ProductVariants
             var result = await _productVariantService.UpdateProductVariantAsync(ProductVariant);
             if (result)
             {
+                TempData["SuccessMessage"] = "Cập nhật biến thể thành công!";
                 return RedirectToPage("./Index", new { productId = ProductVariant.ProductId});
             }
 
+            TempData["ErrorMessage"] = "Cập nhật biến thể thất bại!";
             ModelState.AddModelError(string.Empty, "Cập nhật Product Variant thất bại.");
             return Page();
         }

@@ -147,5 +147,10 @@ namespace BLL.Services
                 UpdatedAt = v.UpdatedAt
             }).ToList();
         }
+
+        public async Task<bool> StockInAsync(Guid variantId, int increaseAmount)
+        {
+            return await _productVariantRepository.StockInAsync(variantId, increaseAmount);
+        }
     }
 }

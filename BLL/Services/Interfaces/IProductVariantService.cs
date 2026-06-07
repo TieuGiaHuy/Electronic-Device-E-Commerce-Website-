@@ -14,5 +14,6 @@ namespace BLL.Services.Interfaces
 
 
         Task<List<ProductVariantDto>> GetVariantsByProductIdAsync(int productId);
+        Task<bool> StockInAsync(Guid variantId, int increaseAmount);
     }
 }
