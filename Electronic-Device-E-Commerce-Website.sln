@@ -11,9 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentatio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Admin.Blazor", "Admin.Blazor\Admin.Blazor.csproj", "{475698A5-9F2E-4A4B-A28F-B95B27B03AA7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StaffUser.Mvc", "StaffUser.Mvc\StaffUser.Mvc.csproj", "{810250AC-2AD7-44D6-AD86-50426FE636B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Customer.Mvc", "StaffUser.Mvc\Customer.Mvc.csproj", "{810250AC-2AD7-44D6-AD86-50426FE636B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserStaff.Razor", "UserStaff.Razor\UserStaff.Razor.csproj", "{C62454DD-9882-4D8E-B482-68F6DDB00560}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Staff.Razor", "UserStaff.Razor\Staff.Razor.csproj", "{C62454DD-9882-4D8E-B482-68F6DDB00560}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
