@@ -1,10 +1,27 @@
 using BLL;
 using BLL.Settings;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.DependencyInjection;
+using BLL.DTOs.StaffUser;
+using BLL.DTOs.User;
+using BLL.Services.Interfaces;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSession();
+
+// Cookie authentication for staff users
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Login";
+        options.LogoutPath = "/Auth/Logout";
+        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+        options.SlidingExpiration = true;
+    });
 
 // lấy connection string từ appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -39,6 +56,8 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseRouting();
 
+app.UseSession();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
@@ -48,5 +67,23 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+// Seed customer user if not exists (for testing)
+using (var scope = app.Services.CreateScope())
+{
+    var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+    var existing = userService.GetByEmailAsync("customer@local").GetAwaiter().GetResult();
+    if (existing == null)
+    {
+        var createDto = new UserCreateDto
+        {
+            FullName = "Customer User",
+            Email = "customer@local",
+            PhoneNumber = "0123456789",
+            Password = "P@ssw0rd",
+            Role = 1 // Customer
+        };
+        userService.CreateAsync(createDto).GetAwaiter().GetResult();
+    }
+}
 
 app.Run();
