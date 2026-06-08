@@ -14,6 +14,7 @@ namespace DAL.Data
         public DbSet<Models.User> Users { get; set; }
         public DbSet<Models.ProductReview> ProductReviews { get; set; }
         public DbSet<Models.Promotion> Promotions { get; set; }
+        public DbSet<Models.Customer> Customers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

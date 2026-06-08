@@ -1,5 +1,5 @@
 using BLL.DTOs.StaffUser;
-using BLL.DTOs.User;
+using BLL.DTOs.Customer;
 using BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -11,11 +11,11 @@ namespace StaffUser.Mvc.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly IUserService _userService;
+        private readonly ICustomerService _customerService;
 
-        public AuthController(IUserService userService)
+        public AuthController(ICustomerService customerService)
         {
-            _userService = userService;
+            _customerService = customerService;
         }
 
         public IActionResult Login()
@@ -31,8 +31,8 @@ namespace StaffUser.Mvc.Controllers
                 return View(loginDto);
             }
 
-            var user = await _userService.ValidateLoginAsync(loginDto.Email, loginDto.Password);
-            if (user == null)
+            var customer = await _customerService.ValidateLoginAsync(loginDto.Email, loginDto.Password);
+            if (customer == null)
             {
                 ModelState.AddModelError("", "Invalid email or password");
                 return View(loginDto);
@@ -41,10 +41,10 @@ namespace StaffUser.Mvc.Controllers
             // Create claims and sign in with cookie authentication
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.FullName ?? user.Email),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
+                new Claim(ClaimTypes.NameIdentifier, customer.CustomerId.ToString()),
+                new Claim(ClaimTypes.Name, customer.FullName ?? customer.Email),
+                new Claim(ClaimTypes.Email, customer.Email),
+                new Claim(ClaimTypes.Role, customer.Role.ToString())
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
