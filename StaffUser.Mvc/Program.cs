@@ -2,7 +2,6 @@
 using BLL.Settings;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
-using BLL.DTOs.StaffUser;
 using BLL.DTOs.Customer;
 using BLL.Services.Interfaces;
 using System;
@@ -13,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 
-// Cookie authentication for staff users
+// Cookie authentication for users
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {

@@ -1,4 +1,4 @@
-using BLL.DTOs.StaffUser;
+using BLL.DTOs.Auth;
 using BLL.DTOs.Customer;
 using BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;

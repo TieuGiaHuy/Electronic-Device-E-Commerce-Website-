@@ -10,7 +10,7 @@ namespace DAL.Data
         public DbSet<Models.Product> Products { get; set; }
         public DbSet<Models.Category> Categories { get; set; }
         public DbSet<Models.ProductVariant> ProductVariants { get; set; }
-        public DbSet<Models.StaffUser> StaffUsers { get; set; }
+        
         public DbSet<Models.User> Users { get; set; }
         public DbSet<Models.ProductReview> ProductReviews { get; set; }
         public DbSet<Models.Promotion> Promotions { get; set; }
