@@ -1,0 +1,90 @@
+@page "/auth/login"
+@using BLL.DTOs.Auth
+@using BLL.Services.Interfaces
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using System.Security.Claims
+@inject IStaffService StaffService
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Admin Login</h4>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="Input" OnValidSubmit="HandleLogin" FormName="LoginForm">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger mb-3" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <InputText @bind-Value="Input.Email" class="form-control" />
+                            <ValidationMessage For="() => Input.Email" class="text-danger" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <InputText @bind-Value="Input.Password" type="password" class="form-control" />
+                            <ValidationMessage For="() => Input.Password" class="text-danger" />
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(ErrorMessage))
+                        {
+                            <div class="alert alert-danger">@ErrorMessage</div>
+                        }
+                        
+                        <button type="submit" class="btn btn-primary w-100" disabled="@isLoading">
+                            @if (isLoading) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                            Login
+                        </button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private LoginDto Input { get; set; } = new();
+    
+    private string? ErrorMessage { get; set; }
+    private bool isLoading { get; set; }
+    
+    private async Task HandleLogin()
+    {
+        isLoading = true;
+        ErrorMessage = null;
+        
+        var staff = await StaffService.ValidateLoginAsync(Input.Email, Input.Password);
+        if (staff == null)
+        {
+            ErrorMessage = "Invalid email or password.";
+            isLoading = false;
+            return;
+        }
+        
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, staff.StaffId.ToString()),
+            new Claim(ClaimTypes.Name, staff.FullName),
+            new Claim(ClaimTypes.Email, staff.Email),
+            new Claim(ClaimTypes.Role, staff.Role.ToString())
+        };
+        
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+        
+        var httpContext = HttpContextAccessor.HttpContext;
+        if (httpContext != null)
+        {
+            await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+        }
+        
+        Navigation.NavigateTo("/");
+    }
+}

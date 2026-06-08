@@ -1,5 +1,8 @@
 using BLL;
+using BLL.DTOs.Staff;
+using BLL.Services.Interfaces;
 using BLL.Settings;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +14,36 @@ builder.Services.AddRazorPages();
 builder.Services.AddBusinessLogicLayer(connectionString!);
 builder.Services.Configure<VnpaySettings>(builder.Configuration.GetSection("VNPAY"));
 
+// Add authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.LoginPath = "/Auth/Login";
+        options.LogoutPath = "/Auth/Logout";
+    });
+builder.Services.AddAuthorization();
+builder.Services.AddSession();
+
 var app = builder.Build();
+
+// Seed test staff account
+using (var scope = app.Services.CreateScope())
+{
+    var staffService = scope.ServiceProvider.GetRequiredService<IStaffService>();
+    var existingStaff = staffService.GetByEmailAsync("staff@local").GetAwaiter().GetResult();
+    if (existingStaff == null)
+    {
+        var createDto = new StaffCreateDto
+        {
+            FullName = "Test Staff",
+            Email = "staff@local",
+            Password = "P@ssw0rd",
+            Role = 2, // Admin role
+            IsActive = true
+        };
+        staffService.CreateAsync(createDto).GetAwaiter().GetResult();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -22,6 +54,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 
 var sharedUploadsFolder = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, "..", "shared-uploads"));
 if (!Directory.Exists(sharedUploadsFolder))
@@ -37,6 +70,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseRouting();
 
+app.UseSession();
 app.UseAuthorization();
 
 app.MapStaticAssets();

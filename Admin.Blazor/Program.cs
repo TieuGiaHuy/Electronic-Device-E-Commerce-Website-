@@ -1,4 +1,5 @@
 using Admin.Blazor.Components;
+using Admin.Blazor.Components.Auth;
 using BLL;
 using BLL.Settings;
 using BLL.Services.Interfaces;
@@ -7,6 +8,8 @@ using DAL.Repositories.Interfaces;
 using DAL.Repositories;
 using DAL.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +26,18 @@ builder.Services.Configure<VnpaySettings>(builder.Configuration.GetSection("VNPA
 // Register promotion service & repository (fix missing DI)
 builder.Services.AddScoped<IPromotionService, PromotionService>();
 builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
+
+// Add authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.LoginPath = "/auth/login";
+        options.LogoutPath = "/auth/logout";
+    });
+builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<StaffAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<StaffAuthenticationStateProvider>());
 
 var app = builder.Build();
 
@@ -52,6 +67,8 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/uploads"
 });
 
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
