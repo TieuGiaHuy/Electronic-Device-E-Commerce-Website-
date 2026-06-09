@@ -94,5 +94,29 @@ namespace StaffUser.Mvc.Controllers
         {
             return View();
         }
+
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(CustomerCreateDto registerDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(registerDto);
+            }
+
+            var existingCustomer = await _customerService.GetByEmailAsync(registerDto.Email);
+            if (existingCustomer != null)
+            {
+                ModelState.AddModelError("", "Email already registered");
+                return View(registerDto);
+            }
+
+            var customer = await _customerService.CreateAsync(registerDto);
+            return RedirectToAction("Login", "Auth");
+        }
     }
 }
