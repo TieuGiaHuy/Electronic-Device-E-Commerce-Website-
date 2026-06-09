@@ -1,4 +1,5 @@
 ﻿using DAL.Models;
+using DAL.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Data;
@@ -123,24 +124,6 @@ namespace DAL.Data
                 );
 
                 context.Promotions.AddRange(promo1, promo2);
-                context.SaveChanges();
-            }
-
-            // Staff (Admin)
-            if (!context.Staffs.Any())
-            {
-                var adminPassword = BCrypt.Net.BCrypt.HashPassword("Admin@123");
-                var admin = new Staff
-                {
-                    FullName = "Administrator",
-                    Email = "admin@electronexus.com",
-                    PasswordHash = adminPassword,
-                    Role = RoleEnum.Admin,
-                    IsActive = true,
-                    IsDeleted = false,
-                    CreatedAt = DateTime.UtcNow
-                };
-                context.Staffs.Add(admin);
                 context.SaveChanges();
             }
         }

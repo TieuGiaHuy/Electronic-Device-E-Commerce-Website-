@@ -41,9 +41,29 @@ builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredServ
 
 var app = builder.Build();
 
-using var scope = app.Services.CreateScope();
-var db = scope.ServiceProvider.GetRequiredService<DAL.Data.AppDbContext>();
-db.EnsureSeedData();
+// Seed admin staff account
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<DAL.Data.AppDbContext>();
+    db.Database.Migrate();
+    
+    if (!db.Staffs.Any(s => s.Email == "admin@electronexus.com"))
+    {
+        var adminPassword = BCrypt.Net.BCrypt.HashPassword("Admin@123");
+        var admin = new DAL.Models.Staff
+        {
+            FullName = "Administrator",
+            Email = "admin@electronexus.com",
+            PasswordHash = adminPassword,
+            Role = DAL.Enums.RoleEnum.Admin,
+            IsActive = true,
+            IsDeleted = false,
+            CreatedAt = DateTime.UtcNow
+        };
+        db.Staffs.Add(admin);
+        db.SaveChanges();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

@@ -23,14 +23,14 @@
                         <Authorized>
                             <div class="d-flex align-items-center gap-2">
                                 <div class="text-end d-none d-md-block me-2">
-                                    <div class="fw-bold text-dark" style="font-size: 0.85rem; line-height: 1.1;">@context.User.Identity?.Name</div>
-                                    <div class="text-muted" style="font-size: 0.7rem;">@context.User.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value</div>
+                                    <div class="fw-bold text-white" style="font-size: 0.85rem; line-height: 1.1;">@context.User.Identity?.Name</div>
+                                    <div class="text-white-50" style="font-size: 0.7rem;">@context.User.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value</div>
                                 </div>
-                                <a href="/auth/logout" class="btn btn-outline-light btn-sm">Logout</a>
+                                <a href="/auth/logout" class="btn btn-danger btn-sm">Logout</a>
                             </div>
                         </Authorized>
                         <NotAuthorized>
-                            <a href="/auth/login" class="btn btn-outline-light btn-sm">Login</a>
+                            <a href="/auth/login" class="btn btn-primary btn-sm">Login</a>
                         </NotAuthorized>
                     </AuthorizeView>
                 </CascadingAuthenticationState>

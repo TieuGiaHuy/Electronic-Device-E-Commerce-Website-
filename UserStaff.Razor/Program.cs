@@ -38,7 +38,7 @@ using (var scope = app.Services.CreateScope())
             FullName = "Test Staff",
             Email = "staff@local",
             Password = "P@ssw0rd",
-            Role = 2, // Admin role
+            Role = 2, // Staff role
             IsActive = true
         };
         staffService.CreateAsync(createDto).GetAwaiter().GetResult();
