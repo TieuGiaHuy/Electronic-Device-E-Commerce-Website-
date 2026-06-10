@@ -315,6 +315,10 @@ namespace DAL.Migrations
                         .HasColumnType("bit")
                         .HasColumnName("is_deleted");
 
+                    b.Property<bool>("IsDisabled")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_disabled");
+
                     b.Property<int>("MaxReservedStock")
                         .HasColumnType("int")
                         .HasColumnName("max_reserved_stock");

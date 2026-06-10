@@ -2,16 +2,19 @@ using BLL.DTOs.Promotion;
 using BLL.Services.Interfaces;
 using DAL.Models;
 using DAL.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BLL.Services
 {
     public class PromotionService : IPromotionService
     {
         private readonly IPromotionRepository _promotionRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public PromotionService(IPromotionRepository promotionRepository)
+        public PromotionService(IPromotionRepository promotionRepository, IUnitOfWork unitOfWork)
         {
             _promotionRepository = promotionRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<PromotionDto>> GetAllPromotionsAsync()
@@ -26,7 +29,8 @@ namespace BLL.Services
                 StartAt = p.StartAt,
                 EndAt = p.EndAt,
                 CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt
+                UpdatedAt = p.UpdatedAt,
+                IsDisabled = p.IsDisabled
             }).ToList();
         }
 
@@ -43,33 +47,52 @@ namespace BLL.Services
                 StartAt = p.StartAt,
                 EndAt = p.EndAt,
                 CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt
+                UpdatedAt = p.UpdatedAt,
+                IsDisabled = p.IsDisabled
             };
         }
 
         public async Task<PromotionDto> CreatePromotionAsync(PromotionCreateDto promotion)
         {
-            var entity = Promotion.Create(
-                promotion.ProductVariantId,
-                promotion.SalePrice,
-                promotion.MaxReservedStock,
-                promotion.StartAt,
-                promotion.EndAt
-            );
-
-            var created = await _promotionRepository.CreatePromotionAsync(entity);
-
-            return new PromotionDto
+            try
             {
-                PromotionId = created.PromotionId,
-                ProductVariantId = created.ProductVariantId,
-                SalePrice = created.SalePrice,
-                MaxReservedStock = created.MaxReservedStock,
-                StartAt = created.StartAt,
-                EndAt = created.EndAt,
-                CreatedAt = created.CreatedAt,
-                UpdatedAt = created.UpdatedAt
-            };
+                await _unitOfWork.BeginTransactionAsync();
+                var entity = Promotion.Create(
+                    promotion.ProductVariantId,
+                    promotion.SalePrice,
+                    promotion.MaxReservedStock,
+                    promotion.StartAt,
+                    promotion.EndAt
+                );
+
+                var productPrice = await _unitOfWork.Repository<ProductVariant>().Query().Where(pv => pv.ProductVariantId == promotion.ProductVariantId)
+                    .Select(pv => pv.Price).FirstOrDefaultAsync();
+                if (entity.SalePrice >= productPrice)
+                {
+                    throw new InvalidOperationException("Sale price must be less than the product price.");
+                }
+
+                var created = await _promotionRepository.CreatePromotionAsync(entity);
+
+                await _unitOfWork.CommitAsync();
+                return new PromotionDto
+                {
+                    PromotionId = created.PromotionId,
+                    ProductVariantId = created.ProductVariantId,
+                    SalePrice = created.SalePrice,
+                    MaxReservedStock = created.MaxReservedStock,
+                    StartAt = created.StartAt,
+                    EndAt = created.EndAt,
+                    CreatedAt = created.CreatedAt,
+                    UpdatedAt = created.UpdatedAt,
+                    IsDisabled = created.IsDisabled
+                };
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<bool> UpdatePromotionAsync(PromotionDto promotion)
@@ -81,7 +104,8 @@ namespace BLL.Services
                 SalePrice = promotion.SalePrice,
                 MaxReservedStock = promotion.MaxReservedStock,
                 StartAt = promotion.StartAt,
-                EndAt = promotion.EndAt
+                EndAt = promotion.EndAt,
+                IsDisabled = promotion.IsDisabled
             };
             return await _promotionRepository.UpdatePromotionAsync(entity);
         }
@@ -103,8 +127,17 @@ namespace BLL.Services
                 StartAt = p.StartAt,
                 EndAt = p.EndAt,
                 CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt
+                UpdatedAt = p.UpdatedAt,
+                IsDisabled = p.IsDisabled
             }).ToList();
+        }
+
+        public async Task<bool> SetPromotionDisabledAsync(int promotionId, bool isDisabled)
+        {
+            var p = await _promotionRepository.GetPromotionByIdAsync(promotionId);
+            if (p == null) return false;
+            p.IsDisabled = isDisabled;
+            return await _promotionRepository.UpdatePromotionAsync(p);
         }
     }
 }

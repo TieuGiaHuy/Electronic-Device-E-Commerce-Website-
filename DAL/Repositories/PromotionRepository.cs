@@ -39,7 +39,7 @@ namespace DAL.Repositories
             var existing = await _context.Set<Promotion>().FindAsync(promotion.PromotionId);
             if (existing == null) return false;
 
-            existing.Update(promotion.SalePrice, promotion.MaxReservedStock, promotion.StartAt, promotion.EndAt);
+            existing.Update(promotion.ProductVariantId, promotion.SalePrice, promotion.MaxReservedStock, promotion.StartAt, promotion.EndAt);
             _context.Set<Promotion>().Update(existing);
             await _context.SaveChangesAsync();
             return true;

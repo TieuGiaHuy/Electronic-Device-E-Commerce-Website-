@@ -10,5 +10,6 @@ namespace BLL.Services.Interfaces
         Task<bool> UpdatePromotionAsync(PromotionDto promotion);
         Task<bool> DeletePromotionAsync(int promotionId);
         Task<List<PromotionDto>> GetActivePromotionsAsync();
+        Task<bool> SetPromotionDisabledAsync(int promotionId, bool isDisabled);
     }
 }

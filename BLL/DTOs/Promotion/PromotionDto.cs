@@ -11,5 +11,8 @@ namespace BLL.DTOs.Promotion
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+
+        // New: persisted enable/disable flag
+        public bool IsDisabled { get; set; }
     }
 }

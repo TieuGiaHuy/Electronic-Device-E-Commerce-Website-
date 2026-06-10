@@ -4,6 +4,7 @@
 @using BLL.Services.Interfaces
 @inject IPromotionService PromotionService
 @inject IProductVariantService ProductVariantService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Manage Promotions - ElectroNexus Admin</PageTitle>
 
@@ -84,12 +85,14 @@
                         @foreach (var p in promotions)
                         {
                             <div class="list-group-item d-flex justify-content-between align-items-start">
-                                <div>
-                                    <div class="fw-bold">#@p.PromotionId — Variant #@p.ProductVariantId</div>
-                                    <div class="small text-muted">Sale: @p.SalePrice.ToString("N0") $ • Reserved: @p.MaxReservedStock • @p.StartAt.ToString("g") — @p.EndAt.ToString("g")</div>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeletePromotion(p.PromotionId)">Delete</button>
+                                <div class="w-100 d-flex justify-content-between">
+                                    <div class="me-3" style="cursor:pointer" @onclick="@(() => NavigationManager.NavigateTo($"/promotions/{p.PromotionId}"))">
+                                        <div class="fw-bold">#@p.PromotionId — Variant #@p.ProductVariantId</div>
+                                        <div class="small text-muted">Sale: @p.SalePrice.ToString("N0") $ • Reserved: @p.MaxReservedStock • @p.StartAt.ToString("g") — @p.EndAt.ToString("g")</div>
+                                    </div>
+                                    <div class="d-flex gap-2 align-items-start">
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeletePromotion(p.PromotionId)">Delete</button>
+                                    </div>
                                 </div>
                             </div>
                         }
