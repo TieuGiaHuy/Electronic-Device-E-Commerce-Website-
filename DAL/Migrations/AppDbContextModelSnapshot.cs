@@ -296,12 +296,10 @@ namespace DAL.Migrations
 
             modelBuilder.Entity("DAL.Models.Promotion", b =>
                 {
-                    b.Property<int>("PromotionId")
+                    b.Property<Guid>("PromotionId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("promotion_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PromotionId"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")

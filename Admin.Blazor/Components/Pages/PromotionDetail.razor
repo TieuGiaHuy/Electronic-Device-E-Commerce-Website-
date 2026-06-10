@@ -1,4 +1,4 @@
-@page "/promotions/{Id:int}"
+@page "/promotions/{Id:guid}"
 @rendermode InteractiveServer
 @using BLL.DTOs.Promotion
 @using BLL.Services.Interfaces
@@ -104,7 +104,7 @@
 
 @code {
     [Parameter]
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     private PromotionDto? promotion;
     private PromotionDto? original;
@@ -176,7 +176,7 @@
         detailError = string.Empty;
         if (promotion == null) return;
 
-        if (promotion.ProductVariantId <= 0)
+        if (promotion.ProductVariantId == Guid.Empty)
         {
             detailError = "Please select a product variant.";
             return;

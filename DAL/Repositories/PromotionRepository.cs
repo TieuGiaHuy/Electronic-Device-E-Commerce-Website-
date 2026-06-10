@@ -22,7 +22,7 @@ namespace DAL.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Promotion?> GetPromotionByIdAsync(int promotionId)
+        public async Task<Promotion?> GetPromotionByIdAsync(Guid promotionId)
         {
             return await _context.Set<Promotion>().FindAsync(promotionId);
         }
@@ -45,7 +45,7 @@ namespace DAL.Repositories
             return true;
         }
 
-        public async Task<bool> DeletePromotionAsync(int promotionId)
+        public async Task<bool> DeletePromotionAsync(Guid promotionId)
         {
             var existing = await _context.Set<Promotion>().FindAsync(promotionId);
             if (existing == null) return false;

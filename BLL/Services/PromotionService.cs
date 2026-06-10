@@ -34,7 +34,7 @@ namespace BLL.Services
             }).ToList();
         }
 
-        public async Task<PromotionDto?> GetPromotionByIdAsync(int promotionId)
+        public async Task<PromotionDto?> GetPromotionByIdAsync(Guid promotionId)
         {
             var p = await _promotionRepository.GetPromotionByIdAsync(promotionId);
             if (p == null) return null;
@@ -110,7 +110,7 @@ namespace BLL.Services
             return await _promotionRepository.UpdatePromotionAsync(entity);
         }
 
-        public async Task<bool> DeletePromotionAsync(int promotionId)
+        public async Task<bool> DeletePromotionAsync(Guid promotionId)
         {
             return await _promotionRepository.DeletePromotionAsync(promotionId);
         }
@@ -132,7 +132,7 @@ namespace BLL.Services
             }).ToList();
         }
 
-        public async Task<bool> SetPromotionDisabledAsync(int promotionId, bool isDisabled)
+        public async Task<bool> SetPromotionDisabledAsync(Guid promotionId, bool isDisabled)
         {
             var p = await _promotionRepository.GetPromotionByIdAsync(promotionId);
             if (p == null) return false;
