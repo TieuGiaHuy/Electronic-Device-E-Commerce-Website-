@@ -4,8 +4,27 @@
 @using BLL.Services.Interfaces
 @inject IPromotionService PromotionService
 @inject IProductVariantService ProductVariantService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Manage Promotions - ElectroNexus Admin</PageTitle>
+
+<style>
+    /* Hover highlight for existing promotion items */
+    .promo-item {
+        transition: background-color 0.12s ease, transform 0.08s ease, box-shadow 0.12s ease;
+    }
+
+    .promo-item:hover {
+        background-color: #f8fbff; /* subtle highlight */
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(17, 24, 39, 0.06);
+    }
+
+    /* keep inner clickable area cursor consistent */
+    .promo-item .me-3 {
+        cursor: pointer;
+    }
+</style>
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -51,12 +70,14 @@
 
                     <div class="mb-3">
                         <label class="form-label">Start At <span class="text-danger">*</span></label>
-                        <InputDate class="form-control" @bind-Value="createModel.StartAt" />
+                        <input type="datetime-local" class="form-control"
+                               @bind="createModel.StartAt"
+                               @bind:format="yyyy-MM-ddTHH:mm" />
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">End At <span class="text-danger">*</span></label>
-                        <InputDate class="form-control" @bind-Value="createModel.EndAt" />
+                        <input type="datetime-local" class="form-control" @bind="createModel.EndAt" @bind:format="yyyy-MM-ddTHH:mm" />
                     </div>
 
                     <div class="d-flex justify-content-end gap-2">
@@ -83,13 +104,15 @@
                     <div class="list-group">
                         @foreach (var p in promotions)
                         {
-                            <div class="list-group-item d-flex justify-content-between align-items-start">
-                                <div>
-                                    <div class="fw-bold">#@p.PromotionId — Variant #@p.ProductVariantId</div>
-                                    <div class="small text-muted">Sale: @p.SalePrice.ToString("N0") $ • Reserved: @p.MaxReservedStock • @p.StartAt.ToString("g") — @p.EndAt.ToString("g")</div>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeletePromotion(p.PromotionId)">Delete</button>
+                            <div class="list-group-item d-flex justify-content-between align-items-start promo-item">
+                                <div class="w-100 d-flex justify-content-between">
+                                    <div class="me-3" style="cursor:pointer" @onclick="@(() => NavigationManager.NavigateTo($"/promotions/{p.PromotionId}"))">
+                                        <div class="fw-bold">#@p.PromotionId — Variant #@p.ProductVariantId</div>
+                                        <div class="small text-muted">Sale: @p.SalePrice.ToString("N0") $ • Reserved: @p.MaxReservedStock • @p.StartAt.ToString("g") — @p.EndAt.ToString("g")</div>
+                                    </div>
+                                    <div class="d-flex gap-2 align-items-start">
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeletePromotion(p.PromotionId)">Delete</button>
+                                    </div>
                                 </div>
                             </div>
                         }
@@ -169,7 +192,7 @@
         }
     }
 
-    private async Task DeletePromotion(int id)
+    private async Task DeletePromotion(Guid id)
     {
         try
         {

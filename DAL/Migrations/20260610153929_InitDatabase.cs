@@ -167,8 +167,7 @@ namespace DAL.Migrations
                 name: "promotions",
                 columns: table => new
                 {
-                    promotion_id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    promotion_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     product_variant_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     sale_price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     max_reserved_stock = table.Column<int>(type: "int", nullable: false),
@@ -176,7 +175,8 @@ namespace DAL.Migrations
                     end_at = table.Column<DateTime>(type: "datetime2", nullable: false),
                     is_deleted = table.Column<bool>(type: "bit", nullable: false),
                     created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    is_disabled = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
