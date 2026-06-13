@@ -93,7 +93,16 @@ namespace StaffUser.Mvc.Controllers
                 ModelState.AddModelError("", "Please provide your email address.");
                 return View();
             }
-            // For a simplified dev flow, redirect the user immediately to a page
+
+            // Verify the email exists before allowing reset
+            var customer = await _customerService.GetByEmailAsync(email);
+            if (customer == null)
+            {
+                ModelState.AddModelError("", "Email address not found.");
+                return View();
+            }
+
+            // For a simplified dev flow, redirect the user to a page
             // where they can set a new password. In production use a secure token+email.
             return RedirectToAction("SetNewPassword", new { email = email });
         }

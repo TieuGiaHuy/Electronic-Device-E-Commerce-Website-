@@ -77,5 +77,11 @@ namespace BLL.Services
                 UpdatedAt = created.UpdatedAt
             };
         }
+
+        public async Task<bool> SetPasswordAsync(int staffId, string newPassword)
+        {
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            return await _staffRepository.SetPasswordAsync(staffId, passwordHash);
+        }
     }
 }
