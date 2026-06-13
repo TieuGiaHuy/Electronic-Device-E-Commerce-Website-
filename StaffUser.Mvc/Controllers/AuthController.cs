@@ -6,6 +6,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System;
+using StaffUser.Mvc.ViewModels;
 
 namespace StaffUser.Mvc.Controllers
 {
@@ -84,10 +85,50 @@ namespace StaffUser.Mvc.Controllers
         }
 
         [HttpPost]
-        public IActionResult ForgotPassword(string email)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(string email)
         {
-            // TODO: Implement forgot password logic
-            return View();
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ModelState.AddModelError("", "Please provide your email address.");
+                return View();
+            }
+            // For a simplified dev flow, redirect the user immediately to a page
+            // where they can set a new password. In production use a secure token+email.
+            return RedirectToAction("SetNewPassword", new { email = email });
+        }
+
+        public IActionResult SetNewPassword(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return RedirectToAction("ForgotPassword");
+            var model = new SetNewPasswordViewModel { Email = email };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetNewPassword(ViewModels.SetNewPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            if (model.Password != model.ConfirmPassword)
+            {
+                ModelState.AddModelError("", "Passwords do not match.");
+                return View(model);
+            }
+
+            var customer = await _customerService.GetByEmailAsync(model.Email);
+            if (customer == null)
+            {
+                // Don't reveal whether the email exists. Redirect to login with no details.
+                return RedirectToAction("Login");
+            }
+
+            await _customerService.SetPasswordAsync(customer.CustomerId, model.Password);
+            return RedirectToAction("Login");
         }
 
         public IActionResult AccessDenied()
