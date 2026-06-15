@@ -1,4 +1,5 @@
 using Admin.Blazor.Components;
+using Admin.Blazor.Components.Auth;
 using BLL;
 using BLL.Settings;
 using BLL.Services.Interfaces;
@@ -7,6 +8,8 @@ using DAL.Repositories.Interfaces;
 using DAL.Repositories;
 using DAL.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,11 +24,43 @@ builder.Services.AddBusinessLogicLayer(connectionString!);
 builder.Services.Configure<VnpaySettings>(builder.Configuration.GetSection("VNPAY"));
 
 
+// Add authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.LoginPath = "/auth/login";
+        options.LogoutPath = "/auth/logout";
+    });
+builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<StaffAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<StaffAuthenticationStateProvider>());
+
 var app = builder.Build();
 
-using var scope = app.Services.CreateScope();
-var db = scope.ServiceProvider.GetRequiredService<DAL.Data.AppDbContext>();
-db.EnsureSeedData();
+// Seed admin staff account
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<DAL.Data.AppDbContext>();
+    db.Database.Migrate();
+    
+    if (!db.Staffs.Any(s => s.Email == "admin@electronexus.com"))
+    {
+        var adminPassword = BCrypt.Net.BCrypt.HashPassword("Admin@123");
+        var admin = new DAL.Models.Staff
+        {
+            FullName = "Administrator",
+            Email = "admin@electronexus.com",
+            PasswordHash = adminPassword,
+            Role = DAL.Enums.RoleEnum.Admin,
+            IsActive = true,
+            IsDeleted = false,
+            CreatedAt = DateTime.UtcNow
+        };
+        db.Staffs.Add(admin);
+        db.SaveChanges();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -49,6 +84,8 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/uploads"
 });
 
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapStaticAssets();

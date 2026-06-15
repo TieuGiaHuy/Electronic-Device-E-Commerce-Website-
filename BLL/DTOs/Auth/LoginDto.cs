@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace BLL.DTOs.StaffUser
+namespace BLL.DTOs.Auth
 {
     public class LoginDto
     {

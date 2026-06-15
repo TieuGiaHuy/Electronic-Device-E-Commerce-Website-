@@ -55,6 +55,68 @@ namespace DAL.Migrations
                     b.ToTable("Categories", (string)null);
                 });
 
+            modelBuilder.Entity("DAL.Models.Customer", b =>
+                {
+                    b.Property<int>("CustomerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("customer_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CustomerId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("full_name");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("password_hash");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("phone_number");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("int")
+                        .HasColumnName("points");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int")
+                        .HasColumnName("role");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("CustomerId")
+                        .HasName("pk_customers");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("ix_customers_email");
+
+                    b.ToTable("customers", (string)null);
+                });
+
             modelBuilder.Entity("DAL.Models.Product", b =>
                 {
                     b.Property<int>("ProductId")
@@ -346,14 +408,14 @@ namespace DAL.Migrations
                     b.ToTable("promotions", (string)null);
                 });
 
-            modelBuilder.Entity("DAL.Models.StaffUser", b =>
+            modelBuilder.Entity("DAL.Models.Staff", b =>
                 {
-                    b.Property<int>("StaffUserId")
+                    b.Property<int>("StaffId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("staff_user_id");
+                        .HasColumnName("staff_id");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StaffUserId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StaffId"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
@@ -384,24 +446,22 @@ namespace DAL.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("password_hash");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                    b.Property<int>("Role")
+                        .HasColumnType("int")
                         .HasColumnName("role");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
 
-                    b.HasKey("StaffUserId")
-                        .HasName("pk_staff_users");
+                    b.HasKey("StaffId")
+                        .HasName("pk_staffs");
 
                     b.HasIndex("Email")
                         .IsUnique()
-                        .HasDatabaseName("ix_staff_users_email");
+                        .HasDatabaseName("ix_staffs_email");
 
-                    b.ToTable("staff_users", (string)null);
+                    b.ToTable("staffs", (string)null);
                 });
 
             modelBuilder.Entity("DAL.Models.User", b =>

@@ -19,9 +19,11 @@ namespace DAL
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddScoped<IStaffUserRepository, StaffUserRepository>();
+            
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<IStaffRepository, StaffRepository>();
             services.AddScoped<IPromotionRepository, PromotionRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 

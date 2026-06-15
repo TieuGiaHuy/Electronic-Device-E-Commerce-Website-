@@ -1,4 +1,5 @@
 ﻿using DAL.Models;
+using DAL.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Data;

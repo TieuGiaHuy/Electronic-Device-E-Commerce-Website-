@@ -4,18 +4,20 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DAL.Configurations
 {
-    public class StaffUserConfiguration : IEntityTypeConfiguration<StaffUser>
+    public class StaffConfiguration : IEntityTypeConfiguration<Staff>
     {
-        public void Configure(EntityTypeBuilder<StaffUser> builder)
+        public void Configure(EntityTypeBuilder<Staff> builder)
         {
-            builder.HasKey(s => s.StaffUserId);
+            builder.ToTable("staffs");
+
+            builder.HasKey(s => s.StaffId);
             builder.Property(s => s.Email).IsRequired().HasMaxLength(255);
-            builder.HasIndex(s => s.Email).IsUnique();
             builder.Property(s => s.FullName).IsRequired().HasMaxLength(100);
             builder.Property(s => s.PasswordHash).IsRequired();
-            builder.Property(s => s.Role).IsRequired().HasMaxLength(50);
+            builder.Property(s => s.Role).IsRequired();
             builder.Property(s => s.IsActive).IsRequired();
 
+            builder.HasIndex(s => s.Email).IsUnique();
             builder.HasQueryFilter(s => !s.IsDeleted);
         }
     }

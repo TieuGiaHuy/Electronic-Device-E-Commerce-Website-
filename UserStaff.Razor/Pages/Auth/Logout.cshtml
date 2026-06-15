@@ -1,0 +1,18 @@
+@page
+@model UserStaff.Razor.Pages.Auth.LogoutModel
+@{
+    Layout = "_Layout";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4 text-center">
+            <h2>Logout</h2>
+            <p>Are you sure you want to logout?</p>
+            <form method="post">
+                <button type="submit" class="btn btn-danger">Logout</button>
+                <a asp-page="/Index" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>

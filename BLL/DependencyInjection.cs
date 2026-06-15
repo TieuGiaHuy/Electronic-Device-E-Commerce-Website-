@@ -14,11 +14,13 @@ namespace BLL
             // Register business logic services here
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IProductVariantService, ProductVariantService>();
-            services.AddScoped<IStaffUserService, StaffUserService>();
+            
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IPromotionService, PromotionService>();
 
+            services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<IStaffService, StaffService>();
             return services.BuildServiceProvider();
         }
     }
