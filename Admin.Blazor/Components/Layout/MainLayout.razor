@@ -1,4 +1,7 @@
 @inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
 
 <div class="page">
     <div class="sidebar">
@@ -8,22 +11,29 @@
     <main>
         <div class="top-row px-4 d-flex justify-content-between align-items-center w-100">
             <div class="d-flex align-items-center">
-                <h5 class="m-0 fw-bold text-secondary d-none d-sm-block me-3">ElectroNexus Control Center</h5>
+                <h5 class="m-0 fw-bold text-secondary d-none d-sm-block me-3">Electronic Commerce Control Center</h5>
                 <span class="badge bg-success-subtle text-success border border-success-subtle d-flex align-items-center gap-1 py-1.5 px-2.5 rounded-pill" style="font-size: 0.75rem; background-color: #e6fcf5 !important; border-color: #c3fae8 !important; color: #0ca678 !important; font-weight: 600;">
                     <span class="d-inline-block bg-success rounded-circle pulse-dot" style="width: 7px; height: 7px; background-color: #0ca678 !important; margin-right: 3px;"></span>
                     Admin Active
                 </span>
             </div>
             <div class="d-flex align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="text-end d-none d-md-block me-2">
-                        <div class="fw-bold text-dark" style="font-size: 0.85rem; line-height: 1.1;">Administrator</div>
-                        <div class="text-muted" style="font-size: 0.7rem;">admin@electronexus.com</div>
-                    </div>
-                    <div class="admin-avatar-box d-flex align-items-center justify-content-center bg-danger-subtle text-danger rounded-circle fw-bold" style="width: 38px; height: 38px; font-size: 0.9rem; background-color: #ffe3e3; border: 1.5px solid #ffc9c9;">
-                        AD
-                    </div>
-                </div>
+                <CascadingAuthenticationState>
+                    <AuthorizeView>
+                        <Authorized>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="text-end d-none d-md-block me-2">
+                                    <div class="fw-bold text-white" style="font-size: 0.85rem; line-height: 1.1;">@context.User.Identity?.Name</div>
+                                    <div class="text-white-50" style="font-size: 0.7rem;">@context.User.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value</div>
+                                </div>
+                                <a href="/auth/logout" class="btn btn-danger btn-sm">Logout</a>
+                            </div>
+                        </Authorized>
+                        <NotAuthorized>
+                            <a href="/auth/login" class="btn btn-primary btn-sm">Login</a>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </CascadingAuthenticationState>
             </div>
         </div>
 
