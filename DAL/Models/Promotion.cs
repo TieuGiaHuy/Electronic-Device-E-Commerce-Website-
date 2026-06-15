@@ -1,12 +1,17 @@
 using DAL.Models.Base;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace DAL.Models
 {
     public class Promotion : IBaseEntity
     {
-        public int PromotionId { get; set; }
+        [Key]
+        public Guid PromotionId { get; set; }
         public Guid ProductVariantId { get; set; }
+        [Range(0, double.MaxValue)]
         public decimal SalePrice { get; set; }
+        [Range(0, int.MaxValue)]
         public int MaxReservedStock { get; set; }
         public DateTime StartAt { get; set; }
         public DateTime EndAt { get; set; }
@@ -14,7 +19,7 @@ namespace DAL.Models
         public bool IsDeleted { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-
+        public bool IsDisabled { get; set; }
         // Navigation
         public virtual ProductVariant? ProductVariant { get; set; }
 
@@ -27,12 +32,14 @@ namespace DAL.Models
                 MaxReservedStock = maxReservedStock,
                 StartAt = startAt,
                 EndAt = endAt,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                IsDisabled = false
             };
         }
 
-        public void Update(decimal salePrice, int maxReservedStock, DateTime startAt, DateTime endAt)
+        public void Update(Guid productVariantId, decimal salePrice, int maxReservedStock, DateTime startAt, DateTime endAt)
         {
+            ProductVariantId = productVariantId;
             SalePrice = salePrice;
             MaxReservedStock = maxReservedStock;
             StartAt = startAt;

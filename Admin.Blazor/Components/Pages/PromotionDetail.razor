@@ -1,0 +1,248 @@
+@page "/promotions/{Id:guid}"
+@rendermode InteractiveServer
+@using BLL.DTOs.Promotion
+@using BLL.Services.Interfaces
+@inject IPromotionService PromotionService
+@inject IProductVariantService ProductVariantService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Promotion Detail - ElectroNexus Admin</PageTitle>
+
+<div class="container py-4">
+    <div class="mb-3 d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="m-0">Promotion Detail</h4>
+            <small class="text-muted">Edit promotion (readonly: PromotionId, CreatedAt, UpdatedAt)</small>
+        </div>
+        <div>
+            <button class="btn btn-light me-2" @onclick="Back">Back</button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(detailError))
+    {
+        <div class="alert alert-danger">@detailError</div>
+    }
+
+    @if (promotion == null)
+    {
+        <div class="text-muted">Loading...</div>
+    }
+    else
+    {
+        <EditForm Model="@promotion" OnValidSubmit="SaveChanges">
+            <DataAnnotationsValidator />
+
+            <div class="row g-2">
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">Promotion Id</label>
+                    <input class="form-control" value="@promotion.PromotionId" readonly />
+                </div>
+
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">Variant</label>
+                    <InputSelect class="@($"{FieldClass(p => p.ProductVariantId)} form-select")" @bind-Value="promotion.ProductVariantId">
+                        <option value="0">-- Select variant --</option>
+                        @foreach (var v in variants)
+                        {
+                            <option value="@v.ProductVariantId">#@v.ProductVariantId - @v.Sku - @v.Color</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">Sale Price ($)</label>
+                    <InputNumber class="@($"{FieldClass(p => p.SalePrice)} form-control")" @bind-Value="promotion.SalePrice" />
+                </div>
+
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">Max Reserved</label>
+                    <InputNumber class="@($"{FieldClass(p => p.MaxReservedStock)} form-control")" @bind-Value="promotion.MaxReservedStock" />
+                </div>
+
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">Start At</label>
+                    <InputDate class="@($"{FieldClass(p => p.StartAt)} form-control")" @bind-Value="promotion.StartAt" />
+                </div>
+
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">End At</label>
+                    <InputDate class="@($"{FieldClass(p => p.EndAt)} form-control")" @bind-Value="promotion.EndAt" />
+                </div>
+
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">Created At</label>
+                    <input class="form-control" value="@promotion.CreatedAt.ToString("g")" readonly />
+                </div>
+
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">Updated At</label>
+                    <input class="form-control" value="@(promotion.UpdatedAt?.ToString("g") ?? "-")" readonly />
+                </div>
+
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">Status</label>
+                    @if (promotion.IsDisabled)
+                    {
+                        <div class="badge bg-secondary">Disabled</div>
+                    }
+                    else
+                    {
+                        <div class="badge bg-success">Enabled</div>
+                    }
+                </div>
+
+                <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+                    <button type="button" class="btn btn-secondary" @onclick="Reset" disabled="@( !IsDirty )">Reset</button>
+                    <button type="button" class="btn btn-outline-danger" @onclick="ToggleEnableDisable">@((promotion.IsDisabled) ? "Enable" : "Disable")</button>
+                    <button type="submit" class="btn btn-primary" disabled="@( !IsDirty )">Save</button>
+                </div>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private PromotionDto? promotion;
+    private PromotionDto? original;
+    private List<BLL.DTOs.ProductVariant.ProductVariantDto> variants = new();
+    private string detailError = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        detailError = string.Empty;
+        variants = await ProductVariantService.GetAllProductVariantsAsync();
+        promotion = await PromotionService.GetPromotionByIdAsync(Id);
+        if (promotion == null)
+        {
+            detailError = "Promotion not found.";
+            return;
+        }
+        original = Clone(promotion);
+    }
+
+    private PromotionDto Clone(PromotionDto p) => new PromotionDto
+    {
+        PromotionId = p.PromotionId,
+        ProductVariantId = p.ProductVariantId,
+        SalePrice = p.SalePrice,
+        MaxReservedStock = p.MaxReservedStock,
+        StartAt = p.StartAt,
+        EndAt = p.EndAt,
+        CreatedAt = p.CreatedAt,
+        UpdatedAt = p.UpdatedAt,
+        IsDisabled = p.IsDisabled
+    };
+
+    private void Reset()
+    {
+        if (original != null) promotion = Clone(original);
+    }
+
+    private bool FieldChanged<T>(Func<PromotionDto, T> selector)
+    {
+        if (promotion == null || original == null) return false;
+        var a = selector(promotion);
+        var b = selector(original);
+        return !EqualityComparer<T>.Default.Equals(a, b);
+    }
+
+    private string FieldClass<T>(Func<PromotionDto, T> selector)
+    {
+        return FieldChanged(selector) ? "border border-warning" : string.Empty;
+    }
+
+    private bool IsDirty =>
+        promotion != null && original != null &&
+        (
+            FieldChanged(p => p.ProductVariantId) ||
+            FieldChanged(p => p.SalePrice) ||
+            FieldChanged(p => p.MaxReservedStock) ||
+            FieldChanged(p => p.StartAt) ||
+            FieldChanged(p => p.EndAt) ||
+            FieldChanged(p => p.IsDisabled)
+        );
+
+    private async Task SaveChanges()
+    {
+        detailError = string.Empty;
+        if (promotion == null) return;
+
+        if (promotion.ProductVariantId == Guid.Empty)
+        {
+            detailError = "Please select a product variant.";
+            return;
+        }
+        if (promotion.SalePrice <= 0)
+        {
+            detailError = "Sale price must be greater than 0.";
+            return;
+        }
+        if (promotion.MaxReservedStock < 0)
+        {
+            detailError = "Max reserved stock must be 0 or positive.";
+            return;
+        }
+        if (promotion.EndAt <= promotion.StartAt)
+        {
+            detailError = "End time must be after start time.";
+            return;
+        }
+
+        try
+        {
+            var ok = await PromotionService.UpdatePromotionAsync(promotion);
+            if (!ok)
+            {
+                detailError = "Server refused update.";
+                return;
+            }
+
+            // reload
+            promotion = await PromotionService.GetPromotionByIdAsync(promotion.PromotionId);
+            if (promotion != null)
+            {
+                original = Clone(promotion);
+            }
+        }
+        catch (Exception ex)
+        {
+            detailError = $"Unable to save changes: {ex.Message}";
+        }
+    }
+
+    private async Task ToggleEnableDisable()
+    {
+        detailError = string.Empty;
+        if (promotion == null) return;
+
+        try
+        {
+            var target = !promotion.IsDisabled;
+            var ok = await PromotionService.SetPromotionDisabledAsync(promotion.PromotionId, target);
+            if (!ok)
+            {
+                detailError = "Unable to change status.";
+                return;
+            }
+
+            // reload
+            promotion = await PromotionService.GetPromotionByIdAsync(promotion.PromotionId);
+            if (promotion != null) original = Clone(promotion);
+        }
+        catch (Exception ex)
+        {
+            detailError = $"Unable to change status: {ex.Message}";
+        }
+    }
+
+    private void Back() => NavigationManager.NavigateTo("/promotions");
+}

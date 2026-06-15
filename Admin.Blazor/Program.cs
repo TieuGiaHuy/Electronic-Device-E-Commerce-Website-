@@ -23,9 +23,6 @@ builder.Services.AddRazorComponents()
 builder.Services.AddBusinessLogicLayer(connectionString!);
 builder.Services.Configure<VnpaySettings>(builder.Configuration.GetSection("VNPAY"));
 
-// Register promotion service & repository (fix missing DI)
-builder.Services.AddScoped<IPromotionService, PromotionService>();
-builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
 
 // Add authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
