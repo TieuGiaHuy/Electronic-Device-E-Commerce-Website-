@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260608130513_AddStaffTable")]
-    partial class AddStaffTable
+    [Migration("20260615042856_InitDatabase")]
+    partial class InitDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -361,12 +361,10 @@ namespace DAL.Migrations
 
             modelBuilder.Entity("DAL.Models.Promotion", b =>
                 {
-                    b.Property<int>("PromotionId")
+                    b.Property<Guid>("PromotionId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("promotion_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PromotionId"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
@@ -379,6 +377,10 @@ namespace DAL.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit")
                         .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsDisabled")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_disabled");
 
                     b.Property<int>("MaxReservedStock")
                         .HasColumnType("int")
