@@ -17,6 +17,9 @@ namespace DAL.Data
         public DbSet<Models.Customer> Customers { get; set; }
         public DbSet<Models.Staff> Staffs { get; set; }
 
+        public DbSet<Models.Order> Orders { get; set; }
+        public DbSet<Models.OrderItem> OrderItems { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
