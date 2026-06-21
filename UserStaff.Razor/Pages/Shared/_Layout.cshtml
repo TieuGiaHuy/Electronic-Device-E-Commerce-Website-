@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,127 +10,311 @@
     <link rel="stylesheet" href="~/UserStaff.Razor.styles.css" asp-append-version="true" />
 
     <style>
-        /* Khóa cứng màu đỏ CellphoneS */
-        .bg-cellphone {
-            background-color: #d70018 !important;
+        :root {
+            --staff-sidebar-bg: #2C2C2A;
+            --staff-sidebar-text: rgba(255, 255, 255, 0.75);
+            --staff-sidebar-text-active: #FFFFFF;
+            --staff-sidebar-hover: rgba(255, 255, 255, 0.08);
+            --staff-sidebar-active-bg: rgba(255, 255, 255, 0.12);
+            --color-primary: #E24B4A;
+            --color-primary-hover: #A32D2D;
+            --sidebar-width: 240px;
         }
 
-        .text-cellphone {
-            color: #d70018 !important;
+        html, body {
+            height: 100%;
         }
-        /* Custom thanh điều hướng */
-        .nav-link-custom {
-            color: rgba(255, 255, 255, 0.85) !important;
+
+        body {
+            background-color: var(--color-background-secondary, #F5F5F5);
+        }
+
+        .app-shell {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ---------- Staff sidebar (vertical, dark gray, no radius) ---------- */
+        /* Fixed positioning: always exactly 100% of the viewport height,
+                   completely independent of page/content length. No flex or sticky
+                   height math involved, so it can never fall short on long pages. */
+        .staff-sidebar {
+            width: var(--sidebar-width);
+            flex-shrink: 0;
+            background-color: var(--staff-sidebar-bg);
+            border-radius: 0; /* full-page frame: no rounding per design system */
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 1030;
+        }
+
+        .staff-sidebar-inner {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .staff-sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 20px 20px;
+            color: #FFFFFF;
             font-weight: 500;
-            padding: 8px 16px !important;
-            border-radius: 6px;
-            transition: all 0.2s ease-in-out;
+            font-size: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-            .nav-link-custom:hover {
-                background-color: rgba(255, 255, 255, 0.15);
-                color: #ffffff !important;
+            .staff-sidebar-brand i {
+                font-size: 20px;
+                color: var(--color-primary);
             }
-        /* Làm nổi bật phân hệ Cấu hình hệ thống (Bảng của bạn) */
-        .nav-link-special {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: #ffffff !important;
-            font-weight: 600;
+
+        .staff-role-badge {
+            margin: 16px 20px 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px; /* badge: full pill per design system */
+            background-color: rgba(226, 75, 74, 0.18);
+            color: #F2A6A5;
+            font-size: 11px;
+            font-weight: 500;
+            width: fit-content;
         }
 
-            .nav-link-special:hover {
-                background-color: rgba(255, 255, 255, 0.3) !important;
+        .staff-nav {
+            flex: 1;
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow-y: auto;
+        }
+
+        .staff-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px; /* nav items act like buttons: 8px */
+            color: var(--staff-sidebar-text);
+            font-size: 13px;
+            font-weight: 400;
+            text-decoration: none;
+            transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+        }
+
+            .staff-nav-link i {
+                font-size: 16px;
+                width: 18px;
+                text-align: center;
             }
-        /* Định dạng lại dropdown tài khoản */
-        .dropdown-menu-custom {
-            border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.075);
+
+            .staff-nav-link:hover {
+                background-color: var(--staff-sidebar-hover);
+                color: var(--staff-sidebar-text-active);
+            }
+
+            .staff-nav-link.active {
+                background-color: var(--staff-sidebar-active-bg);
+                color: var(--staff-sidebar-text-active);
+                font-weight: 500;
+                border-left: 2px solid var(--color-primary);
+                padding-left: 10px;
+            }
+
+        .staff-sidebar-footer {
+            padding: 12px 12px 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .staff-user-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
             border-radius: 8px;
+            color: var(--staff-sidebar-text);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
         }
 
-        .dropdown-item-custom:hover {
-            background-color: #f8f9fa;
-            color: #d70018;
+            .staff-user-link:hover {
+                background-color: var(--staff-sidebar-hover);
+                color: var(--staff-sidebar-text-active);
+            }
+
+            .staff-user-link i {
+                font-size: 22px;
+            }
+
+        .staff-logout-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            color: var(--staff-sidebar-text);
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+            .staff-logout-link:hover {
+                background-color: var(--staff-sidebar-hover);
+                color: var(--staff-sidebar-text-active);
+            }
+
+        /* ---------- Main column ---------- */
+        .staff-main-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            margin-left: var(--sidebar-width);
+        }
+
+        .staff-topbar {
+            background-color: #FFFFFF;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .staff-topbar-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #222222;
+        }
+
+        .staff-content {
+            flex: 1;
+            padding: 24px;
+        }
+
+        .staff-content-card {
+            background-color: #FFFFFF;
+            border-radius: 12px; /* content card: 12px per design system */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            padding: 24px;
+        }
+
+        .staff-footer {
+            background-color: #FFFFFF;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            padding: 12px 24px;
+            font-size: 12px;
+            color: var(--color-text-secondary, #888888);
+        }
+
+        .staff-mobile-toggle {
+            display: none;
+        }
+
+        @@media (max-width: 991.98px) {
+            .staff-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.2s ease-in-out;
+            }
+
+                .staff-sidebar.show {
+                    transform: translateX(0);
+                }
+
+            .staff-main-column {
+                margin-left: 0;
+            }
+
+            .staff-mobile-toggle {
+                display: inline-flex;
+            }
         }
     </style>
 </head>
-<body class="bg-light d-flex flex-column min-vh-100">
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-cellphone border-bottom shadow-sm py-2">
-            <div class="container-fluid px-4">
-                <a class="navbar-brand fw-bold text-white d-flex align-items-center fs-4" asp-area="" asp-page="/Index">
-                    <i class="bi bi-phone-vibrate me-2"></i> ECommerse Staff
-                </a>
+<body class="d-flex flex-column min-vh-100">
 
-                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+    <div class="app-shell">
+        <!-- ============ Staff sidebar ============ -->
+        <aside class="staff-sidebar" id="staffSidebar">
+            <div class="staff-sidebar-inner">
+                <div class="staff-sidebar-brand">
+                    <i class="bi bi-phone-vibrate"></i>
+                    <span>ECommerse Staff</span>
+                </div>
 
-                <div class="navbar-collapse collapse d-lg-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1 ms-lg-3 gap-1 my-2 my-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link nav-link-custom" asp-area="" asp-page="/Index">
-                                <i class="bi bi-house-door-fill me-1"></i> Trang chủ
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link nav-link-custom nav-link-special" asp-area="" asp-page="/Products/Index">
-                                <i class="bi bi-phone-fill me-1"></i> Quản lý Sản phẩm
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link nav-link-custom" asp-area="" asp-page="/Orders/Index">
-                                <i class="bi bi-cart-check-fill me-1"></i> Xử lý Đơn hàng
-                            </a>
-                        </li>
-                    </ul>
+                <span class="staff-role-badge">
+                    <i class="bi bi-person-badge-fill"></i> Staff Mode
+                </span>
 
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="badge bg-white text-danger px-3 py-2 fw-semibold shadow-sm">
-                            <i class="bi bi-person-badge-fill me-1"></i> Staff Mode
-                        </span>
+                <nav class="staff-nav">
+                    <a class="staff-nav-link" asp-area="" asp-page="/Index">
+                        <i class="bi bi-house-door-fill"></i> Home
+                    </a>
+                    <a class="staff-nav-link" asp-area="" asp-page="/Products/Index">
+                        <i class="bi bi-phone-fill"></i> Product Variants
+                    </a>
+                    <a class="staff-nav-link" asp-area="" asp-page="/Orders/Index">
+                        <i class="bi bi-cart-check-fill"></i> Order Processing
+                    </a>
+                </nav>
 
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <div class="dropdown">
-                                <a class="btn btn-link text-white text-decoration-none dropdown-toggle fw-medium d-flex align-items-center p-0"
-                                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-person-circle fs-5 me-1"></i> @User.Identity.Name
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom border-0 mt-2">
-                                    <li>
-                                        <a class="dropdown-item dropdown-item-custom py-2" asp-page="/Auth/Logout">
-                                            <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        }
-                        else
-                        {
-                            <a class="btn btn-outline-light btn-sm" asp-page="/Auth/Login">
-                                <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập
+                <div class="staff-sidebar-footer">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="dropdown">
+                            <a class="staff-user-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i>
+                                <span class="text-truncate">@User.Identity.Name</span>
                             </a>
-                        }
-                    </div>
+                            <ul class="dropdown-menu dropdown-menu-dark mt-2" style="border-radius: 8px;">
+                                <li>
+                                    <a class="dropdown-item" asp-page="/Auth/Logout">
+                                        <i class="bi bi-box-arrow-right me-2"></i> Log out
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="staff-logout-link" asp-page="/Auth/Login">
+                            <i class="bi bi-box-arrow-in-right"></i> Log in
+                        </a>
+                    }
                 </div>
             </div>
-        </nav>
-    </header>
+        </aside>
 
-    <div class="container-fluid px-4 my-4">
-        <main role="main" class="bg-white p-4 rounded shadow-sm">
-            @RenderBody()
-        </main>
-    </div>
+        <!-- ============ Main column ============ -->
+        <div class="staff-main-column">
+            <header class="staff-topbar">
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm staff-mobile-toggle" type="button" onclick="document.getElementById('staffSidebar').classList.toggle('show')">
+                        <i class="bi bi-list fs-5"></i>
+                    </button>
+                    <span class="staff-topbar-title">@ViewData["Title"]</span>
+                </div>
+            </header>
 
-    <footer class="border-top footer text-muted bg-white py-3 mt-auto shadow-sm">
-        <div class="container-fluid px-4 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 small">
-            <span>&copy; 2026 - <b class="text-cellphone">Electronic Commerse Store</b> - Hệ thống quản lý công nghệ</span>
-            <span class="text-muted">Giao diện phân quyền: <b class="text-danger">Nhân viên kho / Bán hàng</b></span>
+            <div class="staff-content">
+                <main role="main" class="staff-content-card">
+                    @RenderBody()
+                </main>
+            </div>
+
+            <footer class="staff-footer d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+                <span>&copy; 2026 - <strong style="color: var(--color-primary);">Electronic Commerce Store</strong> - Operations Management System</span>
+                <span>Access level: <strong style="color: var(--color-primary-hover);">Warehouse / Sales Staff</strong></span>
+            </footer>
         </div>
-    </footer>
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

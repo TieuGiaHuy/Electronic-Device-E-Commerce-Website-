@@ -36,12 +36,12 @@ namespace UserStaff.Razor.Pages.ProductVariants
             var result = await _productVariantService.CreateProductVariantAsync(ProductVariant);
             if (result != null)
             {
-                TempData["SuccessMessage"] = "Tạo Product Variant thành công!";
+                TempData["SuccessMessage"] = "The variant was created successfully!";
                 return RedirectToPage("./Index" , new { productId = ProductVariant.ProductId });
             }
             
-            TempData["ErrorMessage"] = "Tạo Product Variant thất bại!";
-            ModelState.AddModelError(string.Empty, "Tạo Product Variant thất bại.");
+            TempData["ErrorMessage"] = "Failed to create the variant!";
+            ModelState.AddModelError(string.Empty, "Failed to create the Product Variant.");
             return Page();
         }
     }

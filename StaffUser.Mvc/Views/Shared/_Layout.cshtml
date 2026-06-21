@@ -3,64 +3,267 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Customer.Mvc</title>
+    <title>@ViewData["Title"] - ECommerse</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/StaffUser.Mvc.styles.css" asp-append-version="true" />
+
+    <style>
+        :root {
+            --color-primary: #E24B4A;
+            --color-primary-hover: #A32D2D;
+            --color-primary-active: #791F1F;
+            --color-banner-bg: #FCEBEB;
+        }
+
+        body {
+            background-color: var(--color-background-secondary, #F5F5F5);
+        }
+
+        /* ---------- Top nav (red, full-page frame: no radius) ---------- */
+        .customer-navbar {
+            background-color: var(--color-primary);
+            padding: 12px 0;
+            border-radius: 0;
+        }
+
+        .customer-brand {
+            color: #FFFFFF;
+            font-weight: 500;
+            font-size: 18px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+            .customer-brand:hover {
+                color: #FFFFFF;
+            }
+
+            .customer-brand i {
+                font-size: 22px;
+            }
+
+        /* Search bar: 8px radius per design system */
+        .customer-search {
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            padding: 8px 16px;
+        }
+
+            .customer-search:focus {
+                box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.4);
+            }
+
+        .customer-search-btn {
+            border-radius: 0 8px 8px 0;
+            background-color: var(--color-primary-hover);
+            border: none;
+            color: #FFFFFF;
+            padding: 8px 16px;
+        }
+
+            .customer-search-btn:hover {
+                background-color: var(--color-primary-active);
+                color: #FFFFFF;
+            }
+
+        .customer-icon-link {
+            color: #FFFFFF;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 11px;
+            gap: 2px;
+            min-width: 56px;
+        }
+
+            .customer-icon-link i {
+                font-size: 19px;
+            }
+
+            .customer-icon-link:hover {
+                color: rgba(255, 255, 255, 0.85);
+            }
+
+        .customer-cart-badge {
+            position: relative;
+        }
+
+        .customer-cart-count {
+            position: absolute;
+            top: -4px;
+            right: 8px;
+            background-color: #FFFFFF;
+            color: var(--color-primary-active);
+            font-size: 10px;
+            font-weight: 500;
+            border-radius: 999px; /* badge: full pill per design system */
+            min-width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+        }
+
+        /* ---------- Category sub-bar (darker red, lighter text) ---------- */
+        .customer-subnav {
+            background-color: var(--color-primary-hover);
+        }
+
+        .customer-subnav-link {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 13px;
+            font-weight: 400;
+            text-decoration: none;
+            padding: 10px 16px;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+            .customer-subnav-link:hover {
+                color: #FFFFFF;
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+
+        .customer-content {
+            padding: 24px 0 40px;
+        }
+
+        .customer-footer {
+            background-color: #FFFFFF;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            padding: 20px 0;
+            font-size: 13px;
+            color: var(--color-text-secondary, #888888);
+        }
+
+            .customer-footer a {
+                color: var(--color-text-secondary, #888888);
+                text-decoration: none;
+            }
+
+                .customer-footer a:hover {
+                    color: var(--color-primary-hover);
+                }
+
+        .customer-auth-link {
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+        }
+
+            .customer-auth-link:hover {
+                background-color: rgba(255, 255, 255, 0.15);
+                color: #FFFFFF;
+            }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Customer.Mvc</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                    @if (User?.Identity?.IsAuthenticated ?? false)
-                    {
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="Logout">Logout</a>
-                            </li>
-                        </ul>
-                    }
-                    else
-                    {
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="Login">Login</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="Register">Register</a>
-                            </li>
-                        </ul>
-                    }
+        <!-- ============ Primary nav (logo, search, account, cart) ============ -->
+        <nav class="customer-navbar">
+            <div class="container-fluid px-4">
+                <div class="d-flex align-items-center gap-4 flex-wrap">
+                    <a class="customer-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-phone-vibrate"></i> ECommerse
+                    </a>
+
+                    <button class="navbar-toggler border-0 text-white d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="navbar-collapse collapse d-lg-flex flex-grow-1 align-items-center gap-3">
+                        <!-- Search -->
+                        <form class="d-flex flex-grow-1" style="max-width: 520px;" role="search">
+                            <input class="form-control customer-search" type="search" placeholder="Search for phones, laptops, accessories..." aria-label="Search" />
+                            <button class="customer-search-btn" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </form>
+
+                        <!-- Icons: location / account / cart -->
+                        <div class="d-flex align-items-center gap-2 ms-auto">
+                            <a class="customer-icon-link" href="#">
+                                <i class="bi bi-geo-alt-fill"></i> Location
+                            </a>
+
+                            @if (User?.Identity?.IsAuthenticated ?? false)
+                            {
+                                <a class="customer-icon-link" href="#">
+                                    <i class="bi bi-person-fill"></i> Account
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="customer-icon-link" asp-area="" asp-controller="Auth" asp-action="Login">
+                                    <i class="bi bi-person-fill"></i> Account
+                                </a>
+                            }
+
+                            <a class="customer-icon-link customer-cart-badge" href="#">
+                                <i class="bi bi-cart3"></i> Cart
+                                <span class="customer-cart-count">0</span>
+                            </a>
+
+                            @if (User?.Identity?.IsAuthenticated ?? false)
+                            {
+                                <a class="customer-auth-link" asp-area="" asp-controller="Auth" asp-action="Logout">
+                                    Log out
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="customer-auth-link" asp-area="" asp-controller="Auth" asp-action="Register">
+                                    Sign up
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- ============ Category sub-bar ============ -->
+        <nav class="customer-subnav">
+            <div class="container-fluid px-4">
+                <div class="d-flex overflow-auto">
+                    <a class="customer-subnav-link" href="#"><i class="bi bi-phone me-1"></i> Phones</a>
+                    <a class="customer-subnav-link" href="#"><i class="bi bi-laptop me-1"></i> Laptops</a>
+                    <a class="customer-subnav-link" href="#"><i class="bi bi-tablet me-1"></i> Tablets</a>
+                    <a class="customer-subnav-link" href="#"><i class="bi bi-smartwatch me-1"></i> Smartwatches</a>
+                    <a class="customer-subnav-link" href="#"><i class="bi bi-headphones me-1"></i> Audio</a>
+                    <a class="customer-subnav-link" href="#"><i class="bi bi-plug me-1"></i> Accessories</a>
+                    <a class="customer-subnav-link" href="#"><i class="bi bi-percent me-1"></i> Deals</a>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+
+    <div class="container customer-content">
+        <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - StaffUser.Mvc - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="customer-footer">
+        <div class="container d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+            <span>&copy; 2026 - <strong style="color: var(--color-primary-hover);">ECommerse</strong> - Electronics Store</span>
+            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

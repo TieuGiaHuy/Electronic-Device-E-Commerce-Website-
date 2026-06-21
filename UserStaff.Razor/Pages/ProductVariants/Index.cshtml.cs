@@ -33,15 +33,15 @@ namespace UserStaff.Razor.Pages.ProductVariants
 
                 if (!deleteStatus)
                 {
-                    return new JsonResult(new { success = false, message = "Biến thể không tồn tại hoặc đã bị xóa trước đó!" });
+                    return new JsonResult(new { success = false, message = "Variants is not exist or deleted!" });
                 }
 
                 // 4. Trả về kết quả dạng JSON cho AJAX hiển thị Toast thành công
-                return new JsonResult(new { success = true, message = "Xóa thành công biến thể!" });
+                return new JsonResult(new { success = true, message = "The variant was deleted successfully!" });
             }
             catch (Exception ex)
             {
-                return new JsonResult(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+                return new JsonResult(new { success = false, message = "System error: " + ex.Message });
             }
         }
 
@@ -52,17 +52,17 @@ namespace UserStaff.Razor.Pages.ProductVariants
                 var stockInStatus = await _productVariantService.StockInAsync(id, increaseAmount);
                 if (!stockInStatus)
                 {
-                    return new JsonResult(new { success = false, message = "Biến thể không tồn tại hoặc đã bị xóa trước đó!" });
+                    return new JsonResult(new { success = false, message = "The variant does not exist or has been deleted!" });
                 }
 
-                TempData["SuccessMessage"] = "Nhập kho thành công!";
+                TempData["SuccessMessage"] = "Stock in successful!";
 
-                return new JsonResult(new { success = true, message = "Nhập kho thành công!" });
+                return new JsonResult(new { success = true, message = "Stock in successful!" });
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Lỗi hệ thống: " + ex.Message;
-                return new JsonResult(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+                TempData["ErrorMessage"] = "System error: " + ex.Message;
+                return new JsonResult(new { success = false, message = "System error: " + ex.Message });
             }
         }
     }
