@@ -21,6 +21,8 @@ namespace BLL
 
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IStaffService, StaffService>();
+            services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IOrderItemService, OrderItemService>();
             return services.BuildServiceProvider();
         }
     }
