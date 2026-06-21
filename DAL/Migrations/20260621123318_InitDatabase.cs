@@ -12,7 +12,7 @@ namespace DAL.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Categories",
+                name: "categories",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false)
@@ -117,7 +117,7 @@ namespace DAL.Migrations
                     table.ForeignKey(
                         name: "fk_products_categories_category_id",
                         column: x => x.category_id,
-                        principalTable: "Categories",
+                        principalTable: "categories",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -301,7 +301,7 @@ namespace DAL.Migrations
                 name: "products");
 
             migrationBuilder.DropTable(
-                name: "Categories");
+                name: "categories");
         }
     }
 }

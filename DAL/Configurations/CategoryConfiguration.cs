@@ -8,8 +8,6 @@ namespace DAL.Configurations
     {
         public void Configure(EntityTypeBuilder<Category> builder)
         {
-            // 1. Cấu hình tên bảng nếu muốn khác tên DbSet
-            builder.ToTable("Categories");
 
             // 2. Cấu hình Khóa chính và các ràng buộc cột
             builder.HasKey(p => p.Id);

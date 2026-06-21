@@ -32,7 +32,6 @@
             <h2 class="fw-bold text-dark m-0">Golden Hours</h2>
             <p class="text-muted m-0">Create timeboxed promotions. Select a product variant, set sale price and reserved stock.</p>
         </div>
-        <div class="badge bg-danger px-3 py-2 fs-7" style="border-radius: 6px;">Role: Administrator</div>
     </div>
 
     <div class="row">
@@ -92,7 +91,7 @@
             <div class="admin-card p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-bold text-secondary m-0">Existing Promotions (@promotions.Count)</h5>
-                    <a class="btn btn-sm btn-outline-primary" href="/promoted-products">View Promoted Products</a>
+                    <a class="btn btn-sm btn-outline-danger" href="/promoted-products">View Promoted Products</a>
                 </div>
 
                 @if (!promotions.Any())

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260615042856_InitDatabase")]
+    [Migration("20260621123318_InitDatabase")]
     partial class InitDatabase
     {
         /// <inheritdoc />
@@ -55,7 +55,7 @@ namespace DAL.Migrations
                     b.HasKey("Id")
                         .HasName("pk_categories");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("categories", (string)null);
                 });
 
             modelBuilder.Entity("DAL.Models.Customer", b =>

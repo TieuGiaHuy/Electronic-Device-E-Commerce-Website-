@@ -52,7 +52,7 @@ namespace DAL.Migrations
                     b.HasKey("Id")
                         .HasName("pk_categories");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("categories", (string)null);
                 });
 
             modelBuilder.Entity("DAL.Models.Customer", b =>

@@ -12,7 +12,7 @@
     <div class="row justify-content-center">
         <div class="col-md-4">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-danger text-white">
                     <h4 class="mb-0">Admin Login</h4>
                 </div>
                 <div class="card-body">
@@ -37,12 +37,12 @@
                             <div class="alert alert-danger">@ErrorMessage</div>
                         }
                         
-                        <button type="submit" class="btn btn-primary w-100" disabled="@isLoading">
+                        <button type="submit" class="btn btn-danger w-100" disabled="@isLoading">
                             @if (isLoading) { <span class="spinner-border spinner-border-sm me-2"></span> }
                             Login
                         </button>
                         <div class="text-center mt-3">
-                            <a href="/auth/forgot-password" class="text-decoration-none">Forgot password?</a>
+                            <a href="/auth/forgot-password" class="text-decoration-none text-danger">Forgot password?</a>
                         </div>
                     </EditForm>
                 </div>
