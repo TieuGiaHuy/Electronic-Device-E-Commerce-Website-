@@ -46,6 +46,7 @@ namespace UserStaff.Razor.Pages.Auth
                 return Page();
             }
 
+            // Find staff and set new password (BLL will hash internally)
             var staff = await _staffService.GetByEmailAsync(Email);
             if (staff == null)
             {

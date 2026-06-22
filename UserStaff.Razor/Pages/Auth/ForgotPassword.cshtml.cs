@@ -29,6 +29,9 @@ namespace UserStaff.Razor.Pages.Auth
             }
 
             // Verify the email exists before allowing password reset
+            // Note: this project uses a simplified dev flow: if email exists we redirect
+            // to SetNewPassword with the email in query string. Production should use
+            // a secure token sent by email instead of exposing email in query.
             var staff = _staffService.GetByEmailAsync(Email).GetAwaiter().GetResult();
             if (staff == null)
             {

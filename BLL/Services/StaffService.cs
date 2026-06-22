@@ -7,6 +7,13 @@ namespace BLL.Services
 {
     public class StaffService : IStaffService
     {
+                /*
+                 StaffService (BLL)
+                 - Handles staff-related operations used by Admin.Blazor and UserStaff.Razor
+                 - Methods: GetByEmailAsync, ValidateLoginAsync (BCrypt.Verify), CreateAsync (hashes),
+                     and SetPasswordAsync (hash+update)
+                 - Delegates data access to IStaffRepository
+                */
         private readonly IStaffRepository _staffRepository;
 
         public StaffService(IStaffRepository staffRepository)
@@ -16,6 +23,7 @@ namespace BLL.Services
 
         public async Task<StaffDto?> GetByEmailAsync(string email)
         {
+            // Lookup staff by email and map to DTO for UI layers
             var staff = await _staffRepository.GetByEmailAsync(email);
             if (staff == null) return null;
 
@@ -33,6 +41,7 @@ namespace BLL.Services
 
         public async Task<StaffDto?> ValidateLoginAsync(string email, string password)
         {
+            // Validate login by verifying password hash
             var staff = await _staffRepository.GetByEmailAsync(email);
             if (staff == null) return null;
 
@@ -53,6 +62,7 @@ namespace BLL.Services
 
         public async Task<StaffDto> CreateAsync(StaffCreateDto createDto)
         {
+            // Hash password and create staff entity via repository
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(createDto.Password);
             var staff = new Staff
             {
@@ -80,6 +90,7 @@ namespace BLL.Services
 
         public async Task<bool> SetPasswordAsync(int staffId, string newPassword)
         {
+            // Hash and update password via repository
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
             return await _staffRepository.SetPasswordAsync(staffId, passwordHash);
         }

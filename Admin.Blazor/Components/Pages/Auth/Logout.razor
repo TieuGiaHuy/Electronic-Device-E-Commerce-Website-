@@ -5,11 +5,13 @@
 @inject IHttpContextAccessor HttpContextAccessor
 
 @code {
+    // Logout flow: sign out via cookie authentication and redirect to login
     protected override async Task OnInitializedAsync()
     {
         var httpContext = HttpContextAccessor.HttpContext;
         if (httpContext != null)
         {
+            // Removes the auth cookie for the current user
             await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         }
         Navigation.NavigateTo("/auth/login");
