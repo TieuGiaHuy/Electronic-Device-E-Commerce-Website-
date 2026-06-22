@@ -42,14 +42,6 @@ namespace DAL.Repositories
                     product.ProductName, 
                     product.Brand, 
                     product.CategoryId,
-                    product.Sku,
-                    product.Color,
-                    product.Cpu,
-                    product.Ram,
-                    product.Storage,
-                    product.ScreenSize,
-                    product.Price,
-                    product.StockQuantity,
                     product.ImageUrl
                 );
                 await _context.SaveChangesAsync();

@@ -118,12 +118,8 @@
                                 <tr>
                                     <th style="width: 60px;">ID</th>
                                     <th>Product info</th>
-                                    <th>SKU</th>
                                     <th>Brand</th>
                                     <th>Category</th>
-                                    <th>Price</th>
-                                    <th>Stock</th>
-                                    <th>Specs</th>
                                     <th style="width: 140px; text-align: right;">Actions</th>
                                 </tr>
                             </thead>
@@ -154,7 +150,6 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="text-secondary" style="font-size: 0.85rem; font-family: monospace;">@product.Sku</td>
                                         <td>
                                             <span class="badge bg-light text-dark border px-2 py-1" style="font-size: 0.75rem; font-weight: 500;">@product.Brand</span>
                                         </td>
@@ -162,15 +157,6 @@
                                             <span class="badge bg-danger-subtle text-danger px-2 py-1" style="font-size: 0.75rem; font-weight: 550; background-color: #fff5f5; border: 1px solid #ffe3e3;">
                                                 @(!string.IsNullOrEmpty(product.CategoryName) ? product.CategoryName : "Uncategorized")
                                             </span>
-                                        </td>
-                                        <td class="fw-bold text-dark" style="font-size: 0.85rem;">@product.Price.ToString("N0") $</td>
-                                        <td class="text-secondary" style="font-size: 0.85rem;">@product.StockQuantity</td>
-                                        <td style="font-size: 0.8rem; line-height: 1.3;">
-                                            @if (!string.IsNullOrEmpty(product.Cpu)) { <div><strong>CPU:</strong> @product.Cpu</div> }
-                                            @if (!string.IsNullOrEmpty(product.Ram)) { <div><strong>RAM:</strong> @product.Ram</div> }
-                                            @if (!string.IsNullOrEmpty(product.Storage)) { <div><strong>Storage:</strong> @product.Storage</div> }
-                                            @if (!string.IsNullOrEmpty(product.Color)) { <div><strong>Color:</strong> @product.Color</div> }
-                                            @if (!string.IsNullOrEmpty(product.ScreenSize)) { <div><strong>Screen:</strong> @product.ScreenSize</div> }
                                         </td>
                                         <td style="text-align: right;">
                                             <button class="btn btn-sm btn-outline-primary me-2" @onclick="() => EditProduct(product)" title="Edit">
@@ -238,53 +224,7 @@
                                 <ValidationMessage For="@(() => formModel.CategoryId)" class="text-danger" style="font-size: 0.8rem;" />
                             </div>
 
-                            <div class="col-md-6">
-                                <label class="admin-form-label fw-semibold mb-1" for="productSku">SKU <span class="text-danger">*</span></label>
-                                <InputText id="productSku" class="form-control admin-form-control" placeholder="e.g., IP15PM-256-BLK" @bind-Value="formModel.Sku" />
-                                <ValidationMessage For="@(() => formModel.Sku)" class="text-danger" style="font-size: 0.8rem;" />
-                            </div>
 
-                            <div class="col-md-6">
-                                <label class="admin-form-label fw-semibold mb-1" for="productColor">Color <span class="text-danger">*</span></label>
-                                <InputText id="productColor" class="form-control admin-form-control" placeholder="e.g., Black, Silver" @bind-Value="formModel.Color" />
-                                <ValidationMessage For="@(() => formModel.Color)" class="text-danger" style="font-size: 0.8rem;" />
-                            </div>
-
-                            <div class="col-md-3">
-                                <label class="admin-form-label fw-semibold mb-1" for="productPrice">Price ($) <span class="text-danger">*</span></label>
-                                <InputNumber id="productPrice" class="form-control admin-form-control" placeholder="e.g., 1200" @bind-Value="formModel.Price" />
-                                <ValidationMessage For="@(() => formModel.Price)" class="text-danger" style="font-size: 0.8rem;" />
-                            </div>
-
-                            <div class="col-md-3">
-                                <label class="admin-form-label fw-semibold mb-1" for="productStock">Stock <span class="text-danger">*</span></label>
-                                <InputNumber id="productStock" class="form-control admin-form-control" placeholder="e.g., 50" @bind-Value="formModel.StockQuantity" />
-                                <ValidationMessage For="@(() => formModel.StockQuantity)" class="text-danger" style="font-size: 0.8rem;" />
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="admin-form-label fw-semibold mb-1" for="productCpu">CPU</label>
-                                <InputText id="productCpu" class="form-control admin-form-control" placeholder="e.g., A17 Pro" @bind-Value="formModel.Cpu" />
-                                <ValidationMessage For="@(() => formModel.Cpu)" class="text-danger" style="font-size: 0.8rem;" />
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="admin-form-label fw-semibold mb-1" for="productRam">RAM</label>
-                                <InputText id="productRam" class="form-control admin-form-control" placeholder="e.g., 8 GB" @bind-Value="formModel.Ram" />
-                                <ValidationMessage For="@(() => formModel.Ram)" class="text-danger" style="font-size: 0.8rem;" />
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="admin-form-label fw-semibold mb-1" for="productStorage">Storage</label>
-                                <InputText id="productStorage" class="form-control admin-form-control" placeholder="e.g., 256 GB" @bind-Value="formModel.Storage" />
-                                <ValidationMessage For="@(() => formModel.Storage)" class="text-danger" style="font-size: 0.8rem;" />
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="admin-form-label fw-semibold mb-1" for="productScreen">Screen Size</label>
-                                <InputText id="productScreen" class="form-control admin-form-control" placeholder="e.g., 6.7 inch" @bind-Value="formModel.ScreenSize" />
-                                <ValidationMessage For="@(() => formModel.ScreenSize)" class="text-danger" style="font-size: 0.8rem;" />
-                            </div>
 
                             <div class="col-12">
                                 <label class="admin-form-label fw-semibold mb-1">Upload Images (Up to 4 images)</label>
@@ -413,8 +353,7 @@
             {
                 result = result.Where(p => 
                     p.ProductName.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase) || 
-                    p.Brand.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase) ||
-                    p.Sku.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase)
+                    p.Brand.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase)
                 );
             }
 
@@ -509,14 +448,6 @@
             ProductName = product.ProductName,
             Brand = product.Brand,
             CategoryId = product.CategoryId,
-            Sku = product.Sku,
-            Color = product.Color,
-            Cpu = product.Cpu,
-            Ram = product.Ram,
-            Storage = product.Storage,
-            ScreenSize = product.ScreenSize,
-            Price = product.Price,
-            StockQuantity = product.StockQuantity,
             ImageUrl = product.ImageUrl
         };
         showProductModal = true;
@@ -570,14 +501,6 @@
                     ProductName = formModel.ProductName,
                     Brand = formModel.Brand,
                     CategoryId = formModel.CategoryId,
-                    Sku = formModel.Sku,
-                    Color = formModel.Color,
-                    Cpu = formModel.Cpu,
-                    Ram = formModel.Ram,
-                    Storage = formModel.Storage,
-                    ScreenSize = formModel.ScreenSize,
-                    Price = formModel.Price,
-                    StockQuantity = formModel.StockQuantity,
                     ImageUrl = finalImageUrl
                 };
                 var result = await ProductService.UpdateProductAsync(updateDto);
@@ -598,14 +521,6 @@
                     ProductName = formModel.ProductName,
                     Brand = formModel.Brand,
                     CategoryId = formModel.CategoryId,
-                    Sku = formModel.Sku,
-                    Color = formModel.Color,
-                    Cpu = formModel.Cpu,
-                    Ram = formModel.Ram,
-                    Storage = formModel.Storage,
-                    ScreenSize = formModel.ScreenSize,
-                    Price = formModel.Price,
-                    StockQuantity = formModel.StockQuantity,
                     ImageUrl = finalImageUrl
                 };
                 var created = await ProductService.CreateProductAsync(createDto);
@@ -677,7 +592,7 @@
     public class ProductFormModel
     {
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Please enter the product name.")]
-        [System.ComponentModel.DataAnnotations.StringLength(200, ErrorMessage = "Product name cannot exceed 200 characters.")]
+        [System.ComponentModel.DataAnnotations.StringLength(150, ErrorMessage = "Product name cannot exceed 150 characters.")]
         public string ProductName { get; set; } = string.Empty;
 
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Please enter the brand name.")]
@@ -686,34 +601,6 @@
 
         [System.ComponentModel.DataAnnotations.Range(1, int.MaxValue, ErrorMessage = "Please select a valid category.")]
         public int CategoryId { get; set; }
-
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Please enter the SKU.")]
-        [System.ComponentModel.DataAnnotations.StringLength(50, ErrorMessage = "SKU cannot exceed 50 characters.")]
-        public string Sku { get; set; } = string.Empty;
-
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Please enter the color.")]
-        [System.ComponentModel.DataAnnotations.StringLength(50, ErrorMessage = "Color cannot exceed 50 characters.")]
-        public string Color { get; set; } = string.Empty;
-
-        [System.ComponentModel.DataAnnotations.StringLength(100, ErrorMessage = "CPU cannot exceed 100 characters.")]
-        public string? Cpu { get; set; }
-
-        [System.ComponentModel.DataAnnotations.StringLength(50, ErrorMessage = "RAM cannot exceed 50 characters.")]
-        public string? Ram { get; set; }
-
-        [System.ComponentModel.DataAnnotations.StringLength(50, ErrorMessage = "Storage cannot exceed 50 characters.")]
-        public string? Storage { get; set; }
-
-        [System.ComponentModel.DataAnnotations.StringLength(50, ErrorMessage = "Screen size cannot exceed 50 characters.")]
-        public string? ScreenSize { get; set; }
-
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Please enter the price.")]
-        [System.ComponentModel.DataAnnotations.Range(0.01, double.MaxValue, ErrorMessage = "Price must be a positive value.")]
-        public decimal Price { get; set; }
-
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Please enter the stock quantity.")]
-        [System.ComponentModel.DataAnnotations.Range(0, int.MaxValue, ErrorMessage = "Stock quantity must be a non-negative integer.")]
-        public int StockQuantity { get; set; }
 
         public string? ImageUrl { get; set; }
     }

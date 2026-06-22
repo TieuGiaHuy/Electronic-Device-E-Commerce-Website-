@@ -1,4 +1,4 @@
-﻿using DAL.Models;
+using DAL.Models;
 using DAL.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -33,14 +33,6 @@ namespace DAL.Data
                     productName: "XtremeBook 14",
                     brand: "ElectroNexus",
                     categoryId: catLaptop.Id,
-                    sku: "XB14-STD",
-                    color: "Black",
-                    cpu: "Intel i5",
-                    ram: "8GB",
-                    storage: "256GB",
-                    screenSize: "14\"",
-                    price: 999.99m,
-                    stockQuantity: 50,
                     imageUrl: null
                 );
 
@@ -48,14 +40,6 @@ namespace DAL.Data
                     productName: "PocketPhone Z",
                     brand: "ElectroNexus",
                     categoryId: catPhone.Id,
-                    sku: "PPZ-128",
-                    color: "Silver",
-                    cpu: "ARM Octa",
-                    ram: "6GB",
-                    storage: "128GB",
-                    screenSize: "6.1\"",
-                    price: 699.99m,
-                    stockQuantity: 120,
                     imageUrl: null
                 );
 
