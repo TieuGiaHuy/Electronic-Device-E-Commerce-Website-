@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model UserStaff.Razor.Pages.Products.IndexModel
 @{
     ViewData["Title"] = "Product Management";
@@ -58,7 +58,6 @@
                     <tr>
                         <th class="py-3 px-4">Product Name (ID)</th>
                         <th>Category</th>
-                        <th class="text-end">Price (VND)</th>
                         <th class="text-end px-4">Actions</th>
                     </tr>
                 </thead>
@@ -75,7 +74,6 @@
                                 <div class="text-muted small">ID: @product.ProductId</div>
                             </td>
                             <td>@product.CategoryName</td>
-                            <td class="text-end price-accent">@product.Price.ToString("N0") VND</td>
                             <td class="text-end px-4">
                                 <a asp-page="/ProductVariants/Index" asp-route-productId="@product.ProductId" class="btn btn-sm btn-ds-secondary">
                                     <i class="bi bi-eye"></i> View Details
