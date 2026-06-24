@@ -6,7 +6,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System;
-using StaffUser.Mvc.ViewModels;
+// Removed MVC ViewModels; using BLL DTOs for set-new-password flow
 
 namespace StaffUser.Mvc.Controllers
 {
@@ -127,13 +127,13 @@ namespace StaffUser.Mvc.Controllers
         public IActionResult SetNewPassword(string email)
         {
             if (string.IsNullOrWhiteSpace(email)) return RedirectToAction("ForgotPassword");
-            var model = new SetNewPasswordViewModel { Email = email };
+            var model = new CustomerSetPasswordDto { Email = email };
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetNewPassword(ViewModels.SetNewPasswordViewModel model)
+        public async Task<IActionResult> SetNewPassword(BLL.DTOs.Customer.CustomerSetPasswordDto model)
         {
             // POST /Auth/SetNewPassword
             // - Validate passwords match, lookup user by email, and call SetPasswordAsync
@@ -142,13 +142,6 @@ namespace StaffUser.Mvc.Controllers
             {
                 return View(model);
             }
-
-            if (model.Password != model.ConfirmPassword)
-            {
-                ModelState.AddModelError("", "Passwords do not match.");
-                return View(model);
-            }
-
             var customer = await _customerService.GetByEmailAsync(model.Email);
             if (customer == null)
             {
