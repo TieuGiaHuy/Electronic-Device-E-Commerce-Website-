@@ -94,5 +94,16 @@ namespace BLL.Services
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
             return await _staffRepository.SetPasswordAsync(staffId, passwordHash);
         }
+
+        public async Task<bool> UpdateProfileAsync(int staffId, StaffProfileDto profileDto)
+        {
+            var staff = await _staffRepository.GetByIdAsync(staffId);
+            if (staff == null) return false;
+
+            staff.FullName = profileDto.FullName;
+            staff.UpdatedAt = DateTime.UtcNow;
+
+            return await _staffRepository.UpdateAsync(staff);
+        }
     }
 }
