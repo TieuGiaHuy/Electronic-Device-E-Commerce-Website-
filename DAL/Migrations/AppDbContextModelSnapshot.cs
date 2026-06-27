@@ -440,39 +440,71 @@ namespace DAL.Migrations
                     b.Property<Guid>("PromotionId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("promotion_id");
+                        .HasColumnName("promotion_id")
+                        .HasDefaultValueSql("NEWID()");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<DateTime>("EndAt")
+                    b.Property<DateTime?>("EndAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("end_at");
 
                     b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
+                        .HasDefaultValue(false)
                         .HasColumnName("is_deleted");
 
                     b.Property<bool>("IsDisabled")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
+                        .HasDefaultValue(false)
                         .HasColumnName("is_disabled");
 
-                    b.Property<int>("MaxReservedStock")
+                    b.Property<bool>("IsLimitedTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_limited_time");
+
+                    b.Property<bool>("IsReservedStock")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_reserved_stock");
+
+                    b.Property<int?>("MaxReservedStock")
                         .HasColumnType("int")
                         .HasColumnName("max_reserved_stock");
 
-                    b.Property<Guid>("ProductVariantId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("product_variant_id");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("name");
 
-                    b.Property<decimal>("SalePrice")
+                    b.Property<byte?>("Percentage")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("percentage");
+
+                    b.Property<int>("PromotionType")
+                        .HasColumnType("int")
+                        .HasColumnName("promotion_type");
+
+                    b.Property<decimal?>("SalePrice")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("sale_price");
 
-                    b.Property<DateTime>("StartAt")
+                    b.Property<DateTime?>("StartAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("start_at");
+
+                    b.Property<decimal?>("ThresholdPrice")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("threshold_price");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2")
@@ -481,8 +513,20 @@ namespace DAL.Migrations
                     b.HasKey("PromotionId")
                         .HasName("pk_promotions");
 
-                    b.HasIndex("ProductVariantId")
-                        .HasDatabaseName("ix_promotions_product_variant_id");
+                    b.HasIndex(new[] { "EndAt" }, "ix_promotions_end_at")
+                        .HasDatabaseName("ix_promotions_end_at");
+
+                    b.HasIndex(new[] { "IsDeleted" }, "ix_promotions_is_deleted")
+                        .HasDatabaseName("ix_promotions_is_deleted");
+
+                    b.HasIndex(new[] { "IsDisabled" }, "ix_promotions_is_disabled")
+                        .HasDatabaseName("ix_promotions_is_disabled");
+
+                    b.HasIndex(new[] { "PromotionType" }, "ix_promotions_promotion_type")
+                        .HasDatabaseName("ix_promotions_promotion_type");
+
+                    b.HasIndex(new[] { "StartAt" }, "ix_promotions_start_at")
+                        .HasDatabaseName("ix_promotions_start_at");
 
                     b.ToTable("promotions", (string)null);
                 });
@@ -669,18 +713,6 @@ namespace DAL.Migrations
                         .HasConstraintName("fk_product_variants_products_product_id");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("DAL.Models.Promotion", b =>
-                {
-                    b.HasOne("DAL.Models.ProductVariant", "ProductVariant")
-                        .WithMany()
-                        .HasForeignKey("ProductVariantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_promotions_product_variants_product_variant_id");
-
-                    b.Navigation("ProductVariant");
                 });
 
             modelBuilder.Entity("DAL.Models.Order", b =>

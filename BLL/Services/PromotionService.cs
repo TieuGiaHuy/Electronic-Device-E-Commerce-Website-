@@ -1,4 +1,7 @@
+using AutoMapper;
+using BLL.DTOs.Pagination;
 using BLL.DTOs.Promotion;
+using BLL.DTOs.Promotion.PromotionList;
 using BLL.Services.Interfaces;
 using DAL.Models;
 using DAL.Repositories.Interfaces;
@@ -8,136 +11,76 @@ namespace BLL.Services
 {
     public class PromotionService : IPromotionService
     {
-        private readonly IPromotionRepository _promotionRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public PromotionService(IPromotionRepository promotionRepository, IUnitOfWork unitOfWork)
+        public PromotionService(IMapper mapper, IUnitOfWork unitOfWork)
         {
-            _promotionRepository = promotionRepository;
+            _mapper = mapper;
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<List<PromotionDto>> GetAllPromotionsAsync()
+        public async Task<PromotionListResponeDto> GetPromotionsListAsync(PromotionListRequest request)
         {
-            var items = await _promotionRepository.GetAllPromotionsAsync();
-            return items.Select(p => new PromotionDto
-            {
-                PromotionId = p.PromotionId,
-                ProductVariantId = p.ProductVariantId,
-                SalePrice = p.SalePrice,
-                MaxReservedStock = p.MaxReservedStock,
-                StartAt = p.StartAt,
-                EndAt = p.EndAt,
-                CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt,
-                IsDisabled = p.IsDisabled
-            }).ToList();
-        }
+            // Query
+            var promotionsQuery = _unitOfWork.Repository<Promotion>().Query();
 
-        public async Task<PromotionDto?> GetPromotionByIdAsync(Guid promotionId)
-        {
-            var p = await _promotionRepository.GetPromotionByIdAsync(promotionId);
-            if (p == null) return null;
-            return new PromotionDto
+            if (!string.IsNullOrEmpty(request.SearchTerm))
             {
-                PromotionId = p.PromotionId,
-                ProductVariantId = p.ProductVariantId,
-                SalePrice = p.SalePrice,
-                MaxReservedStock = p.MaxReservedStock,
-                StartAt = p.StartAt,
-                EndAt = p.EndAt,
-                CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt,
-                IsDisabled = p.IsDisabled
-            };
-        }
+                promotionsQuery = promotionsQuery.Where(p => p.Name.Contains(request.SearchTerm));
+            }
 
-        public async Task<PromotionDto> CreatePromotionAsync(PromotionCreateDto promotion)
-        {
-            try
+            // Pagination
+            var totalItems = await promotionsQuery.CountAsync();
+
+            var activeCount = await promotionsQuery
+                .Where(p => !p.IsDeleted && !p.IsDisabled)
+                .Where(p =>
+                // Stock
+                    (!p.IsLimitedTime && p.IsReservedStock && p.MaxReservedStock > 0) ||
+                    // Time
+                    (p.IsLimitedTime && p.StartAt.HasValue && p.EndAt.HasValue && p.StartAt.Value <= DateTime.UtcNow && p.EndAt.Value >= DateTime.UtcNow && !p.IsReservedStock) ||
+                    // Both
+                    (p.IsLimitedTime && p.StartAt.HasValue && p.EndAt.HasValue && p.StartAt.Value <= DateTime.UtcNow && p.EndAt.Value >= DateTime.UtcNow && p.IsReservedStock && p.MaxReservedStock > 0)
+                )
+                .CountAsync();
+
+            var upcomingCount = await promotionsQuery
+                .Where(p => !p.IsDeleted && !p.IsDisabled)
+                .Where(p =>
+                    p.IsLimitedTime && p.StartAt.HasValue && p.EndAt.HasValue &&
+                    p.StartAt.Value > DateTime.UtcNow
+                )
+                .CountAsync();
+
+            var expiredOrDisabledCount = await promotionsQuery
+                .Where(p =>
+                    p.IsDisabled ||
+                    p.IsDeleted ||
+                    (p.IsLimitedTime && p.EndAt.HasValue && p.EndAt.Value < DateTime.UtcNow)
+                )
+                .CountAsync();
+
+            var promotions = await promotionsQuery
+                .Skip((request.Pagination.Page - 1) * request.Pagination.PageSize)
+                .Take(request.Pagination.PageSize)
+                .ToListAsync();
+            var promotionDtos = _mapper.Map<List<PromotionDto>>(promotions);
+
+            // Return response
+            return new PromotionListResponeDto
             {
-                await _unitOfWork.BeginTransactionAsync();
-                var entity = Promotion.Create(
-                    promotion.ProductVariantId,
-                    promotion.SalePrice,
-                    promotion.MaxReservedStock,
-                    promotion.StartAt,
-                    promotion.EndAt
-                );
-
-                var productPrice = await _unitOfWork.Repository<ProductVariant>().Query().Where(pv => pv.ProductVariantId == promotion.ProductVariantId)
-                    .Select(pv => pv.Price).FirstOrDefaultAsync();
-                if (entity.SalePrice >= productPrice)
+                ActiveCount = activeCount,
+                Upcoming = upcomingCount,
+                ExpiredOrDisabledCount = expiredOrDisabledCount,
+                Pagination = new PaginatedResponse<PromotionDto>
                 {
-                    throw new InvalidOperationException("Sale price must be less than the product price.");
+                    Items = promotionDtos,
+                    TotalCount = totalItems,
+                    Page = request.Pagination.Page,
+                    PageSize = request.Pagination.PageSize
                 }
-
-                var created = await _promotionRepository.CreatePromotionAsync(entity);
-
-                await _unitOfWork.CommitAsync();
-                return new PromotionDto
-                {
-                    PromotionId = created.PromotionId,
-                    ProductVariantId = created.ProductVariantId,
-                    SalePrice = created.SalePrice,
-                    MaxReservedStock = created.MaxReservedStock,
-                    StartAt = created.StartAt,
-                    EndAt = created.EndAt,
-                    CreatedAt = created.CreatedAt,
-                    UpdatedAt = created.UpdatedAt,
-                    IsDisabled = created.IsDisabled
-                };
-            }
-            catch
-            {
-                await _unitOfWork.RollbackAsync();
-                throw;
-            }
-        }
-
-        public async Task<bool> UpdatePromotionAsync(PromotionDto promotion)
-        {
-            var entity = new Promotion
-            {
-                PromotionId = promotion.PromotionId,
-                ProductVariantId = promotion.ProductVariantId,
-                SalePrice = promotion.SalePrice,
-                MaxReservedStock = promotion.MaxReservedStock,
-                StartAt = promotion.StartAt,
-                EndAt = promotion.EndAt,
-                IsDisabled = promotion.IsDisabled
             };
-            return await _promotionRepository.UpdatePromotionAsync(entity);
-        }
-
-        public async Task<bool> DeletePromotionAsync(Guid promotionId)
-        {
-            return await _promotionRepository.DeletePromotionAsync(promotionId);
-        }
-
-        public async Task<List<PromotionDto>> GetActivePromotionsAsync()
-        {
-            var items = await _promotionRepository.GetActivePromotionsAsync();
-            return items.Select(p => new PromotionDto
-            {
-                PromotionId = p.PromotionId,
-                ProductVariantId = p.ProductVariantId,
-                SalePrice = p.SalePrice,
-                MaxReservedStock = p.MaxReservedStock,
-                StartAt = p.StartAt,
-                EndAt = p.EndAt,
-                CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt,
-                IsDisabled = p.IsDisabled
-            }).ToList();
-        }
-
-        public async Task<bool> SetPromotionDisabledAsync(Guid promotionId, bool isDisabled)
-        {
-            var p = await _promotionRepository.GetPromotionByIdAsync(promotionId);
-            if (p == null) return false;
-            p.IsDisabled = isDisabled;
-            return await _promotionRepository.UpdatePromotionAsync(p);
         }
     }
 }

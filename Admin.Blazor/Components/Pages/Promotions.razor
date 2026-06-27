@@ -1,206 +1,337 @@
 @page "/promotions"
-@rendermode InteractiveServer
+@using BLL.DTOs.Pagination
 @using BLL.DTOs.Promotion
+@using BLL.DTOs.Promotion.PromotionList
 @using BLL.Services.Interfaces
+@using DAL.Enums
+@rendermode InteractiveServer
 @inject IPromotionService PromotionService
-@inject IProductVariantService ProductVariantService
 @inject NavigationManager NavigationManager
 
-<PageTitle>Manage Promotions - ElectroNexus Admin</PageTitle>
+<PageTitle>AdminPromotions - PromoManager</PageTitle>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<style>
-    /* Hover highlight for existing promotion items */
-    .promo-item {
-        transition: background-color 0.12s ease, transform 0.08s ease, box-shadow 0.12s ease;
-    }
+<div class="container py-5">
 
-    .promo-item:hover {
-        background-color: #f8fbff; /* subtle highlight */
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(17, 24, 39, 0.06);
-    }
-
-    /* keep inner clickable area cursor consistent */
-    .promo-item .me-3 {
-        cursor: pointer;
-    }
-</style>
-
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
-            <h2 class="fw-bold text-dark m-0">Golden Hours</h2>
-            <p class="text-muted m-0">Create timeboxed promotions. Select a product variant, set sale price and reserved stock.</p>
+            <h1 class="fw-bold mb-1">Promotion</h1>
+        </div>
+
+        <button class="btn btn-danger px-4 py-2">
+            <i class="bi bi-plus-lg"></i>
+            Create Promotion
+        </button>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row g-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card rounded-4 h-100">
+                <div class="card-body py-4">
+                    <p class="text-uppercase text-secondary fw-semibold small mb-2">
+                        Total Promotions
+                    </p>
+                    <h1 class="fw-bold mb-0">@promotions?.Pagination.TotalCount</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card rounded-4 h-100">
+                <div class="card-body py-4">
+                    <p class="text-uppercase text-success fw-semibold small mb-2">
+                        Active
+                    </p>
+                    <h1 class="fw-bold text-success mb-0">@promotions?.ActiveCount</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card rounded-4 h-100">
+                <div class="card-body py-4">
+                    <p class="text-uppercase text-warning fw-semibold small mb-2">
+                        Upcoming
+                    </p>
+                    <h1 class="fw-bold text-warning mb-0">@promotions?.Upcoming</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card rounded-4 h-100">
+                <div class="card-body py-4">
+                    <p class="text-uppercase text-danger fw-semibold small mb-2">
+                        Expired
+                    </p>
+                    <h1 class="text-uppercase text-danger fw-semibold small mb-2">@promotions?.ExpiredOrDisabledCount</h1>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-6">
-            <div class="admin-card p-4">
-                <h5 class="fw-bold text-secondary mb-3">Create Promotion</h5>
-
-                @if (!string.IsNullOrEmpty(errorMessage))
-                {
-                    <div class="alert alert-danger">@errorMessage</div>
-                }
-
-                <EditForm Model="@createModel" OnValidSubmit="CreatePromotion">
-                    <DataAnnotationsValidator />
-                    <div class="mb-3">
-                        <label class="form-label">Product Variant <span class="text-danger">*</span></label>
-                        <InputSelect class="form-select" @bind-Value="createModel.ProductVariantId">
-                            <option value="0">-- Select variant --</option>
-                            @foreach (var v in variants)
-                            {
-                                <option value="@v.ProductVariantId">#@v.ProductVariantId - @v.Sku - @v.Color - @v.Price.ToString("N0") $</option>
-                            }
-                        </InputSelect>
+    <!-- Filter -->
+    <div class="mt-4">
+        <div class="card rounded-4 shadow-sm">
+            <div class="card-body">
+                <div class="row g-3 align-items-center">
+                    <!-- Search -->
+                    <div class="col-lg-5">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text"
+                                   class="form-control border-start-0 bg-light"
+                                   placeholder="Search promotion name..." @bind="searchName">
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Sale Price ($) <span class="text-danger">*</span></label>
-                        <InputNumber class="form-control" @bind-Value="createModel.SalePrice" />
+                    <!-- Date Range -->
+                    <div class="col-lg-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="bi bi-calendar3"></i>
+                            </span>
+                            <input type="text"
+                                   class="form-control"
+                                   value="01/01/2024 - 31/12/2024"
+                                   readonly>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Max Reserved Stock <span class="text-danger">*</span></label>
-                        <InputNumber class="form-control" @bind-Value="createModel.MaxReservedStock" />
+                    <!-- Filter Button -->
+                    <div class="col-lg-2">
+                        <button class="btn btn-light border w-100">
+                            <i class="bi bi-funnel me-2"></i>
+                            Filter
+                        </button>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Start At <span class="text-danger">*</span></label>
-                        <input type="datetime-local" class="form-control"
-                               @bind="createModel.StartAt"
-                               @bind:format="yyyy-MM-ddTHH:mm" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">End At <span class="text-danger">*</span></label>
-                        <input type="datetime-local" class="form-control" @bind="createModel.EndAt" @bind:format="yyyy-MM-ddTHH:mm" />
-                    </div>
-
-                    <div class="d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-light" @onclick="ClearForm">Clear</button>
-                        <button type="submit" class="btn btn-danger text-white">Create Promotion</button>
-                    </div>
-                </EditForm>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div class="col-lg-6">
-            <div class="admin-card p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold text-secondary m-0">Existing Promotions (@promotions.Count)</h5>
-                    <a class="btn btn-sm btn-outline-danger" href="/promoted-products">View Promoted Products</a>
+    <!-- Promotions List -->
+    <div class="card rounded-4 shadow-sm mt-4">
+        @if (promotions == null)
+        {
+            <div class="card-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+        else if (promotions.Pagination.Items.Count == 0)
+        {
+            <div class="card-body text-center">
+                <p class="text-secondary mb-0">No promotions found.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Index</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Value</th>
+                            <th>Stock</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @{
+                            int index = promotions.Pagination.StartIndex;
+                        }
+                        @foreach (var promotion in promotions.Pagination.Items)
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td>@promotion.Name</td>
+                                <td>@promotion.PromotionType</td>
+                                @if (promotion.PromotionType == DAL.Enums.PromotionTypeEnum.Percentage)
+                                {
+                                    <td>@promotion.Percentage %</td>
+                                }
+                                else
+                                {
+                                    <td>@promotion.SalePrice</td>
+                                }
+
+                                @if (promotion.IsReservedStock == true)
+                                {
+                                    <td>@promotion.MaxReservedStock</td>
+                                }
+                                else
+                                {
+                                    <td>Unlimited from @promotion.StartAt to @promotion.EndAt</td>
+                                }
+
+                                @if (promotion.StartAt.HasValue && promotion.EndAt.HasValue)
+                                {
+                                    <td>@promotion.StartAt.Value.ToString("dd/MM/yyyy HH:mm:ss") - @promotion.EndAt.Value.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                }
+                                else
+                                {
+                                    <td>Unlimited</td>
+                                }
+
+                                <td>
+                                    @switch (GetStatus(promotion).Result)
+                                    {
+                                        case PromotionStatusEnum.Active:
+                                            <span class="badge bg-success">Active</span>
+                                            break;
+                                        case PromotionStatusEnum.Upcoming:
+                                            <span class="badge bg-warning text-dark">Upcoming</span>
+                                            break;
+                                        case PromotionStatusEnum.Expired:
+                                            <span class="badge bg-danger">Expired</span>
+                                            break;
+                                        case PromotionStatusEnum.Disabled:
+                                            <span class="badge bg-secondary">Disabled</span>
+                                            break;
+                                        case PromotionStatusEnum.Deleted:
+                                            <span class="badge bg-dark">Deleted</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-primary me-2">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            index++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer bg-white">
+
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-secondary">
+                            Showing 1 to 10 of 50 entries
+                        </span>
+
+                        <select class="form-select form-select-sm w-auto">
+                            <option>10</option>
+                            <option>25</option>
+                            <option>50</option>
+                        </select>
+                    </div>
+
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0">
+
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            <li class="page-item active">
+                                <a class="page-link" href="#">1</a>
+                            </li>
+
+                            <li class="page-item">
+                                <a class="page-link" href="#">2</a>
+                            </li>
+
+                            <li class="page-item">
+                                <a class="page-link" href="#">3</a>
+                            </li>
+
+                            <li class="page-item">
+                                <a class="page-link" href="#">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+
+                        </ul>
+                    </nav>
+
                 </div>
 
-                @if (!promotions.Any())
-                {
-                    <div class="text-muted">No promotions defined.</div>
-                }
-                else
-                {
-                    <div class="list-group">
-                        @foreach (var p in promotions)
-                        {
-                            <div class="list-group-item d-flex justify-content-between align-items-start promo-item">
-                                <div class="w-100 d-flex justify-content-between">
-                                    <div class="me-3" style="cursor:pointer" @onclick="@(() => NavigationManager.NavigateTo($"/promotions/{p.PromotionId}"))">
-                                        <div class="fw-bold">#@p.PromotionId — Variant #@p.ProductVariantId</div>
-                                        <div class="small text-muted">Sale: @p.SalePrice.ToString("N0") $ • Reserved: @p.MaxReservedStock • @p.StartAt.ToString("g") — @p.EndAt.ToString("g")</div>
-                                    </div>
-                                    <div class="d-flex gap-2 align-items-start">
-                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeletePromotion(p.PromotionId)">Delete</button>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
             </div>
-        </div>
+        }
+
     </div>
 </div>
 
 @code {
-    private List<BLL.DTOs.ProductVariant.ProductVariantDto> variants = new();
-    private List<PromotionDto> promotions = new();
-    private string errorMessage = string.Empty;
-
-    private PromotionCreateDto createModel { get; set; } = new()
-    {
-        StartAt = DateTime.UtcNow,
-        EndAt = DateTime.UtcNow.AddHours(1)
-    };
+    private PromotionListResponeDto? promotions;
+    private string searchName = string.Empty;
+    private PromotionStatusEnum promotionStatus;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadData();
+        await LoadPromotions();
     }
 
-    private async Task LoadData()
+    private async Task LoadPromotions()
     {
-        variants = await ProductVariantService.GetAllProductVariantsAsync();
-        promotions = await PromotionService.GetAllPromotionsAsync();
-    }
-
-    private void ClearForm()
-    {
-        createModel = new PromotionCreateDto
+        var request = new PromotionListRequest
         {
-            StartAt = DateTime.UtcNow,
-            EndAt = DateTime.UtcNow.AddHours(1)
+            SearchTerm = searchName,
+            IncludeDeleted = false,
+            Pagination = new PaginationRequest
+            {
+                Page = 1,
+                PageSize = 10
+            }
         };
-        errorMessage = string.Empty;
+        promotions = await PromotionService.GetPromotionsListAsync(request);
     }
 
-    private async Task CreatePromotion()
+    private async Task<PromotionStatusEnum> GetStatus(PromotionDto promotion)
     {
-        errorMessage = string.Empty;
-
-        if (createModel.ProductVariantId == Guid.Empty)
+        if (promotion.IsDeleted)
         {
-            errorMessage = "Please select a product variant.";
-            return;
-        }
-        if (createModel.SalePrice <= 0)
-        {
-            errorMessage = "Sale price must be greater than 0.";
-            return;
-        }
-        if (createModel.MaxReservedStock < 0)
-        {
-            errorMessage = "Max reserved stock must be 0 or positive.";
-            return;
-        }
-        if (createModel.EndAt <= createModel.StartAt)
-        {
-            errorMessage = "End time must be after start time.";
-            return;
+            return PromotionStatusEnum.Deleted;
         }
 
-        try
+        if (promotion.IsDisabled)
         {
-            await PromotionService.CreatePromotionAsync(createModel);
-            await LoadData();
-            ClearForm();
+            return PromotionStatusEnum.Disabled;
         }
-        catch (Exception ex)
+        
+        if (promotion.IsLimitedTime && promotion.StartAt.HasValue && promotion.EndAt.HasValue)
         {
-            errorMessage = $"Unable to create promotion: {ex.Message}";
-        }
-    }
+            var currentDate = DateTime.UtcNow;
 
-    private async Task DeletePromotion(Guid id)
-    {
-        try
-        {
-            await PromotionService.DeletePromotionAsync(id);
-            await LoadData();
+            if (currentDate < promotion.StartAt.Value)
+            {
+                return PromotionStatusEnum.Upcoming;
+            }
+            else if (currentDate > promotion.EndAt.Value)
+            {
+                return PromotionStatusEnum.Expired;
+            }
         }
-        catch (Exception ex)
+
+        if (promotion.IsReservedStock && promotion.MaxReservedStock.HasValue)
         {
-            errorMessage = $"Unable to delete promotion: {ex.Message}";
+            if (promotion.MaxReservedStock.Value <= 0)
+            {
+                return PromotionStatusEnum.Expired;
+            }
         }
+
+        return await Task.FromResult(PromotionStatusEnum.Active);
     }
 }
