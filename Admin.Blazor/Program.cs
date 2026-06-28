@@ -2,10 +2,6 @@ using Admin.Blazor.Components;
 using Admin.Blazor.Components.Auth;
 using BLL;
 using BLL.Settings;
-using BLL.Services.Interfaces;
-using BLL.Services;
-using DAL.Repositories.Interfaces;
-using DAL.Repositories;
 using DAL.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -13,17 +9,16 @@ using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// lấy connection string từ appsettings.json
+// Lấy connection string từ appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddRazorPages();
 
+builder.Services.AddRazorPages();
 builder.Services.AddBusinessLogicLayer(connectionString!);
 builder.Services.Configure<VnpaySettings>(builder.Configuration.GetSection("VNPAY"));
-
 
 // Add authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -32,6 +27,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/auth/login";
         options.LogoutPath = "/auth/logout";
     });
+
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<StaffAuthenticationStateProvider>();
@@ -39,13 +35,14 @@ builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredServ
 
 var app = builder.Build();
 
-// Seed admin staff account
+// --- ĐÃ SỬA: Chuyển Seed Data sang Async hoàn toàn ---
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<DAL.Data.AppDbContext>();
-    db.Database.Migrate();
+    await db.Database.MigrateAsync();
     db.EnsureSeedData();
-    if (!db.Staffs.Any(s => s.Email == "admin@electronexus.com"))
+
+    if (!await db.Staffs.AnyAsync(s => s.Email == "admin@electronexus.com"))
     {
         var adminPassword = BCrypt.Net.BCrypt.HashPassword("Admin@123");
         var admin = new DAL.Models.Staff
@@ -58,8 +55,8 @@ using (var scope = app.Services.CreateScope())
             IsDeleted = false,
             CreatedAt = DateTime.UtcNow
         };
-        db.Staffs.Add(admin);
-        db.SaveChanges();
+        await db.Staffs.AddAsync(admin);
+        await db.SaveChangesAsync();
     }
 }
 
@@ -67,31 +64,32 @@ using (var scope = app.Services.CreateScope())
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 
+// --- ĐY ĐƯỢC CHUẨN HÓA VỀ THỨ TỰ MIDDLEWARE ---
+app.UseAntiforgery();
+app.MapStaticAssets(); // Tối ưu hóa file tĩnh hệ thống của .NET 9
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+// --- ĐÃ SỬA: Đặt StaticFiles của upload sau Auth để tránh lộ dữ liệu bừa bãi ---
 var sharedUploadsFolder = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, "..", "shared-uploads"));
 if (!Directory.Exists(sharedUploadsFolder))
 {
     Directory.CreateDirectory(sharedUploadsFolder);
 }
-
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(sharedUploadsFolder),
     RequestPath = "/uploads"
 });
 
-app.UseAuthentication();
-app.UseAuthorization();
-app.UseAntiforgery();
-
-app.MapStaticAssets();
 app.MapRazorPages();
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+   .AddInteractiveServerRenderMode();
 
-app.Run();
+await app.RunAsync(); // Đã chuyển sang Async
