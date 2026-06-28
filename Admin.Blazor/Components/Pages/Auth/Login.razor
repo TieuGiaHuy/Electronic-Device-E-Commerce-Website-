@@ -1,32 +1,86 @@
 @page "/auth/login"
 @inject NavigationManager Navigation
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-danger text-white">
-                    <h4 class="mb-0">Admin Login</h4>
-                </div>
-                <div class="card-body">
-                    <form method="post" action="/auth/login-api">
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input name="email" class="form-control" required />
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <input name="password" type="password" class="form-control" required />
-                        </div>
-                        
-                        <button type="submit" class="btn btn-danger w-100">Login</button>
-                        <div class="text-center mt-3">
-                            <a href="/auth/forgot-password" class="text-decoration-none text-danger">Forgot password?</a>
-                        </div>
-                    </form>
+<div class="login-wrapper d-flex flex-column align-items-center justify-content-center min-vh-100 p-3">
+    <div class="text-center mb-4 d-flex align-items-center justify-content-center gap-2">
+        <i class="bi bi-star-fill text-danger fs-3"></i>
+        <h2 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.5px;">ECommerce <span class="badge bg-danger fs-6 align-middle px-2 py-1 rounded-pill">ADMIN</span></h2>
+    </div>
+
+    <div class="card border-0 shadow-sm p-4 text-center custom-card" style="width: 100%; max-width: 480px; border-radius: 8px;">
+        
+        <h3 class="fw-bold text-dark mb-1">Welcome Back</h3>
+        <p class="text-muted small mb-4">Sign in to access your admin dashboard</p>
+
+        <form method="post" action="/auth/login-api" class="text-start">
+            <div class="mb-3">
+                <label class="form-label fw-semibold text-secondary small">Email Address</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
+                    <input name="email" type="email" class="form-control border-start-0 ps-0 text-muted" placeholder="Enter your email address" required />
                 </div>
             </div>
-        </div>
+            
+            <div class="mb-3">
+                <label class="form-label fw-semibold text-secondary small">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-lock"></i></span>
+                    <input name="password" type="password" class="form-control border-start-0 border-end-0 ps-0 text-muted" placeholder="Enter your password" required />
+                    <span class="input-group-text bg-white border-start-0 text-muted cursor-pointer"><i class="bi bi-eye-slash"></i></span>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-danger w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center gap-2 mb-3 shadow-sm custom-btn-danger">
+                <i class="bi bi-box-arrow-in-right"></i> Sign In
+            </button>
+
+            <button type="button" @onclick='() => Navigation.NavigateTo("/auth/forgot-password")' class="btn btn-outline-secondary w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center gap-2 custom-btn-outline">
+                <i class="bi bi-lock"></i> Change Password
+            </button>
+        </form>
     </div>
 </div>
+
+<style>
+    /* Nền trắng thẳng */
+    .login-wrapper {
+        background: #fff;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Tinh chỉnh đường viền các ô Input group */
+    .input-group-text, .form-control {
+        border-color: #dee2e6;
+        padding-top: 0.6rem;
+        padding-bottom: 0.6rem;
+    }
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #dee2e6;
+    }
+
+    /* Custom nút đỏ */
+    .custom-btn-danger {
+        background-color: #d90429 !important;
+        border: none;
+        border-radius: 6px;
+    }
+    .custom-btn-danger:hover {
+        background-color: #b30322 !important;
+    }
+
+    /* Custom nút Change Password */
+    .custom-btn-outline {
+        border-color: #dee2e6 !important;
+        color: #212529 !important;
+        background-color: #fff;
+        border-radius: 6px;
+    }
+    .custom-btn-outline:hover {
+        background-color: #f8f9fa !important;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>
