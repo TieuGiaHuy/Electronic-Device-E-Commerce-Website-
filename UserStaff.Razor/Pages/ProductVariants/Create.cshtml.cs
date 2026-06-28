@@ -1,5 +1,5 @@
-﻿using BLL.DTOs.Product;
-using BLL.DTOs.ProductVariant;
+﻿using BLL.DTOs.Product.Staff;
+using BLL.DTOs.ProductVariant.Staff;
 using BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -18,8 +18,8 @@ namespace UserStaff.Razor.Pages.ProductVariants
         }
 
         [BindProperty]
-        public ProductVariantCreateDto ProductVariant { get; set; } = new();
-        public ProductDto? Product { get; set; } = new();
+        public ProductVariantStaffCreateDto ProductVariant { get; set; } = new();
+        public ProductStaffDto? Product { get; set; } = new();
 
         public async Task OnGetAsync(int productId)
         {

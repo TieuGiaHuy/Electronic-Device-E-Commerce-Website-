@@ -1,4 +1,4 @@
-using BLL.DTOs.Product;
+using BLL.DTOs.Product.Staff;
 using BLL.Services.Interfaces;
 using DAL.Models;
 using DAL.Repositories.Interfaces;
@@ -14,10 +14,10 @@ namespace BLL.Services
             _productRepository = productRepository;
         }
 
-        public async Task<List<ProductDto>> GetAllProductsAsync()
+        public async Task<List<ProductStaffDto>> GetAllProductsAsync()
         {
             var products = await _productRepository.GetAllProductsAsync();
-            var productDtos = products.Select(p => new ProductDto
+            var productDtos = products.Select(p => new ProductStaffDto
             {
                 ProductId = p.ProductId,
                 ProductName = p.ProductName,
@@ -33,12 +33,12 @@ namespace BLL.Services
             return productDtos;
         }
 
-        public async Task<ProductDto?> GetProductByIdAsync(int id)
+        public async Task<ProductStaffDto?> GetProductByIdAsync(int id)
         {
             var product = await _productRepository.GetProductByIdAsync(id);
             if (product != null)
             {
-                return new ProductDto
+                return new ProductStaffDto
                 {
                     ProductId = product.ProductId,
                     ProductName = product.ProductName,
@@ -53,7 +53,7 @@ namespace BLL.Services
             }
             return null;
         }
-        public async Task<ProductDto> CreateProductAsync(ProductCreateDto productCreateDto)
+        public async Task<ProductStaffDto> CreateProductAsync(ProductStaffCreateDto productCreateDto)
         {
             var newProduct = Product.Create(
                  productCreateDto.ProductName,
@@ -70,7 +70,7 @@ namespace BLL.Services
                 return populatedProduct;
             }
 
-            return new ProductDto
+            return new ProductStaffDto
             {
                 ProductId = createdProduct.ProductId,
                 ProductName = createdProduct.ProductName,
@@ -84,7 +84,7 @@ namespace BLL.Services
             };
         }
 
-        public async Task<bool> UpdateProductAsync(ProductUpdateDto productUpdateDto)
+        public async Task<bool> UpdateProductAsync(ProductStaffUpdateDto productUpdateDto)
         {
             var product = new Product
             {
@@ -101,15 +101,15 @@ namespace BLL.Services
             return await _productRepository.UpdateProductAsync(product); ;
         }
 
-        public async Task<bool> DeleteProductAsync(ProductDeleteDto productDeleteDto)
+        public async Task<bool> DeleteProductAsync(ProductStaffDeleteDto productDeleteDto)
         {
             return await _productRepository.DeleteProductAsync(productDeleteDto.ProductId); ;
         }
 
-        public async Task<List<ProductDto>> GetProductsByCategoryIdAsync(int categoryId)
+        public async Task<List<ProductStaffDto>> GetProductsByCategoryIdAsync(int categoryId)
         {
             var products = await _productRepository.GetProductsByCategoryIdAsync(categoryId);
-            var productDtos = products.Select(p => new ProductDto
+            var productDtos = products.Select(p => new ProductStaffDto
             {
                 ProductId = p.ProductId,
                 ProductName = p.ProductName,
@@ -125,12 +125,12 @@ namespace BLL.Services
             return productDtos;
         }
 
-        public async Task<ProductDto?> GetProductWithVariantsAsync(Guid productVariantId)
+        public async Task<ProductStaffDto?> GetProductWithVariantsAsync(Guid productVariantId)
         {
             var product = await _productRepository.GetProductWithVariantsAsync(productVariantId);
             if (product != null)
             {
-                return new ProductDto
+                return new ProductStaffDto
                 {
                     ProductId = product.ProductId,
                     ProductName = product.ProductName,
@@ -146,10 +146,10 @@ namespace BLL.Services
             return null;
         }
 
-        public async Task<List<ProductDto>> SearchByNameAsync(string keyword)
+        public async Task<List<ProductStaffDto>> SearchByNameAsync(string keyword)
         {
             var products = await _productRepository.SearchByNameAsync(keyword);
-            var productDtos = products.Select(p => new ProductDto
+            var productDtos = products.Select(p => new ProductStaffDto
             {
                 ProductId = p.ProductId,
                 ProductName = p.ProductName,

@@ -11,10 +11,10 @@ namespace DAL.Utilities
         public static string Generate(string productCode, string color, string? cpu, string? ram, string? storage)
         {
             if (string.IsNullOrWhiteSpace(productCode))
-                throw new ArgumentException("Mã sản phẩm (Product Code) không được để trống.");
+                throw new ArgumentException("Product Code is NOT empty.");
 
             if (string.IsNullOrWhiteSpace(color))
-                throw new ArgumentException("Màu sắc không được để trống.");
+                throw new ArgumentException("Color is NOT empty.");
 
             // 1. Chuẩn hóa mã sản phẩm và màu sắc (Xóa khoảng trắng, viết hoa)
             string cleanCode = productCode.Replace(" ", "").ToUpper();

@@ -1,9 +1,8 @@
-namespace BLL.DTOs.ProductVariant
+namespace BLL.DTOs.ProductVariant.Staff
 {
-    public class ProductVariantDto
+    public class ProductVariantStaffUpdateDto
     {
         public Guid ProductVariantId { get; set; }
-        public string Sku { get; set; }
         public string ProductCode { get; set; }
         public string Color { get; set; }
         public string? Cpu { get; set; }
@@ -14,9 +13,5 @@ namespace BLL.DTOs.ProductVariant
         public int StockQuantity { get; set; }
         public string? ImageUrl { get; set; }
         public int ProductId { get; set; }
-
-        public bool IsDeleted { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
     }
 }

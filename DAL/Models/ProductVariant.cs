@@ -36,9 +36,9 @@ namespace DAL.Models
             int productId)
         {
             if (price < 0)
-                throw new ArgumentException("Giá tiền không được âm.", nameof(price));
+                throw new ArgumentException("Price cannot be negative.", nameof(price));
             if (stockQuantity < 0)
-                throw new ArgumentException("Số lượng tồn kho không được âm.", nameof(stockQuantity));
+                throw new ArgumentException("Stock quantity cannot be negative.", nameof(stockQuantity));
 
             string sku = SkuGenerator.Generate(productCode, color, cpu, ram, storage);
 
@@ -73,9 +73,9 @@ namespace DAL.Models
             int productId)
         {
             if (price < 0)
-                throw new ArgumentException("Giá tiền không được âm.", nameof(price));
+                throw new ArgumentException("Price cannot be negative.", nameof(price));
             if (stockQuantity < 0)
-                throw new ArgumentException("Số lượng tồn kho không được âm.", nameof(stockQuantity));
+                throw new ArgumentException("Stock quantity cannot be negative.", nameof(stockQuantity));
 
             string sku = SkuGenerator.Generate(productCode, color, cpu, ram, storage);
 
@@ -102,6 +102,9 @@ namespace DAL.Models
 
         public void StockIn(int increaseAmount)
         {
+            if (increaseAmount < 0)
+                throw new ArgumentException("The stock increase amount cannot be negative.", nameof(increaseAmount));
+
             StockQuantity += increaseAmount;
             UpdatedAt = DateTime.UtcNow;
         }

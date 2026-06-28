@@ -1,7 +1,8 @@
 @page "/products"
 @rendermode InteractiveServer
-@using BLL.DTOs.Product
 @using BLL.DTOs.Category
+@using BLL.DTOs.Product
+@using BLL.DTOs.Product.Staff
 @using BLL.Services.Interfaces
 @inject IProductService ProductService
 @inject ICategoryService CategoryService
@@ -283,7 +284,7 @@
 }
 
 @code {
-    private List<ProductDto> products = new();
+    private List<ProductStaffDto> products = new();
     private List<CategoryDto> categories = new();
     private string searchKeyword = "";
     private int filterCategoryId = 0;
@@ -338,12 +339,11 @@
 
     private int uniqueBrandsCount => products.Select(p => p.Brand).Distinct(StringComparer.OrdinalIgnoreCase).Count();
 
-    private List<ProductDto> filteredProducts
+    private List<ProductStaffDto> filteredProducts
     {
         get
         {
-            IEnumerable<ProductDto> result = products;
-
+            IEnumerable<ProductStaffDto> result = products;
             if (filterCategoryId > 0)
             {
                 result = result.Where(p => p.CategoryId == filterCategoryId);
@@ -427,7 +427,7 @@
         uploadedFiles.Clear();
     }
 
-    private void EditProduct(ProductDto product)
+    private void EditProduct(ProductStaffDto product)
     {
         ClearMessages();
         uploadedFiles.Clear();
@@ -495,7 +495,7 @@
 
             if (isEditing)
             {
-                var updateDto = new ProductUpdateDto
+                var updateDto = new ProductStaffUpdateDto
                 {
                     ProductId = editingProductId,
                     ProductName = formModel.ProductName,
@@ -516,7 +516,7 @@
             }
             else
             {
-                var createDto = new ProductCreateDto
+                var createDto = new ProductStaffCreateDto
                 {
                     ProductName = formModel.ProductName,
                     Brand = formModel.Brand,
@@ -565,7 +565,7 @@
 
         try
         {
-            var deleteDto = new ProductDeleteDto { ProductId = id };
+            var deleteDto = new ProductStaffDeleteDto { ProductId = id };
             var result = await ProductService.DeleteProductAsync(deleteDto);
             if (result)
             {
