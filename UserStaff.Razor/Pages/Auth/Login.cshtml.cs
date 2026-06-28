@@ -36,6 +36,7 @@ namespace UserStaff.Razor.Pages.Auth
                 return Page();
             }
 
+            // Validate credentials via BLL (checks hashed password)
             var staff = await _staffService.ValidateLoginAsync(Input.Email, Input.Password);
             if (staff == null)
             {
@@ -43,6 +44,7 @@ namespace UserStaff.Razor.Pages.Auth
                 return Page();
             }
 
+            // Create claims to represent the authenticated staff user
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, staff.StaffId.ToString()),
@@ -51,11 +53,13 @@ namespace UserStaff.Razor.Pages.Auth
                 new Claim(ClaimTypes.Role, staff.Role.ToString())
             };
 
+            // Create identity/principal and sign in (issue auth cookie)
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
+            // Redirect back to return URL or homepage
             return LocalRedirect(ReturnUrl ?? "/Index");
         }
     }

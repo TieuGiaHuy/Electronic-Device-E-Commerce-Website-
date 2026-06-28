@@ -6,12 +6,20 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System;
-using StaffUser.Mvc.ViewModels;
+// Removed MVC ViewModels; using BLL DTOs for set-new-password flow
 
 namespace StaffUser.Mvc.Controllers
 {
     public class AuthController : Controller
     {
+                /*
+                 MVC AuthController
+                 - Handles Login/Logout/Register/ForgotPassword/SetNewPassword for customers (site users)
+                 - Uses ICustomerService to validate credentials, create users, and reset passwords
+                 - Uses cookie authentication via HttpContext.SignInAsync / SignOutAsync
+                 - Note: ForgotPassword uses a simplified dev flow (redirect to SetNewPassword).
+                     In production, use a token emailed to the user instead.
+                */
         private readonly ICustomerService _customerService;
 
         public AuthController(ICustomerService customerService)
@@ -27,6 +35,10 @@ namespace StaffUser.Mvc.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
+            // POST /Auth/Login
+            // - Validate model, call BLL ValidateLoginAsync which checks hashed password
+            // - On success create claims + cookie via SignInAsync
+            // - AuthProperties control persistence (RememberMe)
             if (!ModelState.IsValid)
             {
                 return View(loginDto);
@@ -71,6 +83,8 @@ namespace StaffUser.Mvc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout(string returnUrl = null)
         {
+            // POST /Auth/Logout
+            // Signs the user out by removing the authentication cookie
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
@@ -88,6 +102,9 @@ namespace StaffUser.Mvc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(string email)
         {
+            // POST /Auth/ForgotPassword
+            // - Verify the email exists using ICustomerService.GetByEmailAsync
+            // - DEV flow: redirect to SetNewPassword with email. Production: send email token.
             if (string.IsNullOrWhiteSpace(email))
             {
                 ModelState.AddModelError("", "Please provide your email address.");
@@ -110,25 +127,21 @@ namespace StaffUser.Mvc.Controllers
         public IActionResult SetNewPassword(string email)
         {
             if (string.IsNullOrWhiteSpace(email)) return RedirectToAction("ForgotPassword");
-            var model = new SetNewPasswordViewModel { Email = email };
+            var model = new CustomerSetPasswordDto { Email = email };
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetNewPassword(ViewModels.SetNewPasswordViewModel model)
+        public async Task<IActionResult> SetNewPassword(BLL.DTOs.Customer.CustomerSetPasswordDto model)
         {
+            // POST /Auth/SetNewPassword
+            // - Validate passwords match, lookup user by email, and call SetPasswordAsync
+            // - BLL SetPasswordAsync will hash the new password before updating repository
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
-
-            if (model.Password != model.ConfirmPassword)
-            {
-                ModelState.AddModelError("", "Passwords do not match.");
-                return View(model);
-            }
-
             var customer = await _customerService.GetByEmailAsync(model.Email);
             if (customer == null)
             {
@@ -153,6 +166,9 @@ namespace StaffUser.Mvc.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(CustomerCreateDto registerDto)
         {
+            // POST /Auth/Register
+            // - Check if email already exists using GetByEmailAsync
+            // - Create user via ICustomerService.CreateAsync which hashes password
             if (!ModelState.IsValid)
             {
                 return View(registerDto);

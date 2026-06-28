@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace StaffUser.Mvc.ViewModels
+namespace BLL.DTOs.Customer
 {
-    public class SetNewPasswordViewModel
+    public class CustomerSetPasswordDto
     {
         [Required]
         [EmailAddress]
@@ -10,7 +10,9 @@ namespace StaffUser.Mvc.ViewModels
 
         [Required]
         [DataType(DataType.Password)]
-        [MinLength(6, ErrorMessage = "Password must be at least 6 characters.")]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be at least 8 characters.")]
+        [RegularExpression(@"^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':\""\\|,.<>\/\?]).+$", 
+            ErrorMessage = "Password must contain at least one letter, one number, and one special character.")]
         public string Password { get; set; } = string.Empty;
 
         [Required]

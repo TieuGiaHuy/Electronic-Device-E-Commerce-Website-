@@ -7,6 +7,13 @@ namespace BLL.Services
 {
     public class CustomerService : ICustomerService
     {
+                /*
+                 CustomerService (BLL)
+                 - Provides high-level operations for customer entities used by MVC/UI layers
+                 - Responsibilities: lookup by email, validate login (BCrypt.Verify), create user
+                     (hashes password with BCrypt), and set password (hash+update)
+                 - This layer calls repository interfaces (ICustomerRepository) to access DB
+                */
         private readonly ICustomerRepository _customerRepository;
 
         public CustomerService(ICustomerRepository customerRepository)
@@ -16,6 +23,7 @@ namespace BLL.Services
 
         public async Task<CustomerDto?> GetByEmailAsync(string email)
         {
+            // Return DTO or null if not found. Used by forgot-password flows.
             var customer = await _customerRepository.GetByEmailAsync(email);
             if (customer == null) return null;
 
@@ -34,6 +42,7 @@ namespace BLL.Services
 
         public async Task<CustomerDto?> ValidateLoginAsync(string email, string password)
         {
+            // Validate credentials: fetch entity and verify hashed password using BCrypt
             var customer = await _customerRepository.GetByEmailAsync(email);
             if (customer == null) return null;
 
@@ -55,6 +64,7 @@ namespace BLL.Services
 
         public async Task<CustomerDto> CreateAsync(CustomerCreateDto createDto)
         {
+            // Create a new customer: hash password then persist via repository
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(createDto.Password);
             var customer = new Customer
             {
@@ -84,8 +94,21 @@ namespace BLL.Services
 
         public async Task<bool> SetPasswordAsync(int customerId, string newPassword)
         {
+            // Hash the provided new password and delegate update to repository
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
             return await _customerRepository.SetPasswordAsync(customerId, passwordHash);
+        }
+
+        public async Task<bool> UpdateProfileAsync(int customerId, CustomerProfileDto profileDto)
+        {
+            var customer = await _customerRepository.GetByIdAsync(customerId);
+            if (customer == null) return false;
+
+            customer.FullName = profileDto.FullName;
+            customer.PhoneNumber = profileDto.PhoneNumber;
+            customer.UpdatedAt = DateTime.UtcNow;
+
+            return await _customerRepository.UpdateAsync(customer);
         }
     }
 }

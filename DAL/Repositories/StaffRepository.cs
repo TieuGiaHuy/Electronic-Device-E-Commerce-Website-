@@ -2,15 +2,19 @@ using DAL.Data;
 using DAL.Models;
 using DAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace DAL.Repositories
 {
     public class StaffRepository : IStaffRepository
     {
         private readonly AppDbContext _context;
-        public StaffRepository(AppDbContext context)
+        private readonly ILogger<StaffRepository> _logger;
+
+        public StaffRepository(AppDbContext context, ILogger<StaffRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<List<Staff>> GetAllAsync()
@@ -45,9 +49,17 @@ namespace DAL.Repositories
                 existing.Role = staff.Role;
                 existing.IsActive = staff.IsActive;
                 existing.UpdatedAt = DateTime.UtcNow;
+
+                _context.Entry(existing).Property(x => x.FullName).IsModified = true;
+                _context.Entry(existing).Property(x => x.Email).IsModified = true;
+                _context.Entry(existing).Property(x => x.Role).IsModified = true;
+                _context.Entry(existing).Property(x => x.IsActive).IsModified = true;
+                _context.Entry(existing).Property(x => x.UpdatedAt).IsModified = true;
+
                 await _context.SaveChangesAsync();
                 return true;
             }
+
             return false;
         }
 

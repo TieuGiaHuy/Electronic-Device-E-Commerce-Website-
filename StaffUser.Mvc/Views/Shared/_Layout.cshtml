@@ -201,8 +201,8 @@
 
                             @if (User?.Identity?.IsAuthenticated ?? false)
                             {
-                                <a class="customer-icon-link" href="#">
-                                    <i class="bi bi-person-fill"></i> Account
+                                <a class="customer-icon-link" asp-area="" asp-controller="Profile" asp-action="Index">
+                                    <i class="bi bi-person-fill"></i> @User.Identity?.Name
                                 </a>
                             }
                             else

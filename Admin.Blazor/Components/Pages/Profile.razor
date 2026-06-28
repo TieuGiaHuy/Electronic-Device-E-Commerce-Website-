@@ -1,0 +1,147 @@
+@page "/profile"
+@using BLL.DTOs.Staff
+@using BLL.Services.Interfaces
+@using System.Security.Claims
+@inject IStaffService StaffService
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+@inject ILogger<Profile> Logger
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">My Profile</h4>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(SuccessMessage))
+                    {
+                        <div class="alert alert-success">@SuccessMessage</div>
+                    }
+
+                    <form @onsubmit="HandleUpdate">
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="text" class="form-control" value="@Input.Email" readonly />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" 
+                                   @bind="fullName" 
+                                   @bind:event="oninput" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <input type="text" class="form-control" value="@StatusText" readonly />
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" disabled="@isLoading">
+                                @if (isLoading) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                                Save Changes
+                            </button>
+                            <a href="/auth/change-password" class="btn btn-outline-secondary">Change Password</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private StaffProfileDto Input { get; set; } = new StaffProfileDto();
+    private string? SuccessMessage { get; set; }
+    private bool isLoading { get; set; }
+    private string StatusText { get; set; } = string.Empty;
+    private bool _initialized = false;
+    private string fullName = string.Empty;
+
+    private async Task LoadProfileAsync()
+    {
+        var email = HttpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Email)?.Value;
+        if (string.IsNullOrEmpty(email)) return;
+
+        var staff = await StaffService.GetByEmailAsync(email);
+        if (staff != null)
+        {
+            Input.StaffId = staff.StaffId;
+            Input.Email = staff.Email;
+            Input.FullName = staff.FullName;
+            fullName = staff.FullName;
+            Input.IsActive = staff.IsActive;
+            Input.CreatedAt = staff.CreatedAt;
+            Input.UpdatedAt = staff.UpdatedAt;
+            StatusText = staff.IsActive ? "Active" : "Inactive";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!_initialized)
+        {
+            await LoadProfileAsync();
+            _initialized = true;
+        }
+    }
+
+    private async Task HandleUpdate()
+    {
+        isLoading = true;
+        SuccessMessage = null;
+
+        Input.FullName = fullName;
+
+        var httpContext = HttpContextAccessor.HttpContext;
+        var email = httpContext?.User.FindFirst(ClaimTypes.Email)?.Value;
+        if (string.IsNullOrEmpty(email))
+        {
+            Navigation.NavigateTo("/auth/login");
+            return;
+        }
+
+        var staffId = Input.StaffId;
+        if (staffId <= 0)
+        {
+            Navigation.NavigateTo("/auth/login");
+            return;
+        }
+
+        var profileDto = new StaffProfileDto
+        {
+            StaffId = staffId,
+            Email = Input.Email,
+            FullName = Input.FullName,
+            IsActive = Input.IsActive,
+            CreatedAt = Input.CreatedAt,
+            UpdatedAt = Input.UpdatedAt
+        };
+
+        try
+        {
+            var result = await StaffService.UpdateProfileAsync(staffId, profileDto);
+            if (result)
+            {
+                Input.UpdatedAt = DateTime.UtcNow;
+                SuccessMessage = "Profile updated successfully.";
+                StateHasChanged();
+            }
+            else
+            {
+                SuccessMessage = "Failed to update profile.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Exception while updating profile for staff id {StaffId}", staffId);
+            SuccessMessage = "Failed to update profile.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

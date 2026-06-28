@@ -1,6 +1,7 @@
 using BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.ComponentModel.DataAnnotations;
 
 namespace UserStaff.Razor.Pages.Auth
 {
@@ -17,9 +18,13 @@ namespace UserStaff.Razor.Pages.Auth
         public string Email { get; set; } = string.Empty;
 
         [BindProperty]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be at least 8 characters.")]
+        [RegularExpression(@"^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':""\\|,.<>\/?]).+$", 
+            ErrorMessage = "Password must contain at least one letter, one number, and one special character.")]
         public string Password { get; set; } = string.Empty;
 
         [BindProperty]
+        [Compare("Password", ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; } = string.Empty;
 
         public void OnGet(string? email)
@@ -34,18 +39,12 @@ namespace UserStaff.Razor.Pages.Auth
         {
             if (string.IsNullOrWhiteSpace(Email)) return RedirectToPage("ForgotPassword");
 
-            if (string.IsNullOrWhiteSpace(Password) || string.IsNullOrWhiteSpace(ConfirmPassword))
+            if (!ModelState.IsValid)
             {
-                ModelState.AddModelError(string.Empty, "Please fill in all password fields.");
                 return Page();
             }
 
-            if (Password != ConfirmPassword)
-            {
-                ModelState.AddModelError(string.Empty, "Passwords do not match.");
-                return Page();
-            }
-
+            // Find staff and set new password (BLL will hash internally)
             var staff = await _staffService.GetByEmailAsync(Email);
             if (staff == null)
             {

@@ -7,6 +7,12 @@ namespace BLL.Services
 {
     public class UserService : IUserService
     {
+        /*
+         UserService (BLL)
+         - Similar responsibilities as CustomerService but for app 'users'
+         - Exposes GetByEmailAsync, ValidateLoginAsync, CreateAsync
+         - Uses IUserRepository for data access and BCrypt for hashing/verification
+        */
         private readonly IUserRepository _userRepository;
 
         public UserService(IUserRepository userRepository)
@@ -16,6 +22,7 @@ namespace BLL.Services
 
         public async Task<UserDto?> GetByEmailAsync(string email)
         {
+            // Lookup user entity by email and map to DTO
             var user = await _userRepository.GetByEmailAsync(email);
             if (user == null) return null;
 
@@ -34,6 +41,7 @@ namespace BLL.Services
 
         public async Task<UserDto?> ValidateLoginAsync(string email, string password)
         {
+            // Validate credentials using BCrypt.Verify against stored password hash
             var user = await _userRepository.GetByEmailAsync(email);
             if (user == null) return null;
 
@@ -55,6 +63,7 @@ namespace BLL.Services
 
         public async Task<UserDto> CreateAsync(UserCreateDto createDto)
         {
+            // Hash password and create user via repository
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(createDto.Password);
             var user = User.Create(createDto.FullName, createDto.Email, createDto.PhoneNumber, passwordHash, (UserRole)createDto.Role, createDto.Points);
             var created = await _userRepository.CreateAsync(user);
