@@ -43,7 +43,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<DAL.Data.AppDbContext>();
     db.Database.Migrate();
-    
+    db.EnsureSeedData();
     if (!db.Staffs.Any(s => s.Email == "admin@electronexus.com"))
     {
         var adminPassword = BCrypt.Net.BCrypt.HashPassword("Admin@123");

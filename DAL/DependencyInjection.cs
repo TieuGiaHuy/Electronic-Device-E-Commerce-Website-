@@ -27,7 +27,6 @@ namespace DAL
             services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IStaffRepository, StaffRepository>();
-            services.AddScoped<IPromotionRepository, PromotionRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services.BuildServiceProvider();

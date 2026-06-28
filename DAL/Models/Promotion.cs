@@ -1,3 +1,4 @@
+using DAL.Enums;
 using DAL.Models.Base;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
@@ -8,40 +9,57 @@ namespace DAL.Models
     {
         [Key]
         public Guid PromotionId { get; set; }
-        public Guid ProductVariantId { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty;
+        // Type
+        [Required]
+        public PromotionTypeEnum PromotionType { get; set; } // true: percentage, false: fixed amount
         [Range(0, double.MaxValue)]
-        public decimal SalePrice { get; set; }
+        public decimal? SalePrice { get; set; }
+        [Range(0, double.MaxValue)]
+        public decimal? ThresholdPrice { get; set; }
+        [Range(0, 100)]
+        public byte? Percentage { get; set; }
+        // Stock
+        public bool IsReservedStock { get; set; } = true;
         [Range(0, int.MaxValue)]
-        public int MaxReservedStock { get; set; }
-        public DateTime StartAt { get; set; }
-        public DateTime EndAt { get; set; }
+        public int? MaxReservedStock { get; set; }
+        // Time
+        public bool IsLimitedTime { get; set; } = false;
+        public DateTime? StartAt { get; set; }
+        public DateTime? EndAt { get; set; }
 
-        public bool IsDeleted { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public bool IsDeleted { get; set; } = false;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
-        public bool IsDisabled { get; set; }
-        // Navigation
-        public virtual ProductVariant? ProductVariant { get; set; }
+        public bool IsDisabled { get; set; } = false;
 
-        public static Promotion Create(Guid productVariantId, decimal salePrice, int maxReservedStock, DateTime startAt, DateTime endAt)
+        public Promotion Create(PromotionTypeEnum promotionTypeEnum, decimal? salePrice = null, decimal? thresholdPrice = null, byte? percentage = null, bool isReservedStock = true, int? maxReservedStock = null, bool isLimitedTime = false, DateTime? startAt = null, DateTime? endAt = null)
         {
             return new Promotion
             {
-                ProductVariantId = productVariantId,
+                PromotionId = Guid.NewGuid(),
+                PromotionType = promotionTypeEnum,
                 SalePrice = salePrice,
+                ThresholdPrice = thresholdPrice,
+                Percentage = percentage,
+                IsReservedStock = isReservedStock,
                 MaxReservedStock = maxReservedStock,
+                IsLimitedTime = isLimitedTime,
                 StartAt = startAt,
-                EndAt = endAt,
-                CreatedAt = DateTime.UtcNow,
-                IsDisabled = false
+                EndAt = endAt
             };
         }
 
-        public void Update(Guid productVariantId, decimal salePrice, int maxReservedStock, DateTime startAt, DateTime endAt)
+        public void Update(PromotionTypeEnum promotionTypeEnum, decimal? salePrice = null, decimal? thresholdPrice = null, byte? percentage = null, bool isReservedStock = true, int? maxReservedStock = null, bool isLimitedTime = false, DateTime? startAt = null, DateTime? endAt = null)
         {
-            ProductVariantId = productVariantId;
+            PromotionType = promotionTypeEnum;
             SalePrice = salePrice;
+            ThresholdPrice = thresholdPrice;
+            Percentage = percentage;
+            IsReservedStock = isReservedStock;
             MaxReservedStock = maxReservedStock;
+            IsLimitedTime = isLimitedTime;
             StartAt = startAt;
             EndAt = endAt;
             UpdatedAt = DateTime.UtcNow;

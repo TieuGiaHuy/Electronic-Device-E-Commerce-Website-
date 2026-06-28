@@ -1,8 +1,10 @@
+using AutoMapper;
 using BLL.Services;
 using BLL.Services.Interfaces;
 using DAL;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace BLL
 {
@@ -23,6 +25,11 @@ namespace BLL
             services.AddScoped<IStaffService, StaffService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IOrderItemService, OrderItemService>();
+
+            services.AddAutoMapper(cfg =>
+            {
+                cfg.AddMaps(Assembly.GetExecutingAssembly());
+            });
             return services.BuildServiceProvider();
         }
     }
