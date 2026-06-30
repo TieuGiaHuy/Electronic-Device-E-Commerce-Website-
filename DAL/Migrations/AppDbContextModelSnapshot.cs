@@ -313,9 +313,17 @@ namespace DAL.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int")
+                        .HasColumnName("customer_id");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit")
                         .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsFlagged")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_flagged");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int")
@@ -329,18 +337,14 @@ namespace DAL.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("user_id");
-
                     b.HasKey("Id")
                         .HasName("pk_product_reviews");
 
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("ix_product_reviews_customer_id");
+
                     b.HasIndex("ProductId")
                         .HasDatabaseName("ix_product_reviews_product_id");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_product_reviews_user_id");
 
                     b.ToTable("product_reviews", (string)null);
                 });
@@ -684,6 +688,13 @@ namespace DAL.Migrations
 
             modelBuilder.Entity("DAL.Models.ProductReview", b =>
                 {
+                    b.HasOne("DAL.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_reviews_customers_customer_id");
+
                     b.HasOne("DAL.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
@@ -691,16 +702,9 @@ namespace DAL.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_product_reviews_products_product_id");
 
-                    b.HasOne("DAL.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_product_reviews_users_user_id");
+                    b.Navigation("Customer");
 
                     b.Navigation("Product");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DAL.Models.ProductVariant", b =>

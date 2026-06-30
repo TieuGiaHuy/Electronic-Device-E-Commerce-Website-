@@ -12,9 +12,9 @@ namespace DAL.Configurations
             builder.Property(pr => pr.Rating).IsRequired();
             builder.Property(pr => pr.Comment).HasMaxLength(1000);
 
-            builder.HasOne(pr => pr.User)
+            builder.HasOne(pr => pr.Customer)
                    .WithMany()
-                   .HasForeignKey(pr => pr.UserId)
+                   .HasForeignKey(pr => pr.CustomerId)
                    .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(pr => pr.Product)
