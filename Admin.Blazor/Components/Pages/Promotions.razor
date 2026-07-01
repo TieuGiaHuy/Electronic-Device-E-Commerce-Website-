@@ -1,4 +1,4 @@
-@page "/promotions"
+﻿@page "/promotions"
 @using BLL.DTOs.Pagination
 @using BLL.DTOs.Promotion
 @using BLL.DTOs.Promotion.PromotionList
@@ -85,7 +85,7 @@
                             </span>
                             <input type="text"
                                    class="form-control border-start-0 bg-light"
-                                   placeholder="Search promotion name..." @bind="searchName">
+                                   placeholder="Search promotion name..." @bind="searchName" @bind:event="oninput" @onkeyup="LoadPromotions">
                         </div>
                     </div>
 
@@ -228,10 +228,10 @@
                             Showing 1 to 10 of 50 entries
                         </span>
 
-                        <select class="form-select form-select-sm w-auto">
-                            <option>10</option>
-                            <option>25</option>
-                            <option>50</option>
+                        <select @onchange="OnPageSizeChanged" class="form-select form-select-sm w-auto">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
                         </select>
                     </div>
 
@@ -276,7 +276,10 @@
 @code {
     private PromotionListResponeDto? promotions;
     private string searchName = string.Empty;
-    private PromotionStatusEnum promotionStatus;
+    private int currentPage = 1;
+    private int pageSize = 10;
+
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -298,6 +301,19 @@
         promotions = await PromotionService.GetPromotionsListAsync(request);
     }
 
+    private async Task OnPageSizeChanged(ChangeEventArgs e)
+    {
+        pageSize = int.Parse(e.Value!.ToString()!);
+        currentPage = 1;
+        await LoadPromotions();
+    }
+
+    private async Task OnPageChanged(int page)
+    {
+        currentPage = page;
+        await LoadPromotions();
+    }
+
     private async Task<PromotionStatusEnum> GetStatus(PromotionDto promotion)
     {
         if (promotion.IsDeleted)
@@ -309,7 +325,7 @@
         {
             return PromotionStatusEnum.Disabled;
         }
-        
+
         if (promotion.IsLimitedTime && promotion.StartAt.HasValue && promotion.EndAt.HasValue)
         {
             var currentDate = DateTime.UtcNow;

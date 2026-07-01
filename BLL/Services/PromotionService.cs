@@ -27,7 +27,7 @@ namespace BLL.Services
 
             if (!string.IsNullOrEmpty(request.SearchTerm))
             {
-                promotionsQuery = promotionsQuery.Where(p => p.Name.Contains(request.SearchTerm));
+                promotionsQuery = promotionsQuery.Where(p => p.Name.ToLower().Contains(request.SearchTerm.ToLower()));
             }
 
             // Pagination
