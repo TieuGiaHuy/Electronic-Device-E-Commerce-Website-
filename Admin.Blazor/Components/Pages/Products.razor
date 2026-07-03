@@ -4,9 +4,14 @@
 @using BLL.DTOs.Product
 @using BLL.DTOs.Product.Staff
 @using BLL.Services.Interfaces
+@using Microsoft.AspNetCore.SignalR
+@using Microsoft.AspNetCore.SignalR.Client
 @inject IProductService ProductService
 @inject ICategoryService CategoryService
 @inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Environment
+@inject NavigationManager Navigation
+@inject Microsoft.AspNetCore.SignalR.IHubContext<Admin.Blazor.Hubs.AdminHub> HubContext
+@implements IAsyncDisposable
 
 <PageTitle>Manage Products - ElectroNexus Admin</PageTitle>
 
@@ -291,6 +296,8 @@
     private bool isLoading = true;
     private string successMessage = "";
     private string errorMessage = "";
+    private HubConnection? hubConnection;
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     // Modal & Form states
     private bool showProductModal = false;
@@ -317,9 +324,47 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/adminHub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On("ProductChanged", async () =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await LoadData();
+                StateHasChanged();
+            });
+        });
+
+        hubConnection.On("CategoryChanged", async () =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await LoadData();
+                StateHasChanged();
+            });
+        });
+
+        await hubConnection.StartAsync();
     }
 
     private async Task LoadData()
+    {
+        await _semaphore.WaitAsync();
+        try
+        {
+            await LoadDataInternal();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    private async Task LoadDataInternal()
     {
         isLoading = true;
         try
@@ -462,6 +507,7 @@
             return;
         }
 
+        await _semaphore.WaitAsync();
         try
         {
             List<string> imagePaths = new();
@@ -508,6 +554,10 @@
                 {
                     successMessage = $"Product '{formModel.ProductName}' updated successfully!";
                     CloseProductModal();
+                    if (hubConnection is not null && hubConnection.State == HubConnectionState.Connected)
+                    {
+                        await hubConnection.SendAsync("BroadcastProductChanged");
+                    }
                 }
                 else
                 {
@@ -528,17 +578,25 @@
                 {
                     successMessage = $"Product '{created.ProductName}' added successfully!";
                     CloseProductModal();
+                    if (hubConnection is not null && hubConnection.State == HubConnectionState.Connected)
+                    {
+                        await hubConnection.SendAsync("BroadcastProductChanged");
+                    }
                 }
                 else
                 {
                     errorMessage = "Failed to add product.";
                 }
             }
-            await LoadData();
+            await LoadDataInternal();
         }
         catch (Exception ex)
         {
             errorMessage = $"System error: {ex.Message}";
+        }
+        finally
+        {
+            _semaphore.Release();
         }
     }
 
@@ -563,6 +621,7 @@
         var name = productToDeleteName;
         CloseDeleteConfirmation();
 
+        await _semaphore.WaitAsync();
         try
         {
             var deleteDto = new ProductStaffDeleteDto { ProductId = id };
@@ -570,7 +629,11 @@
             if (result)
             {
                 successMessage = $"Product '{name}' deleted successfully!";
-                await LoadData();
+                if (hubConnection is not null && hubConnection.State == HubConnectionState.Connected)
+                {
+                    await hubConnection.SendAsync("BroadcastProductChanged");
+                }
+                await LoadDataInternal();
             }
             else
             {
@@ -581,12 +644,24 @@
         {
             errorMessage = $"Error deleting product: {ex.Message}";
         }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     private void ClearMessages()
     {
         successMessage = "";
         errorMessage = "";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 
     public class ProductFormModel

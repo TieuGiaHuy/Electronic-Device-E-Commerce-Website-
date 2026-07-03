@@ -1,5 +1,6 @@
 using Admin.Blazor.Components;
 using Admin.Blazor.Components.Auth;
+using Admin.Blazor.Hubs;
 using BLL;
 using BLL.Settings;
 using DAL.Data;
@@ -17,6 +18,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR();
 builder.Services.AddBusinessLogicLayer(connectionString!);
 builder.Services.Configure<VnpaySettings>(builder.Configuration.GetSection("VNPAY"));
 
@@ -88,6 +90,7 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/uploads"
 });
 
+app.MapHub<AdminHub>("/adminHub");
 app.MapRazorPages();
 app.MapRazorComponents<App>()
    .AddInteractiveServerRenderMode();
