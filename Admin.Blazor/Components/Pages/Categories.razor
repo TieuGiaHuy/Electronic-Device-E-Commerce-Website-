@@ -1,11 +1,14 @@
-@page "/categories"
+﻿@page "/categories"
 @rendermode InteractiveServer
 @using BLL.DTOs.Category
 @using BLL.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.SignalR.Client
 @inject ICategoryService CategoryService
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
+
+@attribute [Authorize]
 
 <PageTitle>Manage Categories - ElectroNexus Admin</PageTitle>
 
@@ -193,7 +196,27 @@
             });
         });
 
-        await hubConnection.StartAsync();
+        // await hubConnection.StartAsync(); // chuyển lên OnAfterRenderAsync để đảm bảo giao diện đã render hoàn toàn trước khi kết nối
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                if (hubConnection is not null && hubConnection.State == HubConnectionState.Disconnected)
+                {
+                    // Chỉ chạy khi giao diện đã render hoàn toàn trên Trình duyệt (Client)
+                    await hubConnection.StartAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Can't connect to Realtime Hub: {ex.Message}";
+                StateHasChanged();
+            }
+        }
     }
 
     private async Task LoadCategories()

@@ -1,7 +1,7 @@
 @model List<BLL.DTOs.ProductReview.ProductReviewDto>
 @{
     ViewData["Title"] = "Product Reviews";
-    var product = ViewBag.Product as BLL.DTOs.Product.ProductDto;
+    var product = ViewBag.Product as BLL.DTOs.Product.Customer.ProductCustomerDto;
     var currentUserEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
 }
 

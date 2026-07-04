@@ -3,10 +3,13 @@
 @using BLL.DTOs.Order
 @using BLL.DTOs.Product
 @using BLL.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
 @inject IOrderService OrderService
 @inject IOrderItemService OrderItemService
 @inject IProductVariantService ProductVariantService
 @inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Environment
+
+@attribute [Authorize]
 
 <PageTitle>Manage Orders - ElectroNexus Admin</PageTitle>
 

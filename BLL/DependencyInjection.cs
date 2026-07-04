@@ -18,7 +18,6 @@ namespace BLL
             services.AddScoped<IProductVariantService, ProductVariantService>();
             services.AddScoped<IProductReviewService, ProductReviewService>();
             
-            services.AddScoped<IUserService, UserService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IPromotionService, PromotionService>();
 

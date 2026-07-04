@@ -1,5 +1,6 @@
 using BLL.DTOs.Customer;
 using BLL.Services.Interfaces;
+using DAL.Enums;
 using DAL.Models;
 using DAL.Repositories.Interfaces;
 
@@ -72,7 +73,7 @@ namespace BLL.Services
                 Email = createDto.Email,
                 PhoneNumber = createDto.PhoneNumber,
                 PasswordHash = passwordHash,
-                Role = (UserRole)createDto.Role,
+                Role = (RoleEnum)createDto.Role,
                 Points = createDto.Points,
                 IsDeleted = false,
                 CreatedAt = DateTime.UtcNow

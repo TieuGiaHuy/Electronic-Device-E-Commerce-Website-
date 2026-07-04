@@ -4,6 +4,7 @@
 @using BLL.DTOs.Product
 @using BLL.DTOs.Product.Staff
 @using BLL.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.SignalR
 @using Microsoft.AspNetCore.SignalR.Client
 @inject IProductService ProductService
@@ -12,6 +13,8 @@
 @inject NavigationManager Navigation
 @inject Microsoft.AspNetCore.SignalR.IHubContext<Admin.Blazor.Hubs.AdminHub> HubContext
 @implements IAsyncDisposable
+
+@attribute [Authorize]
 
 <PageTitle>Manage Products - ElectroNexus Admin</PageTitle>
 
@@ -348,7 +351,27 @@
             });
         });
 
-        await hubConnection.StartAsync();
+        // await hubConnection.StartAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                if (hubConnection is not null && hubConnection.State == HubConnectionState.Disconnected)
+                {
+                    // Chỉ chạy khi giao diện đã render hoàn toàn trên Trình duyệt (Client)
+                    await hubConnection.StartAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Can't connect to Realtime Hub: {ex.Message}";
+                StateHasChanged();
+            }
+        }
     }
 
     private async Task LoadData()

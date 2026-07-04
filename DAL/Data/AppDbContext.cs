@@ -12,7 +12,6 @@ namespace DAL.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<ProductVariant> ProductVariants { get; set; }
         
-        public DbSet<User> Users { get; set; }
         public DbSet<ProductReview> ProductReviews { get; set; }
         public DbSet<Promotion> Promotions { get; set; }
         public DbSet<Customer> Customers { get; set; }
