@@ -88,6 +88,9 @@
                     <a class="customer-subnav-link" href="@Url.Action("Index", "Home")">
                         <i class="bi bi-grid-fill me-1"></i> All Products
                     </a>
+                    <a class="customer-subnav-link" href="@Url.Action("Index", "Reviews")">
+                        <i class="bi bi-chat-square-text me-1"></i> Reviews
+                    </a>
                     @foreach (var cat in await CategoryService.GetAllCategoriesAsync())
                     {
                         var icon = cat.Name.ToLower() switch
