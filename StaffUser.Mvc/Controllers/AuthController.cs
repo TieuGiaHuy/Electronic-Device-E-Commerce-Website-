@@ -133,7 +133,7 @@ namespace StaffUser.Mvc.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetNewPassword(BLL.DTOs.Customer.CustomerSetPasswordDto model)
+        public async Task<IActionResult> SetNewPassword(CustomerSetPasswordDto model)
         {
             // POST /Auth/SetNewPassword
             // - Validate passwords match, lookup user by email, and call SetPasswordAsync
@@ -164,7 +164,7 @@ namespace StaffUser.Mvc.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(CustomerCreateDto registerDto)
+        public async Task<IActionResult> Register(CustomerRegisterDto registerDto)
         {
             // POST /Auth/Register
             // - Check if email already exists using GetByEmailAsync
@@ -181,7 +181,15 @@ namespace StaffUser.Mvc.Controllers
                 return View(registerDto);
             }
 
-            var customer = await _customerService.CreateAsync(registerDto);
+            await _customerService.CreateAsync(new CustomerCreateDto
+            {
+                FullName = registerDto.FullName,
+                Email = registerDto.Email,
+                PhoneNumber = registerDto.PhoneNumber,
+                Password = registerDto.Password,
+                Role = (int)DAL.Enums.RoleEnum.Customer,
+                Points = 0
+            });
             return RedirectToAction("Login", "Auth");
         }
     }

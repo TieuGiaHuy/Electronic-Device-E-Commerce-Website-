@@ -2,6 +2,7 @@ using BLL;
 using BLL.DTOs.Staff;
 using BLL.Services.Interfaces;
 using BLL.Settings;
+using DAL.Enums;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,7 +10,17 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");  
 
 // Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("StaffOnly", p => p.RequireRole(
+        ((int)RoleEnum.Staff).ToString(),
+        ((int)RoleEnum.Admin).ToString()));
+});
+
+builder.Services.AddRazorPages(options => { 
+    options.Conventions.AuthorizeFolder("/", "StaffOnly");
+    options.Conventions.AllowAnonymousToFolder("/Auth");
+});
 
 builder.Services.AddBusinessLogicLayer(connectionString!);
 builder.Services.Configure<VnpaySettings>(builder.Configuration.GetSection("VNPAY"));
@@ -38,7 +49,7 @@ using (var scope = app.Services.CreateScope())
             FullName = "Test Staff",
             Email = "staff@local",
             Password = "P@ssw0rd",
-            Role = 2, // Staff role
+            Role = (int)RoleEnum.Staff, // Staff role
             IsActive = true
         };
         staffService.CreateAsync(createDto).GetAwaiter().GetResult();

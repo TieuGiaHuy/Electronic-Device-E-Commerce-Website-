@@ -21,7 +21,7 @@ namespace BLL.Services
             {
                 ProductVariantId = pv.ProductVariantId,
                 Sku = pv.Sku,
-                ProductCode = pv.ProductCode,
+                //ProductCode = pv.ProductCode,s
                 Color = pv.Color,
                 Cpu = pv.Cpu,
                 Ram = pv.Ram,
@@ -46,7 +46,7 @@ namespace BLL.Services
                 {
                     ProductVariantId = productVariant.ProductVariantId,
                     Sku = productVariant.Sku,
-                    ProductCode = productVariant.ProductCode,
+                    //ProductCode = productVariant.ProductCode,
                     Color = productVariant.Color,
                     Cpu = productVariant.Cpu,
                     Ram = productVariant.Ram,
@@ -66,7 +66,7 @@ namespace BLL.Services
         public async Task<ProductVariantStaffDto> CreateProductVariantAsync(ProductVariantStaffCreateDto productVariant)
         {
             var newVariant = ProductVariant.Create(
-                productVariant.ProductCode,
+                //productVariant.ProductCode,
                 productVariant.Color,
                 productVariant.Cpu,
                 productVariant.Ram,
@@ -106,7 +106,7 @@ namespace BLL.Services
             };
 
             existingVariant.Update(
-                productVariant.ProductCode,
+                //productVariant.ProductCode,
                 productVariant.Color,
                 productVariant.Cpu,
                 productVariant.Ram,

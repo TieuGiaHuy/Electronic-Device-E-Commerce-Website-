@@ -1,3 +1,5 @@
+using AutoMapper;
+using BLL.DTOs.Product.Customer;
 using BLL.DTOs.Product.Staff;
 using BLL.Services.Interfaces;
 using DAL.Models;
@@ -8,10 +10,12 @@ namespace BLL.Services
     public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepository;
+        private readonly IMapper _mapper;
 
-        public ProductService(IProductRepository productRepository)
+        public ProductService(IProductRepository productRepository, IMapper mapper)
         {
             _productRepository = productRepository;
+            _mapper = mapper;
         }
 
         public async Task<List<ProductStaffDto>> GetAllProductsAsync()
@@ -31,6 +35,18 @@ namespace BLL.Services
             }).ToList();
 
             return productDtos;
+        }
+
+        public async Task<ProductCustomerDto?> GetProductCustomerByIdAsync(int productId)
+        {
+            var product = await _productRepository.GetProductByIdAsync(productId);
+
+            if (product == null)
+            {
+                return null;
+            }
+
+            return _mapper.Map<ProductCustomerDto>(product);
         }
 
         public async Task<ProductStaffDto?> GetProductByIdAsync(int id)

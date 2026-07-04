@@ -1,31 +1,34 @@
-using Microsoft.AspNetCore.Mvc;
-using StaffUser.Mvc.Models;
+using BLL.DTOs.CartItem;
 using BLL.Services.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using StaffUser.Mvc.Utilities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace StaffUser.Mvc.Controllers
 {
+    [Authorize]
     public class CartController : Controller
     {
+        private int CustomerId => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        private readonly ICartItemService _cartItemService;
         private readonly IProductVariantService _productVariantService;
         private readonly IProductService _productService;
 
         public CartController(
             IProductVariantService productVariantService,
-            IProductService productService)
+            IProductService productService,
+            ICartItemService cartItemService)
         {
             _productVariantService = productVariantService;
             _productService = productService;
+            _cartItemService = cartItemService;
         }
 
         // View Cart Page
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var cart = HttpContext.Session.Get<List<CartItem>>("Cart") ?? new List<CartItem>();
+            var cart = await _cartItemService.GetCartItemsByCustomerIdAsync(CustomerId);
             return View(cart);
         }
 
@@ -67,122 +70,87 @@ namespace StaffUser.Mvc.Controllers
         [HttpPost]
         public async Task<IActionResult> AddToCart(Guid variantId, int quantity = 1)
         {
-            if (quantity <= 0) quantity = 1;
-
-            var variant = await _productVariantService.GetProductVariantByIdAsync(variantId);
-            if (variant == null || variant.IsDeleted)
+            try
             {
-                return Json(new { success = false, message = "Product variant not found." });
-            }
-
-            if (variant.StockQuantity < quantity)
-            {
-                return Json(new { success = false, message = $"Not enough stock. Available: {variant.StockQuantity}." });
-            }
-
-            var product = await _productService.GetProductByIdAsync(variant.ProductId);
-            if (product == null)
-            {
-                return Json(new { success = false, message = "Product not found." });
-            }
-
-            var cart = HttpContext.Session.Get<List<CartItem>>("Cart") ?? new List<CartItem>();
-            var existingItem = cart.FirstOrDefault(i => i.ProductVariantId == variantId);
-
-            if (existingItem != null)
-            {
-                var newQty = existingItem.Quantity + quantity;
-                if (variant.StockQuantity < newQty)
+                var createDto = new CartItemCreateDTO
                 {
-                    return Json(new { success = false, message = $"Cannot add more. Max stock available: {variant.StockQuantity}." });
-                }
-                existingItem.Quantity = newQty;
-            }
-            else
-            {
-                var specs = new List<string>();
-                if (!string.IsNullOrEmpty(variant.Cpu)) specs.Add(variant.Cpu);
-                if (!string.IsNullOrEmpty(variant.Ram)) specs.Add(variant.Ram + " RAM");
-                if (!string.IsNullOrEmpty(variant.Storage)) specs.Add(variant.Storage);
-                if (!string.IsNullOrEmpty(variant.ScreenSize)) specs.Add(variant.ScreenSize + " Screen");
-
-                var imageUrl = !string.IsNullOrEmpty(variant.ImageUrl) 
-                    ? variant.ImageUrl 
-                    : product.ImageUrl?.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-
-                cart.Add(new CartItem
-                {
-                    ProductVariantId = variant.ProductVariantId,
-                    ProductId = product.ProductId,
-                    ProductName = product.ProductName,
-                    Brand = product.Brand,
-                    VariantSku = variant.Sku,
-                    VariantColor = variant.Color,
-                    VariantSpecs = string.Join(", ", specs),
-                    Price = variant.Price,
+                    ProductVariantId = variantId,
                     Quantity = quantity,
-                    ImageUrl = imageUrl,
-                    MaxStock = variant.StockQuantity
-                });
+                    CustomerId = CustomerId
+                };
+
+                await _cartItemService.CreateCartItemAsync(createDto);
+
+                var cartItems = await _cartItemService.GetCartItemsByCustomerIdAsync(CustomerId);
+                var totalCount = cartItems.Sum(i => i.Quantity);
+
+                return Json(new { success = true, message = "Product added to cart!", totalCount = totalCount });
             }
-
-            HttpContext.Session.Set("Cart", cart);
-            var totalCount = cart.Sum(i => i.Quantity);
-
-            return Json(new { success = true, message = $"Product '{product.ProductName}' added to cart!", totalCount });
+            catch (ArgumentException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An unexpected error occurred: " + ex.Message });
+            }
         }
 
-        // Update quantity in cart
         [HttpPost]
-        public async Task<IActionResult> UpdateQuantity(Guid variantId, int quantity)
+        public async Task<IActionResult> UpdateQuantity(int cartItemId, int quantity)
         {
-            if (quantity <= 0)
+            try
             {
-                return Json(new { success = false, message = "Quantity must be at least 1." });
-            }
+                await _cartItemService.UpdateCartItemQuantityAsync(cartItemId, quantity, CustomerId);
+                var cartItems = await _cartItemService.GetCartItemsByCustomerIdAsync(CustomerId);
+                var updatedItem = cartItems.FirstOrDefault(i => i.CartItemId == cartItemId);
+                var totalCount = cartItems.Sum(i => i.Quantity);
+                var cartTotal = cartItems.Sum(i => i.Quantity * (i.ProductVariant?.Price ?? 0));
 
-            var variant = await _productVariantService.GetProductVariantByIdAsync(variantId);
-            if (variant == null || variant.IsDeleted)
+                var totalPrice = (updatedItem?.Quantity ?? 0) * (updatedItem?.ProductVariant?.Price ?? 0);
+
+                return Json(new { success = true, totalCount, totalPrice, cartTotal });
+            }
+            catch (UnauthorizedAccessException)
             {
-                return Json(new { success = false, message = "Product variant not found." });
+                return Forbid();
             }
-
-            if (variant.StockQuantity < quantity)
+            catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException)
             {
-                return Json(new { success = false, message = $"Only {variant.StockQuantity} items are available in stock." });
+                return Json(new { success = false, message = ex.Message });
             }
-
-            var cart = HttpContext.Session.Get<List<CartItem>>("Cart") ?? new List<CartItem>();
-            var item = cart.FirstOrDefault(i => i.ProductVariantId == variantId);
-            if (item != null)
+            catch (Exception ex)
             {
-                item.Quantity = quantity;
-                HttpContext.Session.Set("Cart", cart);
+                return Json(new { success = false, message = "Can not update item quantity: " + ex.Message });
             }
-
-            var totalCount = cart.Sum(i => i.Quantity);
-            var totalPrice = cart.Where(i => i.ProductVariantId == variantId).Sum(i => i.Price * i.Quantity);
-            var cartTotal = cart.Sum(i => i.Price * i.Quantity);
-
-            return Json(new { success = true, totalCount, totalPrice, cartTotal });
         }
 
         // Remove item from cart
         [HttpPost]
-        public IActionResult Remove(Guid variantId)
+        public async Task<IActionResult> Remove(int cartItemId)
         {
-            var cart = HttpContext.Session.Get<List<CartItem>>("Cart") ?? new List<CartItem>();
-            var item = cart.FirstOrDefault(i => i.ProductVariantId == variantId);
-            if (item != null)
+            try
             {
-                cart.Remove(item);
-                HttpContext.Session.Set("Cart", cart);
+                await _cartItemService.DeleteCartItemAsync(cartItemId, CustomerId);
+
+                var cartItems = await _cartItemService.GetCartItemsByCustomerIdAsync(CustomerId);
+                var totalCount = cartItems.Sum(i => i.Quantity);
+                var cartTotal = cartItems.Sum(i => i.Quantity * (i.ProductVariant?.Price ?? 0));
+
+                return Json(new { success = true, totalCount, cartTotal });
+            } 
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
             }
-
-            var totalCount = cart.Sum(i => i.Quantity);
-            var cartTotal = cart.Sum(i => i.Price * i.Quantity);
-
-            return Json(new { success = true, totalCount, cartTotal });
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Can not remove item: " + ex.Message });
+            }
         }
     }
 }

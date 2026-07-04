@@ -6,7 +6,7 @@ namespace DAL.Models
     public class ProductVariant : IBaseEntity
     {
         public Guid ProductVariantId { get; set; }
-        public string ProductCode { get; set; }
+        //public string ProductCode { get; set; }
         public string Sku { get; set; }
         public string Color { get; set; }
         public string? Cpu { get; set; }
@@ -24,7 +24,7 @@ namespace DAL.Models
         public DateTime? UpdatedAt { get; set; }
 
         public static ProductVariant Create(
-            string productCode, 
+            //string productCode, 
             string color, 
             string? cpu, 
             string? ram, 
@@ -40,11 +40,11 @@ namespace DAL.Models
             if (stockQuantity < 0)
                 throw new ArgumentException("Stock quantity cannot be negative.", nameof(stockQuantity));
 
-            string sku = SkuGenerator.Generate(productCode, color, cpu, ram, storage);
+            string sku = SkuGenerator.Generate(productId, color, cpu, ram, storage, screenSize);
 
             var productVariant = new ProductVariant
             {
-                ProductCode = productCode,
+                //ProductCode = productCode,
                 Sku = sku,
                 Color = color,
                 Cpu = cpu,
@@ -61,7 +61,7 @@ namespace DAL.Models
             return productVariant;
         }
         public void Update(
-            string productCode, 
+            //string productCode, 
             string color, 
             string? cpu, 
             string? ram, 
@@ -77,10 +77,10 @@ namespace DAL.Models
             if (stockQuantity < 0)
                 throw new ArgumentException("Stock quantity cannot be negative.", nameof(stockQuantity));
 
-            string sku = SkuGenerator.Generate(productCode, color, cpu, ram, storage);
+            string sku = SkuGenerator.Generate(productId, color, cpu, ram, storage, screenSize);
 
             Sku = sku;
-            ProductCode = productCode;
+            //ProductCode = productCode;
             Color = color;
             Cpu = cpu;
             Ram = ram;

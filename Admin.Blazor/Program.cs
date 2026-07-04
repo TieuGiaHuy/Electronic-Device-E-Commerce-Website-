@@ -28,12 +28,15 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/auth/login";
         options.LogoutPath = "/auth/logout";
+        options.Cookie.SameSite = SameSiteMode.Strict; // Đặt SameSite để tăng cường bảo mật
     });
 
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<StaffAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<StaffAuthenticationStateProvider>());
+
+builder.Services.AddCascadingAuthenticationState(); // Đăng ký dịch vụ CascadingAuthenticationState
 
 var app = builder.Build();
 

@@ -32,7 +32,6 @@ namespace UserStaff.Razor.Pages.ProductVariants
                 {
                     ProductVariantId = variantDto.ProductVariantId,
                     ProductId = variantDto.ProductId,
-                    ProductCode = variantDto.ProductCode,
                     Color = variantDto.Color,
                     Cpu = variantDto.Cpu,
                     Ram = variantDto.Ram,
@@ -52,17 +51,20 @@ namespace UserStaff.Razor.Pages.ProductVariants
             {
                 return Page();
             }
-
-            var result = await _productVariantService.UpdateProductVariantAsync(ProductVariant);
-            if (result)
+            
+            try
             {
-                TempData["SuccessMessage"] = "The variant was updated successfully!";
-                return RedirectToPage("./Index", new { productId = ProductVariant.ProductId});
-            }
+                await _productVariantService.UpdateProductVariantAsync(ProductVariant);
 
-            TempData["ErrorMessage"] = "Failed to update the variant!";
-            ModelState.AddModelError(string.Empty, "Failed to update the Product Variant.");
-            return Page();
+                TempData["SuccessMessage"] = "The variant was updated successfully!";
+                return RedirectToPage("./Index", new { productId = ProductVariant.ProductId });
+
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToPage("./Index", new { productId = ProductVariant.ProductId });
+            }
         }
     }
 }

@@ -27,6 +27,8 @@ namespace BLL
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IOrderItemService, OrderItemService>();
 
+            services.AddScoped<ICartItemService, CartItemService>();
+
             services.AddAutoMapper(cfg =>
             {
                 cfg.AddMaps(Assembly.GetExecutingAssembly());

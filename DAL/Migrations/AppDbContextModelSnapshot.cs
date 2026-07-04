@@ -22,6 +22,36 @@ namespace DAL.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("DAL.Models.CartItem", b =>
+                {
+                    b.Property<int>("CartItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("cart_item_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CartItemId"));
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int")
+                        .HasColumnName("customer_id");
+
+                    b.Property<Guid>("ProductVariantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("product_variant_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int")
+                        .HasColumnName("quantity");
+
+                    b.HasKey("CartItemId")
+                        .HasName("pk_cart_items");
+
+                    b.HasIndex("ProductVariantId")
+                        .HasDatabaseName("ix_cart_items_product_variant_id");
+
+                    b.ToTable("cart_items", (string)null);
+                });
+
             modelBuilder.Entity("DAL.Models.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -384,12 +414,6 @@ namespace DAL.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("price");
 
-                    b.Property<string>("ProductCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("product_code");
-
                     b.Property<int>("ProductId")
                         .HasColumnType("int")
                         .HasColumnName("product_id");
@@ -651,6 +675,18 @@ namespace DAL.Migrations
                         .HasDatabaseName("ix_users_email");
 
                     b.ToTable("users", (string)null);
+                });
+
+            modelBuilder.Entity("DAL.Models.CartItem", b =>
+                {
+                    b.HasOne("DAL.Models.ProductVariant", "ProductVariant")
+                        .WithMany()
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_cart_items_product_variants_product_variant_id");
+
+                    b.Navigation("ProductVariant");
                 });
 
             modelBuilder.Entity("DAL.Models.OrderItem", b =>

@@ -32,17 +32,21 @@ namespace UserStaff.Razor.Pages.ProductVariants
             {
                 return Page();
             }
-
-            var result = await _productVariantService.CreateProductVariantAsync(ProductVariant);
-            if (result != null)
+            try
             {
+                await _productVariantService.CreateProductVariantAsync(ProductVariant);
+
                 TempData["SuccessMessage"] = "The variant was created successfully!";
-                return RedirectToPage("./Index" , new { productId = ProductVariant.ProductId });
+                return RedirectToPage("./Index", new { productId = ProductVariant.ProductId });
+
             }
-            
-            TempData["ErrorMessage"] = "Failed to create the variant!";
-            ModelState.AddModelError(string.Empty, "Failed to create the Product Variant.");
-            return Page();
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                ModelState.AddModelError(string.Empty, "Failed to create the Product Variant.");
+                return RedirectToPage("./Index", new { productId = ProductVariant.ProductId });
+            }
+
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using BLL.DTOs.Product.Staff;
+﻿using BLL.DTOs.Product.Customer;
+using BLL.DTOs.Product.Staff;
 
 namespace BLL.Services.Interfaces
 {
@@ -6,6 +7,7 @@ namespace BLL.Services.Interfaces
     {
         Task<List<ProductStaffDto>> GetAllProductsAsync();
         Task<ProductStaffDto?> GetProductByIdAsync(int id);
+        Task<ProductCustomerDto?> GetProductCustomerByIdAsync(int id);
         Task<ProductStaffDto> CreateProductAsync(ProductStaffCreateDto productCreateDto);
         Task<bool> UpdateProductAsync(ProductStaffUpdateDto productUpdateDto);
         Task<bool> DeleteProductAsync(ProductStaffDeleteDto productDeleteDto);
