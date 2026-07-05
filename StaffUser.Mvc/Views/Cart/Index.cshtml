@@ -1,4 +1,4 @@
-@model List<StaffUser.Mvc.Models.CartItem>
+﻿@model List<BLL.DTOs.CartItem.CartItemDTO>
 @{
     ViewData["Title"] = "My Cart";
 }
@@ -37,37 +37,49 @@
                     @Html.AntiForgeryToken()
                     @foreach (var item in Model)
                     {
-                        var specsLabel = !string.IsNullOrEmpty(item.VariantSpecs) ? item.VariantSpecs : "Standard Model";
-                        <div class="cart-item-row" id="row-@item.ProductVariantId">
+                        var variant = item.ProductVariant;
+                        if (variant == null) continue;
+
+                        // Xử lý chuỗi thông số kỹ thuật (Specs) từ dữ liệu DTO
+                        var specsList = new List<string>();
+                        if (!string.IsNullOrEmpty(variant.Cpu)) specsList.Add(variant.Cpu);
+                        if (!string.IsNullOrEmpty(variant.Ram)) specsList.Add(variant.Ram + " RAM");
+                        if (!string.IsNullOrEmpty(variant.Storage)) specsList.Add(variant.Storage);
+                        if (!string.IsNullOrEmpty(variant.ScreenSize)) specsList.Add(variant.ScreenSize + " Screen");
+
+                        var specsLabel = specsList.Any() ? string.Join(", ", specsList) : "Standard Model";
+
+                        <div class="cart-item-row" id="row-@item.CartItemId">
                             <div class="pe-3">
-                                <input type="checkbox" name="selectedVariantIds" value="@item.ProductVariantId" class="cart-item-checkbox item-select-check" checked data-price="@item.Price" data-qty="@item.Quantity" onchange="calculateSummary()" />
+                                @* Form checkout sẽ gửi danh sách CartItemId được chọn lên Server *@
+                                <input type="checkbox" name="selectedCartItemIds" value="@item.CartItemId" class="cart-item-checkbox item-select-check" checked data-price="@variant.Price" data-qty="@item.Quantity" onchange="calculateSummary()" />
                             </div>
                             <div class="d-flex align-items-center gap-3 flex-grow-1">
-                                <img src="/@(item.ImageUrl ?? "uploads/placeholder.png")" class="cart-item-img" alt="product thumbnail" />
+                                <img src="/@(variant.ImageUrl ?? "uploads/placeholder.png")" class="cart-item-img" alt="product thumbnail" />
                                 <div class="flex-grow-1">
-                                    <span class="product-brand" style="font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: #888888;">@item.Brand</span>
-                                    <h6 class="fw-bold text-dark mb-1">@item.ProductName</h6>
+                                    <span class="product-brand" style="font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: #888888;">@variant.Brand</span>
+                                    <h6 class="fw-bold text-dark mb-1">@variant.ProductName</h6>
                                     <span class="badge bg-light text-secondary border px-2 py-1" style="font-size: 0.72rem; font-weight: 500;">
-                                        @item.VariantColor / @specsLabel
+                                        @variant.Color / @specsLabel
                                     </span>
                                 </div>
                             </div>
-                            
+
                             <div class="text-end px-3">
-                                <span class="fw-bold text-danger fs-5" id="price-@item.ProductVariantId">@((item.Price * item.Quantity).ToString("C"))</span>
-                                <div class="text-muted small">@item.Price.ToString("C") each</div>
+                                <span class="fw-bold text-danger fs-5" id="price-@item.CartItemId">@((variant.Price * item.Quantity).ToString("C"))</span>
+                                <div class="text-muted small">@variant.Price.ToString("C") each</div>
                             </div>
 
                             <div class="px-2">
                                 <div class="qty-control">
-                                    <button type="button" class="qty-btn" onclick="adjustQty('@item.ProductVariantId', -1)">-</button>
-                                    <input type="number" class="qty-input" id="qty-@item.ProductVariantId" value="@item.Quantity" min="1" max="@item.MaxStock" onchange="updateQtyDirect('@item.ProductVariantId', this.value)" />
-                                    <button type="button" class="qty-btn" onclick="adjustQty('@item.ProductVariantId', 1)">+</button>
+                                    <button type="button" class="qty-btn" onclick="adjustQty('@item.CartItemId', -1)">-</button>
+                                    <input type="number" class="qty-input" id="qty-@item.CartItemId" value="@item.Quantity" min="1" max="@variant.StockQuantity" onchange="updateQtyDirect('@item.CartItemId', this.value)" />
+                                    <button type="button" class="qty-btn" onclick="adjustQty('@item.CartItemId', 1)">+</button>
                                 </div>
                             </div>
 
                             <div class="ps-3">
-                                <button type="button" class="remove-btn" onclick="removeCartItem('@item.ProductVariantId')" title="Remove item">
+                                <button type="button" class="remove-btn" onclick="removeCartItem('@item.CartItemId')" title="Remove item">
                                     <i class="bi bi-trash3-fill"></i>
                                 </button>
                             </div>
@@ -101,7 +113,6 @@
     }
 </div>
 
-<!-- Checkout Development Modal -->
 <div class="modal fade" id="checkoutDevModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
@@ -154,8 +165,7 @@
 
             $("#selectAllCheckbox").prop("checked", allChecked && checks.length > 0);
             $("#summary-items").text(totalCount);
-            
-            // Format to currency (USD format matching default C# ToString("C"))
+
             const formatter = new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency: 'USD',
@@ -163,8 +173,8 @@
             $("#summary-total").text(formatter.format(totalAmount));
         }
 
-        function adjustQty(variantId, change) {
-            const input = $("#qty-" + variantId);
+        function adjustQty(cartItemId, change) {
+            const input = $("#qty-" + cartItemId);
             let current = parseInt(input.val()) || 1;
             let target = current + change;
             const max = parseInt(input.attr("max")) || 999;
@@ -176,12 +186,12 @@
             }
 
             input.val(target);
-            updateCartQuantityOnServer(variantId, target);
+            updateCartQuantityOnServer(cartItemId, target);
         }
 
-        function updateQtyDirect(variantId, value) {
+        function updateQtyDirect(cartItemId, value) {
             let qty = parseInt(value) || 1;
-            const input = $("#qty-" + variantId);
+            const input = $("#qty-" + cartItemId);
             const max = parseInt(input.attr("max")) || 999;
 
             if (qty < 1) qty = 1;
@@ -191,28 +201,26 @@
             }
 
             input.val(qty);
-            updateCartQuantityOnServer(variantId, qty);
+            updateCartQuantityOnServer(cartItemId, qty);
         }
 
-        function updateCartQuantityOnServer(variantId, quantity) {
+        function updateCartQuantityOnServer(cartItemId, quantity) {
             $.ajax({
                 url: '@Url.Action("UpdateQuantity", "Cart")',
                 type: 'POST',
-                data: { variantId: variantId, quantity: quantity },
+                data: { cartItemId: cartItemId, quantity: quantity },
                 success: function(response) {
                     if (response.success) {
-                        // Update layout badge count
                         $("#cart-count").text(response.totalCount);
-                        
-                        // Update individual item row price label
+
                         const formatter = new Intl.NumberFormat('en-US', {
                             style: 'currency',
                             currency: 'USD',
                         });
-                        $("#price-" + variantId).text(formatter.format(response.totalPrice));
+                        $("#price-" + cartItemId).text(formatter.format(response.totalPrice));
 
-                        // Update checkbox data attributes
-                        const checkbox = $("input[value='" + variantId + "'].item-select-check");
+                        // Cập nhật lại thuộc tính dữ liệu (data-qty) trên thẻ checkbox
+                        const checkbox = $("input[value='" + cartItemId + "'].item-select-check");
                         checkbox.data("qty", quantity);
 
                         calculateSummary();
@@ -227,7 +235,7 @@
             });
         }
 
-        function removeCartItem(variantId) {
+        function removeCartItem(cartItemId) {
             if (!confirm("Are you sure you want to remove this item from the cart?")) {
                 return;
             }
@@ -235,14 +243,13 @@
             $.ajax({
                 url: '@Url.Action("Remove", "Cart")',
                 type: 'POST',
-                data: { variantId: variantId },
+                data: { cartItemId: cartItemId },
                 success: function(response) {
                     if (response.success) {
-                        $("#row-" + variantId).fadeOut(400, function() {
+                        $("#row-" + cartItemId).fadeOut(400, function() {
                             $(this).remove();
                             $("#cart-count").text(response.totalCount);
-                            
-                            // If cart is empty, reload page to show empty cart banner
+
                             if (response.totalCount === 0) {
                                 window.location.reload();
                             } else {

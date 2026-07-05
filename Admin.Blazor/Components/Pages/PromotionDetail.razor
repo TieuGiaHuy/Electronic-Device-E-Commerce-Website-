@@ -2,9 +2,12 @@
 @rendermode InteractiveServer
 @using BLL.DTOs.Promotion
 @using BLL.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
 @inject IPromotionService PromotionService
 @inject IProductVariantService ProductVariantService
 @inject NavigationManager NavigationManager
+
+@attribute [Authorize]
 
 <PageTitle>Promotion Detail - ElectroNexus Admin</PageTitle>
 

@@ -2,11 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using StaffUser.Mvc.Models;
 using BLL.Services.Interfaces;
 using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Linq;
-using System.Collections.Generic;
+using BLL.DTOs.Product.Staff;
+using Microsoft.AspNetCore.Authorization;
 
-namespace StaffUser.Mvc.Controllers
+namespace Customer.Mvc.Controllers
 {
     public class HomeController : Controller
     {
@@ -34,7 +33,7 @@ namespace StaffUser.Mvc.Controllers
         {
             var categories = await _categoryService.GetAllCategoriesAsync();
 
-            List<BLL.DTOs.Product.ProductDto> products;
+            List<ProductStaffDto> products;
             if (categoryId.HasValue && categoryId.Value > 0)
             {
                 products = await _productService.GetProductsByCategoryIdAsync(categoryId.Value);
@@ -103,6 +102,7 @@ namespace StaffUser.Mvc.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

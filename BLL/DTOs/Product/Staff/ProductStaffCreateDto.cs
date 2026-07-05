@@ -1,8 +1,7 @@
-namespace BLL.DTOs.Product
+namespace BLL.DTOs.Product.Staff
 {
-    public class ProductUpdateDto
+    public class ProductStaffCreateDto
     {
-        public int ProductId { get; set; }
         public string ProductName { get; set; } = string.Empty;
         public string Brand { get; set; } = string.Empty;
         public int CategoryId { get; set; }

@@ -35,7 +35,7 @@ namespace DAL.Repositories
             var existingProductVariant = await _context.ProductVariants.FindAsync(productVariant.ProductVariantId);
             if (existingProductVariant != null)
             {
-                var productCode = productVariant.ProductCode;
+                //var productCode = productVariant.ProductCode;
                 var color = productVariant.Color;
                 var cpu = productVariant.Cpu;
                 var ram = productVariant.Ram;
@@ -46,7 +46,7 @@ namespace DAL.Repositories
                 var imageUrl = productVariant.ImageUrl;
                 var productId = productVariant.ProductId;
 
-                existingProductVariant.Update(productCode, color, cpu, ram, storage, screenSize, price, stockQuantity, imageUrl, productId);
+                existingProductVariant.Update(color, cpu, ram, storage, screenSize, price, stockQuantity, imageUrl, productId);
                 _context.ProductVariants.Update(existingProductVariant);
                 _context.SaveChanges();
 

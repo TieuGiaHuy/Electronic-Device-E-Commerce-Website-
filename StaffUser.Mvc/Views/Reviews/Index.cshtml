@@ -5,7 +5,7 @@
     var currentPage = ViewBag.CurrentPage as int? ?? 1;
     var totalPages = ViewBag.TotalPages as int? ?? 1;
     var totalReviews = ViewBag.TotalReviews as int? ?? 0;
-    var allProducts = ViewBag.AllProducts as List<BLL.DTOs.Product.ProductDto> ?? new List<BLL.DTOs.Product.ProductDto>();
+    var allProducts = ViewBag.AllProducts as List<BLL.DTOs.Product.Customer.ProductCustomerDto> ?? new List<BLL.DTOs.Product.Customer.ProductCustomerDto>();
     var currentUserEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
 }
 

@@ -5,7 +5,7 @@ using BLL.DTOs.Product;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
-namespace StaffUser.Mvc.Controllers
+namespace Customer.Mvc.Controllers
 {
     public class ReviewsController : Controller
     {
@@ -104,7 +104,7 @@ namespace StaffUser.Mvc.Controllers
             }
 
             // Check if user already reviewed this product
-            var customerService = HttpContext.RequestServices.GetRequiredService<BLL.Services.Interfaces.ICustomerService>();
+            var customerService = HttpContext.RequestServices.GetRequiredService<ICustomerService>();
             var customer = await customerService.GetByEmailAsync(email);
             if (customer != null)
             {
@@ -134,7 +134,7 @@ namespace StaffUser.Mvc.Controllers
             }
 
             // Get customer ID from email
-            var customerService = HttpContext.RequestServices.GetRequiredService<BLL.Services.Interfaces.ICustomerService>();
+            var customerService = HttpContext.RequestServices.GetRequiredService<ICustomerService>();
             var customer = await customerService.GetByEmailAsync(email);
             if (customer == null)
             {
@@ -180,7 +180,7 @@ namespace StaffUser.Mvc.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
-            var customerService = HttpContext.RequestServices.GetRequiredService<BLL.Services.Interfaces.ICustomerService>();
+            var customerService = HttpContext.RequestServices.GetRequiredService<ICustomerService>();
             var customer = await customerService.GetByEmailAsync(email);
             if (customer == null)
             {
@@ -218,7 +218,7 @@ namespace StaffUser.Mvc.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
-            var customerService = HttpContext.RequestServices.GetRequiredService<BLL.Services.Interfaces.ICustomerService>();
+            var customerService = HttpContext.RequestServices.GetRequiredService<ICustomerService>();
             var customer = await customerService.GetByEmailAsync(email);
             if (customer == null)
             {

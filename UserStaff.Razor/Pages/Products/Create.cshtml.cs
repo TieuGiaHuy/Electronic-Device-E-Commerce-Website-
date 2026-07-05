@@ -1,4 +1,4 @@
-using BLL.DTOs.Product;
+using BLL.DTOs.Product.Staff;
 using BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -14,7 +14,7 @@ namespace UserStaff.Razor.Pages.Products
             _productService = productService;
         }
         [BindProperty]
-        public ProductCreateDto ProductToCreate { get; set; } = new();
+        public ProductStaffCreateDto ProductToCreate { get; set; } = new();
         public void OnGet()
         {
 

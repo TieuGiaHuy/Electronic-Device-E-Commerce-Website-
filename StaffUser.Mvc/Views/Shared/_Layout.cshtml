@@ -55,12 +55,12 @@
                             }
 
                             @{
-                                var cartList = Context.Session.Get<List<CartItem>>("Cart") ?? new List<CartItem>();
-                                var totalCartCount = cartList.Sum(item => item.Quantity);
+                                // var cartList = Context.Session.Get<List<CartItem>>("Cart") ?? new List<CartItem>();
+                                // var totalCartCount = cartList.Sum(item => item.Quantity);
                             }
                             <a class="customer-icon-link customer-cart-badge" href="@Url.Action("Index", "Cart")">
                                 <i class="bi bi-cart3"></i> Cart
-                                <span class="customer-cart-count" id="cart-count">@totalCartCount</span>
+                                @* <span class="customer-cart-count" id="cart-count">@totalCartCount</span> *@
                             </a>
 
                             @if (User?.Identity?.IsAuthenticated ?? false)

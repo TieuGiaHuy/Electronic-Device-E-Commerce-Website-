@@ -1,24 +1,17 @@
 @{
     ViewData["Title"] = "Logout";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-4">
-        <div class="card shadow">
-            <div class="card-header bg-warning text-dark">
-                <h4 class="mb-0">Logout</h4>
-            </div>
-            <div class="card-body text-center">
-                <p class="mb-4">Are you sure you want to logout?</p>
-                <form asp-action="Logout" asp-controller="Auth" method="post">
-                    @Html.AntiForgeryToken()
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-warning">Yes, Logout</button>
-                        <a asp-action="Index" asp-controller="Home" class="btn btn-secondary">Cancel</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+<div class="auth-card-header">
+    <h4>Log Out</h4>
+    <p>Are you sure you want to end your session?</p>
 </div>
+
+<form asp-action="Logout" asp-controller="Auth" method="post">
+    @Html.AntiForgeryToken()
+    <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-auth-primary py-2">Yes, Log Out</button>
+        <a asp-action="Index" asp-controller="Home" class="btn btn-outline-secondary py-2">Cancel</a>
+    </div>
+</form>

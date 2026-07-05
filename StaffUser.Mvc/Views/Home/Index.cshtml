@@ -163,8 +163,8 @@
         @foreach (var prod in Model.Products)
         {
             var firstImage = !string.IsNullOrEmpty(prod.ImageUrl)
-                ? prod.ImageUrl.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
-                : null;
+            ? prod.ImageUrl.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
+            : null;
             <div class="col-6 col-md-4 col-lg-3 mb-4">
                 <div class="product-grid-card">
                     <div class="product-img-wrapper">
@@ -184,7 +184,7 @@
                     <div class="product-card-body">
                         <span class="product-brand">@prod.Brand</span>
                         <h6 class="product-title" title="@prod.ProductName">@prod.ProductName</h6>
-                        
+
                         <!-- Specifications badges -->
                         <div class="mb-2">
                             @foreach (var spec in prod.Features.Take(3))
@@ -199,9 +199,9 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-secondary w-50 py-1.5 fw-semibold" style="border-radius: 8px; font-size: 0.82rem;" onclick="viewProductDetails('@prod.ProductId', '@prod.ProductName')">
+                            <a href="@Url.Action("Index", "Product", new { id = prod.ProductId })" class="btn btn-sm btn-outline-secondary w-50 py-1.5 fw-semibold" style="border-radius: 8px; font-size: 0.82rem;">
                                 Details
-                            </button>
+                            </a>
                             <a href="@Url.Action("Create", "Reviews", new { productId = prod.ProductId })" class="btn btn-sm btn-outline-warning w-50 py-1.5 fw-semibold" style="border-radius: 8px; font-size: 0.82rem; border-color: #ffc107; color: #856404;">
                                 <i class="bi bi-chat-square-text me-1"></i> Review
                             </a>
@@ -357,7 +357,7 @@
                             if (v.ram) specs.push(v.ram + " RAM");
                             if (v.storage) specs.push(v.storage);
                             let specLabel = specs.join(" / ");
-                            
+
                             let isDisabled = v.stockQuantity <= 0 ? 'disabled' : '';
                             let badgeHtml = v.stockQuantity <= 0 ? '<span class="badge bg-secondary ms-2">Out of Stock</span>' : '';
 
@@ -379,7 +379,7 @@
                         } else {
                             $("#cartModalImgWrapper").html(`<img src="/${firstImg}" style="max-width: 100%; max-height: 100%; object-fit: contain;" />`);
                         }
-                        
+
                         // Select first available variant automatically
                         setTimeout(() => {
                             const firstAvailable = response.variants.find(v => v.stockQuantity > 0);
@@ -403,7 +403,7 @@
             if (stock <= 0) return;
             selectedVariantId = variantId;
             $("#var-" + variantId).prop("checked", true);
-            
+
             // Highlight selected row borders
             $(".variant-option-row").css("border-color", "#dee2e6");
             $("#var-" + variantId).closest(".variant-option-row").css("border-color", "var(--color-primary)");
@@ -448,7 +448,7 @@
                     if (response.success) {
                         // Update cart count badge
                         $("#cart-count").text(response.totalCount);
-                        
+
                         // Close modal
                         var myModal = bootstrap.Modal.getInstance(document.getElementById('addToCartModal'));
                         myModal.hide();

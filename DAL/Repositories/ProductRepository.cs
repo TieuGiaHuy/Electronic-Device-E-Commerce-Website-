@@ -24,6 +24,7 @@ namespace DAL.Repositories
             return await _context.Products
                 .AsNoTracking()
                 .Include(p => p.Category)
+                .Include(p => p.ProductVariants)
                 .FirstOrDefaultAsync(p => p.ProductId == productId);
         }
 

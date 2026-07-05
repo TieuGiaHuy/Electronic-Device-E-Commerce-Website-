@@ -2,7 +2,10 @@
 @rendermode InteractiveServer
 @using BLL.DTOs.ProductReview
 @using BLL.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
 @inject IProductReviewService ProductReviewService
+
+@attribute [Authorize]
 
 <PageTitle>Manage Reviews - ElectroNexus Admin</PageTitle>
 

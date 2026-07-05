@@ -1,9 +1,7 @@
-namespace BLL.DTOs.ProductVariant
+namespace BLL.DTOs.ProductVariant.Customer
 {
-    public class ProductVariantUpdateDto
+    public class ProductVariantCustomerCreateDto
     {
-        public Guid ProductVariantId { get; set; }
-        public string ProductCode { get; set; }
         public string Color { get; set; }
         public string? Cpu { get; set; }
         public string? Ram { get; set; }

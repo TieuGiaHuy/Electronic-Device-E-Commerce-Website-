@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace UserStaff.Razor.Pages.Reviews
 {
-    [IgnoreAntiforgeryToken]
     public class IndexModel : PageModel
     {
         private readonly IProductReviewService _productReviewService;

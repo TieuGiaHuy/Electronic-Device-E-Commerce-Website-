@@ -1,8 +1,10 @@
 @page "/products"
 @rendermode InteractiveServer
-@using BLL.DTOs.Product
 @using BLL.DTOs.Category
+@using BLL.DTOs.Product
+@using BLL.DTOs.Product.Staff
 @using BLL.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.SignalR
 @using Microsoft.AspNetCore.SignalR.Client
 @inject IProductService ProductService
@@ -11,6 +13,8 @@
 @inject NavigationManager Navigation
 @inject Microsoft.AspNetCore.SignalR.IHubContext<Admin.Blazor.Hubs.AdminHub> HubContext
 @implements IAsyncDisposable
+
+@attribute [Authorize]
 
 <PageTitle>Manage Products - ElectroNexus Admin</PageTitle>
 
@@ -288,7 +292,7 @@
 }
 
 @code {
-    private List<ProductDto> products = new();
+    private List<ProductStaffDto> products = new();
     private List<CategoryDto> categories = new();
     private string searchKeyword = "";
     private int filterCategoryId = 0;
@@ -347,7 +351,27 @@
             });
         });
 
-        await hubConnection.StartAsync();
+        // await hubConnection.StartAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                if (hubConnection is not null && hubConnection.State == HubConnectionState.Disconnected)
+                {
+                    // Chỉ chạy khi giao diện đã render hoàn toàn trên Trình duyệt (Client)
+                    await hubConnection.StartAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Can't connect to Realtime Hub: {ex.Message}";
+                StateHasChanged();
+            }
+        }
     }
 
     private async Task LoadData()
@@ -383,12 +407,11 @@
 
     private int uniqueBrandsCount => products.Select(p => p.Brand).Distinct(StringComparer.OrdinalIgnoreCase).Count();
 
-    private List<ProductDto> filteredProducts
+    private List<ProductStaffDto> filteredProducts
     {
         get
         {
-            IEnumerable<ProductDto> result = products;
-
+            IEnumerable<ProductStaffDto> result = products;
             if (filterCategoryId > 0)
             {
                 result = result.Where(p => p.CategoryId == filterCategoryId);
@@ -472,7 +495,7 @@
         uploadedFiles.Clear();
     }
 
-    private void EditProduct(ProductDto product)
+    private void EditProduct(ProductStaffDto product)
     {
         ClearMessages();
         uploadedFiles.Clear();
@@ -541,7 +564,7 @@
 
             if (isEditing)
             {
-                var updateDto = new ProductUpdateDto
+                var updateDto = new ProductStaffUpdateDto
                 {
                     ProductId = editingProductId,
                     ProductName = formModel.ProductName,
@@ -566,7 +589,7 @@
             }
             else
             {
-                var createDto = new ProductCreateDto
+                var createDto = new ProductStaffCreateDto
                 {
                     ProductName = formModel.ProductName,
                     Brand = formModel.Brand,
@@ -624,7 +647,7 @@
         await _semaphore.WaitAsync();
         try
         {
-            var deleteDto = new ProductDeleteDto { ProductId = id };
+            var deleteDto = new ProductStaffDeleteDto { ProductId = id };
             var result = await ProductService.DeleteProductAsync(deleteDto);
             if (result)
             {
