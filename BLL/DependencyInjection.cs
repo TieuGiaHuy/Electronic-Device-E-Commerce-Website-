@@ -16,8 +16,8 @@ namespace BLL
             // Register business logic services here
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IProductVariantService, ProductVariantService>();
+            services.AddScoped<IProductReviewService, ProductReviewService>();
             
-            services.AddScoped<IUserService, UserService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IPromotionService, PromotionService>();
 
@@ -25,6 +25,8 @@ namespace BLL
             services.AddScoped<IStaffService, StaffService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IOrderItemService, OrderItemService>();
+
+            services.AddScoped<ICartItemService, CartItemService>();
 
             services.AddAutoMapper(cfg =>
             {

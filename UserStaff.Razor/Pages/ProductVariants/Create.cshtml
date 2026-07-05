@@ -121,11 +121,6 @@
                         <input type="hidden" asp-for="ProductVariant.ProductId" value="@Model.Product?.ProductId" />
                         <span asp-validation-for="ProductVariant.ProductId" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-6 form-group mb-3">
-                        <label class="ds-label">Product Code <span class="text-danger">*</span></label>
-                        <input asp-for="ProductVariant.ProductCode" class="form-control" placeholder="e.g. IPHONE" />
-                        <span asp-validation-for="ProductVariant.ProductCode" class="text-danger small"></span>
-                    </div>
                 </div>
 
                 <h5 class="ds-section-title mb-3"><i class="bi bi-cpu me-2"></i>Specifications</h5>
@@ -172,6 +167,34 @@
                         <label class="ds-label">Image URL</label>
                         <input asp-for="ProductVariant.ImageUrl" class="form-control" placeholder="https://..." />
                     </div>
+                </div>
+
+                <h5 class="ds-section-title mb-3"><i class="bi bi bi-gift me-2"></i>Promotion</h5>
+                <div class="row ds-section-block p-3 mb-4 mx-0">
+                    @if (Model.PromotionDtos != null && Model.PromotionDtos.Count > 0)
+                    {
+
+                        <select class="form-select" asp-for="ProductVariant.PromotionId">
+                            <option selected value="">No Promotion</option>
+                            @foreach (var promotion in Model.PromotionDtos)
+                            {
+                                <option value="@promotion.PromotionId">
+                                    Name: @promotion.Name, @if (promotion.PromotionType == DAL.Enums.PromotionTypeEnum.Percentage)
+                                    {
+                                        <text>Percentage: @promotion.Percentage.</text>
+                                    } else
+                                    {
+
+                                        <text>(Price: @promotion.SalePrice,Threshold Price: @promotion.ThresholdPrice. )</text>
+                                    }
+                                </option>
+                            }
+                        </select>
+                    }
+                    else
+                    {
+                        <div class="text-muted">No active or upcoming promotions available.</div>
+                    }
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-2">

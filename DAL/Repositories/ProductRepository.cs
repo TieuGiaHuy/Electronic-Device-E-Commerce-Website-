@@ -15,14 +15,16 @@ namespace DAL.Repositories
 
         public async Task<List<Product>> GetAllProductsAsync()
         {
-            var products = await _context.Products.Include(p => p.Category).ToListAsync();
+            var products = await _context.Products.AsNoTracking().Include(p => p.Category).ToListAsync();
             return products;
         }
 
         public async Task<Product?> GetProductByIdAsync(int productId)
         {
             return await _context.Products
+                .AsNoTracking()
                 .Include(p => p.Category)
+                .Include(p => p.ProductVariants)
                 .FirstOrDefaultAsync(p => p.ProductId == productId);
         }
 
@@ -65,6 +67,7 @@ namespace DAL.Repositories
         public async Task<List<Product>> GetProductsByCategoryIdAsync(int categoryId)
         {
             var products = await _context.Products
+                .AsNoTracking()
                 .Include(p => p.Category)
                 .Where(p => p.CategoryId == categoryId)
                 .ToListAsync();
@@ -74,6 +77,7 @@ namespace DAL.Repositories
         public async Task<Product?> GetProductWithVariantsAsync(Guid productVariantId)
         {
             var product = await _context.Products
+                .AsNoTracking()
                 .Include(p => p.Category)
                 .Include(p => p.ProductVariants)
                 .FirstOrDefaultAsync(p => p.ProductVariants.Any(pv => pv.ProductVariantId == productVariantId));
@@ -83,6 +87,7 @@ namespace DAL.Repositories
         public async Task<List<Product>> SearchByNameAsync(string keyword)
         {
             return await _context.Products
+                .AsNoTracking()
                 .Include(p => p.Category)
                 .Where(p => p.ProductName.Contains(keyword))
                 .ToListAsync();

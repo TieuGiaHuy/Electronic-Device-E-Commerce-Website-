@@ -1,5 +1,8 @@
-﻿using BLL.DTOs.Product;
+﻿using BLL.DTOs.Product.Staff;
+using BLL.DTOs.ProductVariant.Staff;
+using BLL.DTOs.Product;
 using BLL.DTOs.ProductVariant;
+using BLL.DTOs.Promotion;
 using BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -10,20 +13,24 @@ namespace UserStaff.Razor.Pages.ProductVariants
     {
         private readonly IProductVariantService _productVariantService;
         private readonly IProductService _productService;
+        private readonly IPromotionService _promotionService;
 
-        public CreateModel(IProductVariantService productVariantService, IProductService productService)
+        public CreateModel(IProductVariantService productVariantService, IProductService productService, IPromotionService promotionService)
         {
             _productVariantService = productVariantService;
             _productService = productService;
+            _promotionService = promotionService;
         }
 
         [BindProperty]
-        public ProductVariantCreateDto ProductVariant { get; set; } = new();
-        public ProductDto? Product { get; set; } = new();
+        public ProductVariantStaffCreateDto ProductVariant { get; set; } = new();
+        public ProductStaffDto? Product { get; set; } = new();
+        public List<PromotionDto> PromotionDtos { get; set; } = new();
 
         public async Task OnGetAsync(int productId)
         {
             Product = await _productService.GetProductByIdAsync(productId);
+            PromotionDtos = await _promotionService.GetActiveAndUpcomingPromotionsAsync();
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -32,17 +39,21 @@ namespace UserStaff.Razor.Pages.ProductVariants
             {
                 return Page();
             }
-
-            var result = await _productVariantService.CreateProductVariantAsync(ProductVariant);
-            if (result != null)
+            try
             {
+                await _productVariantService.CreateProductVariantAsync(ProductVariant);
+
                 TempData["SuccessMessage"] = "The variant was created successfully!";
-                return RedirectToPage("./Index" , new { productId = ProductVariant.ProductId });
+                return RedirectToPage("./Index", new { productId = ProductVariant.ProductId });
+
             }
-            
-            TempData["ErrorMessage"] = "Failed to create the variant!";
-            ModelState.AddModelError(string.Empty, "Failed to create the Product Variant.");
-            return Page();
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                ModelState.AddModelError(string.Empty, "Failed to create the Product Variant.");
+                return RedirectToPage("./Index", new { productId = ProductVariant.ProductId });
+            }
+
         }
     }
 }

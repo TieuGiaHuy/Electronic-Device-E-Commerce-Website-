@@ -10,7 +10,7 @@ namespace DAL.Configurations
         {
             builder.HasKey(pv => pv.ProductVariantId);
             builder.Property(pv => pv.Sku).IsRequired().HasMaxLength(50);
-            builder.Property(pv => pv.ProductCode).IsRequired().HasMaxLength(50);
+            //builder.Property(pv => pv.ProductCode).IsRequired().HasMaxLength(50);
             builder.Property(pv => pv.Color).IsRequired().HasMaxLength(50);
             builder.Property(pv => pv.Cpu).HasMaxLength(100);
             builder.Property(pv => pv.Ram).HasMaxLength(50);
@@ -19,6 +19,7 @@ namespace DAL.Configurations
             builder.Property(pv => pv.Price).IsRequired().HasColumnType("decimal(18,2)");
             builder.Property(pv => pv.StockQuantity).IsRequired();
             builder.Property(pv => pv.ImageUrl).HasMaxLength(200);
+            builder.Property(pv => pv.PromotionId);
 
             // Check xóa mềm
             builder.HasQueryFilter(pv => !pv.IsDeleted);

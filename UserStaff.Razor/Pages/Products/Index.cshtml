@@ -75,8 +75,11 @@
                             </td>
                             <td>@product.CategoryName</td>
                             <td class="text-end px-4">
-                                <a asp-page="/ProductVariants/Index" asp-route-productId="@product.ProductId" class="btn btn-sm btn-ds-secondary">
-                                    <i class="bi bi-eye"></i> View Details
+                                <a asp-page="/ProductVariants/Index" asp-route-productId="@product.ProductId" class="btn btn-sm btn-ds-secondary me-2">
+                                    <i class="bi bi-eye"></i> View Variants
+                                </a>
+                                <a asp-page="/Reviews/Index" asp-route-productId="@product.ProductId" class="btn btn-sm btn-ds-secondary">
+                                    <i class="bi bi-chat-square-text"></i> View Reviews
                                 </a>
                             </td>
                         </tr>

@@ -1,4 +1,4 @@
-using BLL.DTOs.Order;
+using BLL.DTOs.OrderItem;
 
 namespace BLL.Services.Interfaces
 {

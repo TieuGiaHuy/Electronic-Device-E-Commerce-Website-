@@ -22,8 +22,7 @@ namespace DAL
             services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 
-            
-            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ICartItemRepository, CartItemRepository>();
             services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IStaffRepository, StaffRepository>();

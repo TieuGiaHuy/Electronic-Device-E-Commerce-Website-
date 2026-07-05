@@ -1,19 +1,17 @@
-﻿
-
-using BLL.DTOs.ProductVariant;
+﻿using BLL.DTOs.ProductVariant.Staff;
 
 namespace BLL.Services.Interfaces
 {
     public interface IProductVariantService
     {
-        Task<List<ProductVariantDto>> GetAllProductVariantsAsync();
-        Task<ProductVariantDto?> GetProductVariantByIdAsync(Guid productVariantId);
-        Task<ProductVariantDto> CreateProductVariantAsync(ProductVariantCreateDto productVariant);
-        Task<bool> UpdateProductVariantAsync(ProductVariantUpdateDto productVariant);
-        Task<bool> DeleteProductVariantAsync(ProductVariantDeleteDto productVariant);
+        Task<List<ProductVariantStaffDto>> GetAllProductVariantsAsync();
+        Task<ProductVariantStaffDto?> GetProductVariantByIdAsync(Guid productVariantId);
+        Task<ProductVariantStaffDto> CreateProductVariantAsync(ProductVariantStaffCreateDto productVariant);
+        Task<bool> UpdateProductVariantAsync(ProductVariantStaffUpdateDto productVariant);
+        Task<bool> DeleteProductVariantAsync(ProductVariantStaffDeleteDto productVariant);
 
 
-        Task<List<ProductVariantDto>> GetVariantsByProductIdAsync(int productId);
+        Task<List<ProductVariantStaffDto>> GetVariantsByProductIdAsync(int productId);
         Task<bool> StockInAsync(Guid variantId, int increaseAmount);
     }
 }

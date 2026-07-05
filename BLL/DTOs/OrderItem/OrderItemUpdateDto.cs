@@ -1,4 +1,4 @@
-namespace BLL.DTOs.Order
+namespace BLL.DTOs.OrderItem
 {
     public class OrderItemUpdateDto
     {

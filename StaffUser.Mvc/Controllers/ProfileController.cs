@@ -2,10 +2,11 @@ using BLL.DTOs.Customer;
 using BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 // Using MVC ViewModels removed — using BLL DTOs directly
 using System.Security.Claims;
 
-namespace StaffUser.Mvc.Controllers
+namespace Customer.Mvc.Controllers
 {
     [Authorize]
     public class ProfileController : Controller

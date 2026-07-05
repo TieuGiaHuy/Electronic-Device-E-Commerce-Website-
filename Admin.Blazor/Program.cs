@@ -1,11 +1,13 @@
 using Admin.Blazor.Components;
 using Admin.Blazor.Components.Auth;
+using Admin.Blazor.Hubs;
 using BLL;
 using BLL.Settings;
 using DAL.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR();
 builder.Services.AddBusinessLogicLayer(connectionString!);
 builder.Services.Configure<VnpaySettings>(builder.Configuration.GetSection("VNPAY"));
 
@@ -26,12 +29,15 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/auth/login";
         options.LogoutPath = "/auth/logout";
+        options.Cookie.SameSite = SameSiteMode.Strict; // Đặt SameSite để tăng cường bảo mật
     });
 
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<StaffAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<StaffAuthenticationStateProvider>());
+
+builder.Services.AddCascadingAuthenticationState(); // Đăng ký dịch vụ CascadingAuthenticationState
 
 var app = builder.Build();
 
@@ -88,6 +94,7 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/uploads"
 });
 
+app.MapHub<AdminHub>("/adminHub");
 app.MapRazorPages();
 app.MapRazorComponents<App>()
    .AddInteractiveServerRenderMode();
