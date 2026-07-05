@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
-namespace UserStaff.Razor.Pages.ProductVariants
+namespace Staff.Razor.Pages.ProductVariants
 {
     public class IndexModel : PageModel
     {

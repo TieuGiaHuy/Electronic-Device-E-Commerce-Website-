@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace UserStaff.Razor.Pages.Orders
+namespace Staff.Razor.Pages.Orders
 {
     [Authorize]
     public class IndexModel : PageModel

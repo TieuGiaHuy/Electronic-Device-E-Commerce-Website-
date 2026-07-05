@@ -1,6 +1,6 @@
 using BLL.DTOs.Order;
 
-namespace StaffUser.Mvc.Models
+namespace Customer.Mvc.Models
 {
     public class MyOrdersViewModel
     {

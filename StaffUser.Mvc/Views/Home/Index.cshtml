@@ -19,7 +19,7 @@
             </div>
             <div class="carousel-inner">
                 <div class="carousel-item active hero-gradient-1">
-                    <div class="carousel-content">
+                    <div class="carousel-content px-5">
                         <span class="badge bg-warning text-dark mb-2 fw-bold text-uppercase">Exclusive Launch</span>
                         <h2>PocketPhone Pro</h2>
                         <p>Power, beauty, and octa-core processor compiled in a stunning 6.7" bezel-less display. Starting at just $999.99.</p>
@@ -27,7 +27,7 @@
                     </div>
                 </div>
                 <div class="carousel-item hero-gradient-2">
-                    <div class="carousel-content">
+                    <div class="carousel-content px-5">
                         <span class="badge bg-light text-danger mb-2 fw-bold text-uppercase">Ultimate Performance</span>
                         <h2>XtremeBook 16</h2>
                         <p>Engineered for professionals. Powered by Intel i9, 32GB RAM, and 1TB SSD. Run your builds instantly.</p>
@@ -35,7 +35,7 @@
                     </div>
                 </div>
                 <div class="carousel-item hero-gradient-3">
-                    <div class="carousel-content">
+                    <div class="carousel-content px-5">
                         <span class="badge bg-info text-dark mb-2 fw-bold text-uppercase">Audiophile Grade</span>
                         <h2>SoundBuds Pro</h2>
                         <p>Wireless sound, active noise cancellation, and up to 30 hours of continuous premium music streaming.</p>
@@ -109,7 +109,15 @@
                         </div>
                         @if (promo.EndAt.HasValue)
                         {
-                            <span class="text-danger small fw-semibold"><i class="bi bi-clock-history"></i> Ends in 3 hours</span>
+                            var remaining = promo.EndAt.Value - DateTime.Now;
+                            var remainingText = remaining.TotalSeconds <= 0
+                            ? "Expired"
+                            : remaining.TotalDays >= 1
+                            ? $"Ends in {(int)remaining.TotalDays} day(s)"
+                            : remaining.TotalHours >= 1
+                            ? $"Ends in {(int)remaining.TotalHours}h {(remaining.Minutes)}m"
+                            : $"Ends in {(int)remaining.TotalMinutes}m";
+                            <span class="text-danger small fw-semibold"><i class="bi bi-clock-history"></i> @remainingText</span>
                         }
                     </div>
                 </div>
@@ -202,7 +210,7 @@
                             <a href="@Url.Action("Index", "Product", new { id = prod.ProductId })" class="btn btn-sm btn-outline-secondary w-50 py-1.5 fw-semibold" style="border-radius: 8px; font-size: 0.82rem;">
                                 Details
                             </a>
-                            <a href="@Url.Action("Create", "Reviews", new { productId = prod.ProductId })" class="btn btn-sm btn-outline-warning w-50 py-1.5 fw-semibold" style="border-radius: 8px; font-size: 0.82rem; border-color: #ffc107; color: #856404;">
+                            <a href="@Url.Action("Index", "Product", new { id = prod.ProductId })#reviews" class="btn btn-sm btn-outline-warning w-50 py-1.5 fw-semibold" style="border-radius: 8px; font-size: 0.82rem; border-color: #ffc107; color: #856404;">
                                 <i class="bi bi-chat-square-text me-1"></i> Review
                             </a>
                             <button class="btn btn-sm btn-danger w-50 py-1.5 fw-semibold text-white border-0" style="background-color: var(--color-primary); border-radius: 8px; font-size: 0.82rem;" onclick="openAddToCartModal('@prod.ProductId')">

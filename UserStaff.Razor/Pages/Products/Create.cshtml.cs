@@ -3,7 +3,7 @@ using BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace UserStaff.Razor.Pages.Products
+namespace Staff.Razor.Pages.Products
 {
     public class CreateModel : PageModel
     {

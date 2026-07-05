@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
 
-namespace UserStaff.Razor.Pages.Auth
+namespace Staff.Razor.Pages.Auth
 {
     public class LoginModel : PageModel
     {
