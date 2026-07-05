@@ -2,9 +2,12 @@
 @using BLL.DTOs.Promotion
 @using BLL.Services.Interfaces
 @using DAL.Enums
+@using Microsoft.AspNetCore.Authorization
 @rendermode InteractiveServer
 @inject IPromotionService PromotionService
 @inject NavigationManager NavigationManager
+
+@attribute [Authorize]
 
 <div class="modal-header">
     <h5 class="modal-title fw-bold">Update Promotion</h5>
