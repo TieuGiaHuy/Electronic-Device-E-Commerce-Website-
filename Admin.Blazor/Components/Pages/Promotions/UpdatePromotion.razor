@@ -1,0 +1,187 @@
+﻿@page "/promotions/update"
+@using BLL.DTOs.Promotion
+@using BLL.Services.Interfaces
+@using DAL.Enums
+@rendermode InteractiveServer
+@inject IPromotionService PromotionService
+@inject NavigationManager NavigationManager
+
+<div class="modal-header">
+    <h5 class="modal-title fw-bold">Update Promotion</h5>
+
+    <button type="button"
+            class="btn-close"
+            @onclick="OnCancel">
+    </button>
+</div>
+
+<div class="modal-body">
+
+    <div class="row g-3">
+
+        <!-- Name -->
+        <div class="col-md-6">
+            <label class="form-label fw-semibold">
+                Promotion Name
+            </label>
+
+            <input class="form-control"
+                   placeholder="Enter promotion name..." @bind="promotionUpdateDto!.Name" />
+        </div>
+
+        <!-- Type -->
+        <div class="col-md-6">
+            <label class="form-label fw-semibold">
+                Promotion Type
+            </label>
+
+            <select class="form-select" @bind="promotionUpdateDto.PromotionType">
+                @foreach (var type in Enum.GetValues<PromotionTypeEnum>())
+                {
+                    <option value="@type">@type</option>
+                }
+            </select>
+        </div>
+
+        <!-- Value based on type -->
+        <div class="col-md-6">
+            @if (promotionUpdateDto.PromotionType == PromotionTypeEnum.Percentage)
+            {
+                <!--Percentage-->
+                <div>
+                    <label class="form-label fw-semibold">
+                        Percentage (%) <span class="text-danger">*</span>
+                    </label>
+                    <input type="number" class="form-control"
+                           placeholder="Enter percentage (0-100)" @bind="promotionUpdateDto.Percentage" />
+                </div>
+            }
+            else if (promotionUpdateDto.PromotionType == PromotionTypeEnum.FixedAmount)
+            {
+                <!--Sale Price-->
+                <div>
+                    <label class="form-label fw-semibold">
+                        Sale Price <span class="text-danger">*</span>
+                    </label>
+                    <input type="number" class="form-control" placeholder="Enter sale price" @bind="promotionUpdateDto.SalePrice" />
+                </div>
+
+                <!--ThresholdPrice-->
+                <div class="mt-3">
+                    <label class="form-label fw-semibold">
+                        Threshold Price
+                    </label>
+                    <input type="number" class="form-control" placeholder="Enter threshold price" @bind="promotionUpdateDto.ThresholdPrice" />
+                </div>
+            }
+            else
+            {
+                <div class="text-muted mt-2">
+                    <i class="bi bi-info-circle"></i> Please select a promotion type first
+                </div>
+            }
+        </div>
+
+        <!--Time-->
+        <div class="col-md-6">
+            <InputCheckbox @bind-Value="promotionUpdateDto.IsLimitedTime">Is Limited Time</InputCheckbox>
+
+            <label class="form-label fw-semibold">
+                Duration
+            </label>
+
+            <div class="row g-2">
+                <div class="col">
+                    <input type="datetime" disabled="@(!promotionUpdateDto.IsLimitedTime)" class="form-control" @bind="promotionUpdateDto.StartAt" />
+                </div>
+
+                <div class="col-auto d-flex align-items-center">
+                    -
+                </div>
+
+                <div class="col">
+                    <input type="datetime" disabled="@(!promotionUpdateDto.IsLimitedTime)" class="form-control" @bind="promotionUpdateDto.EndAt" />
+                </div>
+            </div>
+        </div>
+
+        <!--Stock-->
+        <div class="col-md-6">
+            <InputCheckbox @bind-Value="promotionUpdateDto.IsReservedStock">Is Reserved Stock</InputCheckbox>
+
+            <label class="form-label fw-semibold">
+                Stock
+            </label>
+            <div>
+                <input type="number" disabled="@(!promotionUpdateDto.IsReservedStock)" class="form-control" placeholder="Enter stock quantity" @bind="promotionUpdateDto.MaxReservedStock" />
+            </div>
+        </div>
+
+        <div class="row g-2">
+            <div class="col-md-12" style="color: red;">@errorMessage</div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+
+    <button class="btn btn-secondary"
+            @onclick="OnCancel">
+        Cancel
+    </button>
+
+    <button class="btn btn-danger" @onclick="Update">
+        Update Promotion
+    </button>
+
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnEdited { get; set; }
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+    private string errorMessage = string.Empty;
+
+    [Parameter] public PromotionDto? promotionDto { get; set; }
+    private PromotionUpdateDto? promotionUpdateDto = new PromotionUpdateDto();
+
+    protected override void OnParametersSet()
+    {
+        if (promotionDto != null)
+        {
+            promotionUpdateDto = new PromotionUpdateDto
+            {
+                Name = promotionDto.Name!,
+                PromotionType = promotionDto.PromotionType,
+                Percentage = promotionDto.Percentage,
+                SalePrice = promotionDto.SalePrice,
+                ThresholdPrice = promotionDto.ThresholdPrice,
+                IsLimitedTime = promotionDto.IsLimitedTime,
+                StartAt = promotionDto.StartAt,
+                EndAt = promotionDto.EndAt,
+                IsReservedStock = promotionDto.IsReservedStock,
+                MaxReservedStock = promotionDto.MaxReservedStock
+            };
+        }
+    }
+
+    private async Task Update()
+    {
+        try
+        {
+            if (!promotionUpdateDto!.IsLimitedTime && !promotionUpdateDto.IsReservedStock)
+            {
+                errorMessage = "Please select at least one option: Limited Time or Reserved Stock.";
+                return;
+            }
+            await PromotionService.UpdatePromotionAsync(promotionDto!.PromotionId, promotionUpdateDto);
+            await OnEdited.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+}

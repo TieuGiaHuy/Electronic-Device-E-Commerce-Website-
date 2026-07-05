@@ -1,0 +1,166 @@
+﻿@page "/promotions/create"
+@using BLL.DTOs.Promotion
+@using BLL.Services.Interfaces
+@using DAL.Enums
+@rendermode InteractiveServer
+@inject IPromotionService PromotionService
+@inject NavigationManager NavigationManager
+
+<div class="modal-header">
+    <h5 class="modal-title fw-bold">Create Promotion</h5>
+
+    <button type="button"
+            class="btn-close"
+            @onclick="OnCancel">
+    </button>
+</div>
+
+<div class="modal-body">
+
+    <div class="row g-3">
+
+        <!-- Name -->
+        <div class="col-md-6">
+            <label class="form-label fw-semibold">
+                Promotion Name
+            </label>
+
+            <input class="form-control"
+                   placeholder="Enter promotion name..." @bind="promotionCreateDto.Name" />
+        </div>
+
+        <!-- Type -->
+        <div class="col-md-6">
+            <label class="form-label fw-semibold">
+                Promotion Type
+            </label>
+
+            <select class="form-select" @bind="promotionCreateDto.PromotionType">
+                @foreach (var type in Enum.GetValues<PromotionTypeEnum>())
+                {
+                    <option value="@type">@type</option>
+                }
+            </select>
+        </div>
+
+        <!-- Value based on type -->
+        <div class="col-md-6">
+            @if (promotionCreateDto.PromotionType == PromotionTypeEnum.Percentage)
+            {
+                <!--Percentage-->
+                <div>
+                    <label class="form-label fw-semibold">
+                        Percentage (%) <span class="text-danger">*</span>
+                    </label>
+                    <input type="number" class="form-control"
+                           placeholder="Enter percentage (0-100)" @bind="promotionCreateDto.Percentage" />
+                </div>
+            }
+            else if (promotionCreateDto.PromotionType == PromotionTypeEnum.FixedAmount)
+            {
+                <!--Sale Price-->
+                <div>
+                    <label class="form-label fw-semibold">
+                        Sale Price <span class="text-danger">*</span>
+                    </label>
+                    <input type="number" class="form-control" placeholder="Enter sale price" @bind="promotionCreateDto.SalePrice" />
+                </div>
+
+                <!--ThresholdPrice-->
+                <div class="mt-3">
+                    <label class="form-label fw-semibold">
+                        Threshold Price
+                    </label>
+                    <input type="number" class="form-control" placeholder="Enter threshold price" @bind="promotionCreateDto.ThresholdPrice" />
+                </div>
+            }
+            else
+            {
+                <div class="text-muted mt-2">
+                    <i class="bi bi-info-circle"></i> Please select a promotion type first
+                </div>
+            }
+        </div>
+
+        <!--Time-->
+        <div class="col-md-6">
+            <InputCheckbox @bind-Value="promotionCreateDto.IsLimitedTime">Is Limited Time</InputCheckbox>
+
+            <label class="form-label fw-semibold">
+                Duration
+            </label>
+
+            <div class="row g-2">
+                <div class="col">
+                    <input type="datetime" disabled="@(!promotionCreateDto.IsLimitedTime)" class="form-control" @bind="promotionCreateDto.StartAt" />
+                </div>
+
+                <div class="col-auto d-flex align-items-center">
+                    -
+                </div>
+
+                <div class="col">
+                    <input type="datetime" disabled="@(!promotionCreateDto.IsLimitedTime)" class="form-control" @bind="promotionCreateDto.EndAt" />
+                </div>
+            </div>
+        </div>
+
+        <!--Stock-->
+        <div class="col-md-6">
+            <InputCheckbox @bind-Value="promotionCreateDto.IsReservedStock">Is Reserved Stock</InputCheckbox>
+
+            <label class="form-label fw-semibold">
+                Stock
+            </label>
+            <div>
+                <input type="number" disabled="@(!promotionCreateDto.IsReservedStock)" class="form-control" placeholder="Enter stock quantity" @bind="promotionCreateDto.MaxReservedStock" />
+            </div>
+        </div>
+
+        <div class="row g-2">
+            <div class="col-md-12" style="color: red;">@errorMessage</div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+
+    <button class="btn btn-secondary"
+            @onclick="OnCancel">
+        Cancel
+    </button>
+
+    <button class="btn btn-danger" @onclick="Create">
+        Create Promotion
+    </button>
+
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnCreated { get; set; }
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+    private string errorMessage = string.Empty;
+
+    private PromotionCreateDto promotionCreateDto = new PromotionCreateDto { StartAt = DateTime.Now, EndAt = DateTime.Now };
+
+    private async Task Create()
+    {
+        try
+        {
+            if (!promotionCreateDto.IsLimitedTime && !promotionCreateDto.IsReservedStock)
+            {
+                errorMessage = "Please select at least one option: Limited Time or Reserved Stock.";
+                return;
+            }
+            await PromotionService.CreatePromotionAsync(promotionCreateDto);
+            await OnCreated.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+}

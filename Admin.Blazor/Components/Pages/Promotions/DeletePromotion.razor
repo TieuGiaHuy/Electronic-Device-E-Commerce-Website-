@@ -1,0 +1,70 @@
+﻿@page "/promotions/delete"
+@using BLL.DTOs.Promotion
+@using BLL.Services.Interfaces
+@using DAL.Enums
+@rendermode InteractiveServer
+@inject IPromotionService PromotionService
+@inject NavigationManager NavigationManager
+
+<div class="modal-header">
+    <h5 class="modal-title fw-bold">Create Promotion</h5>
+
+    <button type="button"
+            class="btn-close"
+            @onclick="OnCancel">
+    </button>
+</div>
+<div class="p-6">
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-red-600">
+                            delete_forever
+                        </span>
+                    </div>
+
+                    <div>
+                        <p class="font-medium">
+                            Bạn có chắc chắn muốn xóa khuyến mãi này?
+                        </p>
+
+                        <p class="text-sm text-gray-500 mt-2">
+                            Hành động này không thể hoàn tác.
+                        </p>
+                    </div>
+                </div>
+            </div>
+<div class="modal-footer">
+
+    <button class="btn btn-secondary"
+            @onclick="OnCancel">
+        Cancel
+    </button>
+
+    <button class="btn btn-danger" @onclick="Delete">
+        Delete Promotion
+    </button>
+
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnDeleted { get; set; }
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+    private string errorMessage = string.Empty;
+    [Parameter] public Guid promotionId { get; set; }
+
+    private async Task Delete()
+    {
+        try
+        {
+            await PromotionService.DeletePromotionAsync(promotionId);
+            await OnDeleted.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+}

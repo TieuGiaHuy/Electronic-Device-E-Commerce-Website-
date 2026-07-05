@@ -1,5 +1,6 @@
 ﻿using BLL.DTOs.Product;
 using BLL.DTOs.ProductVariant;
+using BLL.DTOs.Promotion;
 using BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -10,20 +11,24 @@ namespace UserStaff.Razor.Pages.ProductVariants
     {
         private readonly IProductVariantService _productVariantService;
         private readonly IProductService _productService;
+        private readonly IPromotionService _promotionService;
 
-        public CreateModel(IProductVariantService productVariantService, IProductService productService)
+        public CreateModel(IProductVariantService productVariantService, IProductService productService, IPromotionService promotionService)
         {
             _productVariantService = productVariantService;
             _productService = productService;
+            _promotionService = promotionService;
         }
 
         [BindProperty]
         public ProductVariantCreateDto ProductVariant { get; set; } = new();
         public ProductDto? Product { get; set; } = new();
+        public List<PromotionDto> PromotionDtos { get; set; } = new();
 
         public async Task OnGetAsync(int productId)
         {
             Product = await _productService.GetProductByIdAsync(productId);
+            PromotionDtos = await _promotionService.GetActiveAndUpcomingPromotionsAsync();
         }
 
         public async Task<IActionResult> OnPostAsync()

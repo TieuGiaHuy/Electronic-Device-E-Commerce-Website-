@@ -19,6 +19,7 @@ namespace DAL.Configurations
             builder.Property(pv => pv.Price).IsRequired().HasColumnType("decimal(18,2)");
             builder.Property(pv => pv.StockQuantity).IsRequired();
             builder.Property(pv => pv.ImageUrl).HasMaxLength(200);
+            builder.Property(pv => pv.PromotionId);
 
             // Check xóa mềm
             builder.HasQueryFilter(pv => !pv.IsDeleted);

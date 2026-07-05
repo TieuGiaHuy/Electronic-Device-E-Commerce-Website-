@@ -45,8 +45,9 @@ namespace DAL.Repositories
                 var stockQuantity = productVariant.StockQuantity;
                 var imageUrl = productVariant.ImageUrl;
                 var productId = productVariant.ProductId;
+                var promotionId = productVariant.PromotionId;
 
-                existingProductVariant.Update(productCode, color, cpu, ram, storage, screenSize, price, stockQuantity, imageUrl, productId);
+                existingProductVariant.Update(productCode, color, cpu, ram, storage, screenSize, price, stockQuantity, imageUrl, productId, promotionId);
                 _context.ProductVariants.Update(existingProductVariant);
                 _context.SaveChanges();
 
@@ -71,7 +72,7 @@ namespace DAL.Repositories
         public async Task<List<ProductVariant>> GetVariantsByProductIdAsync(int productId)
         {
             var variants = await _context.ProductVariants
-                .Where(pv => pv.ProductId == productId)
+                .Where(pv => pv.ProductId == productId).Include(pv => pv.Promotion)
                 .ToListAsync();
             return variants;
         }

@@ -134,6 +134,7 @@
                         <th>Specifications</th>
                         <th class="text-end">Price (VND)</th>
                         <th class="text-center">Stock</th>
+                        <th>Promotion Name</th>
                         <th class="text-center px-4">Actions</th>
                     </tr>
                 </thead>
@@ -165,7 +166,7 @@
                                     }
                                 </div>
                             </td>
-                            <td class="text-end price-accent">@variant.Price.ToString("N0") VND</td>
+                            <td class="text-end price-accent">@variant.GetPrice().ToString("N0") VND</td>
                             <td class="text-center">
                                 @if (variant.StockQuantity > 10)
                                 {
@@ -180,6 +181,7 @@
                                     <span class="badge badge-pill-ds badge-stock-out">Out of stock</span>
                                 }
                             </td>
+                            <td class="text-muted small">@variant.Promotion?.Name</td>
                             <td class="text-center px-4">
                                 <button type="button" class="btn btn-outline-info btn-sm ds-action-btn"
                                         data-id="@variant.ProductVariantId"

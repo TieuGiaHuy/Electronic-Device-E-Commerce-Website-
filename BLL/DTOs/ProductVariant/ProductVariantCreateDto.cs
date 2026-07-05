@@ -2,8 +2,8 @@ namespace BLL.DTOs.ProductVariant
 {
     public class ProductVariantCreateDto
     {
-        public string ProductCode { get; set; }
-        public string Color { get; set; }
+        public string ProductCode { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
         public string? Cpu { get; set; }
         public string? Ram { get; set; }
         public string? Storage { get; set; }
@@ -12,5 +12,6 @@ namespace BLL.DTOs.ProductVariant
         public int StockQuantity { get; set; }
         public string? ImageUrl { get; set; }
         public int ProductId { get; set; }
+        public Guid? PromotionId { get; set; }
     }
 }

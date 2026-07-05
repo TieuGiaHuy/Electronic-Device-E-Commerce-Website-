@@ -13,5 +13,7 @@ namespace BLL.DTOs.ProductVariant
         public int StockQuantity { get; set; }
         public string? ImageUrl { get; set; }
         public int ProductId { get; set; }
+        public Guid? PromotionId { get; set; }
+        public DAL.Models.Promotion? Promotion { get; set; }
     }
 }
