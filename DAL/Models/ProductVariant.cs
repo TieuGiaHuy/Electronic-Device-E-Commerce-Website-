@@ -155,7 +155,6 @@ namespace DAL.Models
             string sku = SkuGenerator.Generate(productId, color, cpu, ram, storage, screenSize);
 
             Sku = sku;
-            ProductCode = productCode;
             Color = color;
             Cpu = cpu;
             Ram = ram;

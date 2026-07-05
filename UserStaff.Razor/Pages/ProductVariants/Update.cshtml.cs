@@ -39,7 +39,6 @@ namespace UserStaff.Razor.Pages.ProductVariants
                     ProductVariantId = variantDto.ProductVariantId,
                     ProductId = variantDto.ProductId,
                     PromotionId = variantDto.PromotionId,
-                    Promotion = variantDto.Promotion,
                     Color = variantDto.Color,
                     Cpu = variantDto.Cpu,
                     Ram = variantDto.Ram,

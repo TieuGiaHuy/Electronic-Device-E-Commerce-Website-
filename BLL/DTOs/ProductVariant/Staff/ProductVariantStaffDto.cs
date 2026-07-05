@@ -1,3 +1,6 @@
+using DAL.Enums;
+using DAL.Models;
+
 namespace BLL.DTOs.ProductVariant.Staff
 {
     public class ProductVariantStaffDto
@@ -13,9 +16,28 @@ namespace BLL.DTOs.ProductVariant.Staff
         public int StockQuantity { get; set; }
         public string? ImageUrl { get; set; }
         public int ProductId { get; set; }
+        public Guid? PromotionId { get; set; }
+        public DAL.Models.Promotion? Promotion { get; set; }
 
         public bool IsDeleted { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+
+        public decimal GetPrice()
+        {
+            if (Promotion != null && Promotion.IsActive())
+            {
+                if (Promotion.PromotionType == PromotionTypeEnum.Percentage && Promotion.Percentage.HasValue)
+                {
+                    return Price * (1 - Promotion.Percentage.Value / 100m);
+                }
+                else if (Promotion.PromotionType == PromotionTypeEnum.FixedAmount && Promotion.SalePrice.HasValue)
+                {
+                    return Price - Promotion.SalePrice.Value;
+                }
+            }
+
+            return Price;
+        }
     }
 }
