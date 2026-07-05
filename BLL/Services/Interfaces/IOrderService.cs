@@ -9,6 +9,7 @@ namespace BLL.Services.Interfaces
         Task<List<OrderDto>> GetOrdersByCustomerIdAsync(int customerId);
         Task<List<OrderDto>> GetOrdersByStatusAsync(string status);
         Task<OrderDto> CreateOrderAsync(OrderCreateDto orderCreateDto);
+        Task<OrderCheckoutResultDto> CheckoutCartAsync(int customerId, IReadOnlyCollection<int> selectedCartItemIds);
         Task<bool> UpdateOrderAsync(OrderUpdateDto orderUpdateDto);
         Task<bool> UpdateOrderStatusAsync(Guid orderId, string status);
         Task<bool> DeleteOrderAsync(Guid orderId);

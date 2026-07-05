@@ -34,6 +34,28 @@ namespace DAL.Repositories
             return true;
         }
 
+        public async Task<bool> DeleteCartItemsAsync(IEnumerable<int> cartItemIds)
+        {
+            var ids = cartItemIds.Distinct().ToList();
+            if (!ids.Any())
+            {
+                return true;
+            }
+
+            var cartItems = await _context.CartItems
+                .Where(ci => ids.Contains(ci.CartItemId))
+                .ToListAsync();
+
+            if (!cartItems.Any())
+            {
+                return false;
+            }
+
+            _context.CartItems.RemoveRange(cartItems);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<CartItem?> GetCartItemByIdAsync(int cartItemId)
         {
             return await _context.CartItems.FirstOrDefaultAsync(ci => ci.CartItemId == cartItemId); ;
