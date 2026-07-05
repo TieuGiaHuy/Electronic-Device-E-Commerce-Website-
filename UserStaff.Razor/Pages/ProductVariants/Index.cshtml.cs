@@ -1,4 +1,4 @@
-﻿using BLL.DTOs.ProductVariant;
+﻿using BLL.DTOs.ProductVariant.Staff;
 using BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -15,7 +15,7 @@ namespace UserStaff.Razor.Pages.ProductVariants
             _productVariantService = productVariantService;
         }
 
-        public List<ProductVariantDto> ProductVariants { get; set; } = new List<ProductVariantDto>();
+        public List<ProductVariantStaffDto> ProductVariants { get; set; } = new List<ProductVariantStaffDto>();
         public int productId;
 
         public async Task OnGetAsync(int productId)
@@ -29,7 +29,7 @@ namespace UserStaff.Razor.Pages.ProductVariants
             try
             {
                 // 1. Tìm biến thể trong Database theo ID truyền lên
-                var deleteStatus = await _productVariantService.DeleteProductVariantAsync(new ProductVariantDeleteDto { ProductVariantId = id });
+                var deleteStatus = await _productVariantService.DeleteProductVariantAsync(new ProductVariantStaffDeleteDto { ProductVariantId = id });
 
                 if (!deleteStatus)
                 {

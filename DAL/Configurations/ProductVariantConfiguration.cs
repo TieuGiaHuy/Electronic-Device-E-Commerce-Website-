@@ -10,7 +10,7 @@ namespace DAL.Configurations
         {
             builder.HasKey(pv => pv.ProductVariantId);
             builder.Property(pv => pv.Sku).IsRequired().HasMaxLength(50);
-            builder.Property(pv => pv.ProductCode).IsRequired().HasMaxLength(50);
+            //builder.Property(pv => pv.ProductCode).IsRequired().HasMaxLength(50);
             builder.Property(pv => pv.Color).IsRequired().HasMaxLength(50);
             builder.Property(pv => pv.Cpu).HasMaxLength(100);
             builder.Property(pv => pv.Ram).HasMaxLength(50);

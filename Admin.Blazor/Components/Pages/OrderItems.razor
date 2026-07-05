@@ -3,10 +3,13 @@
 @using BLL.DTOs.Order
 @using BLL.DTOs.OrderItem
 @using BLL.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
 @inject IOrderService OrderService
 @inject IOrderItemService OrderItemService
 @inject IProductVariantService ProductVariantService
 @inject NavigationManager Navigation
+
+@attribute [Authorize]
 
 <PageTitle>Order Items - ElectroNexus Admin</PageTitle>
 

@@ -1,11 +1,20 @@
 @page "/products"
 @rendermode InteractiveServer
-@using BLL.DTOs.Product
 @using BLL.DTOs.Category
+@using BLL.DTOs.Product
+@using BLL.DTOs.Product.Staff
 @using BLL.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.SignalR
+@using Microsoft.AspNetCore.SignalR.Client
 @inject IProductService ProductService
 @inject ICategoryService CategoryService
 @inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Environment
+@inject NavigationManager Navigation
+@inject Microsoft.AspNetCore.SignalR.IHubContext<Admin.Blazor.Hubs.AdminHub> HubContext
+@implements IAsyncDisposable
+
+@attribute [Authorize]
 
 <PageTitle>Manage Products - ElectroNexus Admin</PageTitle>
 
@@ -283,13 +292,15 @@
 }
 
 @code {
-    private List<ProductDto> products = new();
+    private List<ProductStaffDto> products = new();
     private List<CategoryDto> categories = new();
     private string searchKeyword = "";
     private int filterCategoryId = 0;
     private bool isLoading = true;
     private string successMessage = "";
     private string errorMessage = "";
+    private HubConnection? hubConnection;
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     // Modal & Form states
     private bool showProductModal = false;
@@ -316,9 +327,67 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/adminHub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On("ProductChanged", async () =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await LoadData();
+                StateHasChanged();
+            });
+        });
+
+        hubConnection.On("CategoryChanged", async () =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await LoadData();
+                StateHasChanged();
+            });
+        });
+
+        // await hubConnection.StartAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                if (hubConnection is not null && hubConnection.State == HubConnectionState.Disconnected)
+                {
+                    // Chỉ chạy khi giao diện đã render hoàn toàn trên Trình duyệt (Client)
+                    await hubConnection.StartAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Can't connect to Realtime Hub: {ex.Message}";
+                StateHasChanged();
+            }
+        }
     }
 
     private async Task LoadData()
+    {
+        await _semaphore.WaitAsync();
+        try
+        {
+            await LoadDataInternal();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    private async Task LoadDataInternal()
     {
         isLoading = true;
         try
@@ -338,12 +407,11 @@
 
     private int uniqueBrandsCount => products.Select(p => p.Brand).Distinct(StringComparer.OrdinalIgnoreCase).Count();
 
-    private List<ProductDto> filteredProducts
+    private List<ProductStaffDto> filteredProducts
     {
         get
         {
-            IEnumerable<ProductDto> result = products;
-
+            IEnumerable<ProductStaffDto> result = products;
             if (filterCategoryId > 0)
             {
                 result = result.Where(p => p.CategoryId == filterCategoryId);
@@ -427,7 +495,7 @@
         uploadedFiles.Clear();
     }
 
-    private void EditProduct(ProductDto product)
+    private void EditProduct(ProductStaffDto product)
     {
         ClearMessages();
         uploadedFiles.Clear();
@@ -462,6 +530,7 @@
             return;
         }
 
+        await _semaphore.WaitAsync();
         try
         {
             List<string> imagePaths = new();
@@ -495,7 +564,7 @@
 
             if (isEditing)
             {
-                var updateDto = new ProductUpdateDto
+                var updateDto = new ProductStaffUpdateDto
                 {
                     ProductId = editingProductId,
                     ProductName = formModel.ProductName,
@@ -508,6 +577,10 @@
                 {
                     successMessage = $"Product '{formModel.ProductName}' updated successfully!";
                     CloseProductModal();
+                    if (hubConnection is not null && hubConnection.State == HubConnectionState.Connected)
+                    {
+                        await hubConnection.SendAsync("BroadcastProductChanged");
+                    }
                 }
                 else
                 {
@@ -516,7 +589,7 @@
             }
             else
             {
-                var createDto = new ProductCreateDto
+                var createDto = new ProductStaffCreateDto
                 {
                     ProductName = formModel.ProductName,
                     Brand = formModel.Brand,
@@ -528,17 +601,25 @@
                 {
                     successMessage = $"Product '{created.ProductName}' added successfully!";
                     CloseProductModal();
+                    if (hubConnection is not null && hubConnection.State == HubConnectionState.Connected)
+                    {
+                        await hubConnection.SendAsync("BroadcastProductChanged");
+                    }
                 }
                 else
                 {
                     errorMessage = "Failed to add product.";
                 }
             }
-            await LoadData();
+            await LoadDataInternal();
         }
         catch (Exception ex)
         {
             errorMessage = $"System error: {ex.Message}";
+        }
+        finally
+        {
+            _semaphore.Release();
         }
     }
 
@@ -563,14 +644,19 @@
         var name = productToDeleteName;
         CloseDeleteConfirmation();
 
+        await _semaphore.WaitAsync();
         try
         {
-            var deleteDto = new ProductDeleteDto { ProductId = id };
+            var deleteDto = new ProductStaffDeleteDto { ProductId = id };
             var result = await ProductService.DeleteProductAsync(deleteDto);
             if (result)
             {
                 successMessage = $"Product '{name}' deleted successfully!";
-                await LoadData();
+                if (hubConnection is not null && hubConnection.State == HubConnectionState.Connected)
+                {
+                    await hubConnection.SendAsync("BroadcastProductChanged");
+                }
+                await LoadDataInternal();
             }
             else
             {
@@ -581,12 +667,24 @@
         {
             errorMessage = $"Error deleting product: {ex.Message}";
         }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     private void ClearMessages()
     {
         successMessage = "";
         errorMessage = "";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 
     public class ProductFormModel

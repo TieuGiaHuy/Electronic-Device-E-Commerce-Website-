@@ -260,6 +260,9 @@
                     <a class="staff-nav-link" asp-area="" asp-page="/Products/Index">
                         <i class="bi bi-phone-fill"></i> Product Variants
                     </a>
+                    <a class="staff-nav-link" asp-area="" asp-page="/Reviews/Index">
+                        <i class="bi bi-chat-square-text-fill"></i> Reviews
+                    </a>
                     <a class="staff-nav-link" asp-area="" asp-page="/Orders/Index">
                         <i class="bi bi-cart-check-fill"></i> Order Processing
                     </a>
@@ -274,6 +277,11 @@
                                 <span class="text-truncate">@User.Identity.Name</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark mt-2" style="border-radius: 8px;">
+                                <li>
+                                    <a class="dropdown-item" asp-page="/Profile/Index">
+                                        <i class="bi bi-person-fill me-2"></i> Profile
+                                    </a>
+                                </li>
                                 <li>
                                     <a class="dropdown-item" asp-page="/Auth/Logout">
                                         <i class="bi bi-box-arrow-right me-2"></i> Log out

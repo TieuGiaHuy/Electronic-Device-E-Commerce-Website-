@@ -121,11 +121,6 @@
                         <input type="hidden" asp-for="ProductVariant.ProductId" value="@Model.Product?.ProductId" />
                         <span asp-validation-for="ProductVariant.ProductId" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-6 form-group mb-3">
-                        <label class="ds-label">Product Code <span class="text-danger">*</span></label>
-                        <input asp-for="ProductVariant.ProductCode" class="form-control" placeholder="e.g. IPHONE" />
-                        <span asp-validation-for="ProductVariant.ProductCode" class="text-danger small"></span>
-                    </div>
                 </div>
 
                 <h5 class="ds-section-title mb-3"><i class="bi bi-cpu me-2"></i>Specifications</h5>

@@ -1,15 +1,22 @@
 ﻿using BLL;
 using BLL.Settings;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.Extensions.DependencyInjection;
 using BLL.DTOs.Customer;
 using BLL.Services.Interfaces;
-using System;
+using DAL.Enums;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+// Add services to the container. Add authorization policy to require authentication for all controllers by default
+builder.Services.AddControllersWithViews( options =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();   
+    options.Filters.Add(new AuthorizeFilter(policy));
+});
 builder.Services.AddSession();
 
 // Cookie authentication for users
@@ -79,7 +86,7 @@ using (var scope = app.Services.CreateScope())
             Email = "customer@local",
             PhoneNumber = "0123456789",
             Password = "P@ssw0rd",
-            Role = 1 // Customer
+            Role = (int)RoleEnum.Customer // Customer
         };
         customerService.CreateAsync(createDto).GetAwaiter().GetResult();
     }

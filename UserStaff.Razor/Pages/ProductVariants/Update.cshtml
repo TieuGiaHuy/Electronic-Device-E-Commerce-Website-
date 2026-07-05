@@ -100,7 +100,7 @@
 </style>
 
 <div class="d-flex align-items-center mb-4 gap-3">
-    <a asp-page="./Index" class="ds-back-btn shadow-sm" title="Back">
+    <a asp-page="./Index" asp-route-productId="@Model.Product?.ProductId" class="ds-back-btn shadow-sm" title="Back">
         <i class="bi bi-arrow-left fs-5 lh-1"></i>
     </a>
     <h2 class="m-0 fw-medium ds-heading-accent">Update Product Variant</h2>
@@ -121,11 +121,6 @@
                         <label class="form-control">@Model.Product?.ProductName</label>
                         <input type="hidden" asp-for="ProductVariant.ProductId" value="@Model.Product?.ProductId" />
                         <span asp-validation-for="ProductVariant.ProductId" class="text-danger small"></span>
-                    </div>
-                    <div class="col-md-6 form-group mb-3">
-                        <label class="ds-label">Product Code <span class="text-danger">*</span></label>
-                        <input asp-for="ProductVariant.ProductCode" class="form-control" placeholder="e.g. IPHONE" />
-                        <span asp-validation-for="ProductVariant.ProductCode" class="text-danger small"></span>
                     </div>
                 </div>
 
@@ -220,4 +215,57 @@ else
             <div class="small" style="color: var(--color-text-secondary, #555555);">This product does not exist or has been removed from the system.</div>
         </div>
     </div>
+}
+
+<!-- STATUS TOAST -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
+    <div id="statusToast" class="toast align-items-center text-white border-0 shadow rounded-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2 fw-medium">
+                <i id="toastIcon" class="bi fs-5"></i>
+                <span id="toastMessage"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            @if (TempData["SuccessMessage"] != null)
+            {
+                            <text>
+                            showToast('success', '@Html.Raw(TempData["SuccessMessage"])');
+                            </text>
+            }
+            else if (TempData["ErrorMessage"] != null)
+            {
+                            <text>
+                            showToast('danger', '@Html.Raw(TempData["ErrorMessage"])');
+                            </text>
+            }
+
+            // Renders the toast with the correct style based on status
+            function showToast(status, message) {
+                let toastEl = $('#statusToast');
+                let iconEl = $('#toastIcon');
+
+                toastEl.removeClass('bg-success bg-danger');
+                iconEl.removeClass('bi-check-circle-fill bi-x-circle-fill');
+
+                if (status === 'success') {
+                    toastEl.addClass('bg-success');
+                    iconEl.addClass('bi-check-circle-fill');
+                } else {
+                    toastEl.addClass('bg-danger');
+                    iconEl.addClass('bi-x-circle-fill');
+                }
+
+                $('#toastMessage').text(message);
+                let bsToast = new bootstrap.Toast(toastEl[0]);
+                bsToast.show();
+            }
+        });
+    </script>
 }

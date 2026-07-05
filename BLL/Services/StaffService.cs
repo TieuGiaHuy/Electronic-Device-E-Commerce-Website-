@@ -2,16 +2,26 @@ using BLL.DTOs.Staff;
 using BLL.Services.Interfaces;
 using DAL.Models;
 using DAL.Repositories.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace BLL.Services
 {
     public class StaffService : IStaffService
     {
+        /*
+         StaffService (BLL)
+         - Handles staff-related operations used by Admin.Blazor and UserStaff.Razor
+         - Methods: GetByEmailAsync, ValidateLoginAsync (BCrypt.Verify), CreateAsync (hashes),
+             and SetPasswordAsync (hash+update)
+         - Delegates data access to IStaffRepository
+        */
         private readonly IStaffRepository _staffRepository;
+        private readonly ILogger<StaffService> _logger;
 
-        public StaffService(IStaffRepository staffRepository)
+        public StaffService(IStaffRepository staffRepository, ILogger<StaffService> logger)
         {
             _staffRepository = staffRepository;
+            _logger = logger;
         }
 
         public async Task<StaffDto?> GetByEmailAsync(string email)
@@ -82,6 +92,17 @@ namespace BLL.Services
         {
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
             return await _staffRepository.SetPasswordAsync(staffId, passwordHash);
+        }
+
+        public async Task<bool> UpdateProfileAsync(int staffId, StaffProfileDto profileDto)
+        {
+            var staff = await _staffRepository.GetByIdAsync(staffId);
+            if (staff == null) return false;
+
+            staff.FullName = profileDto.FullName;
+            staff.UpdatedAt = DateTime.UtcNow;
+
+            return await _staffRepository.UpdateAsync(staff);
         }
     }
 }

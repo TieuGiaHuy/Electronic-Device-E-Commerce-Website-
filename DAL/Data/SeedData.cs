@@ -61,23 +61,23 @@ namespace DAL.Data
 
                 var variants = new[]
                 {
-                    ProductVariant.Create("XB14-STD-BLK", "Black", "Intel i5", "8GB", "256GB", "14\"", 999.99m, 30, null, prod1.ProductId),
-                    ProductVariant.Create("XB14-PRO-SLV", "Silver", "Intel i7", "16GB", "512GB", "14\"", 1299.99m, 15, null, prod1.ProductId),
+                    ProductVariant.Create("Black", "Intel i5", "8GB", "256GB", "14\"", 999.99m, 30, null, prod1.ProductId),
+                    ProductVariant.Create("Silver", "Intel i7", "16GB", "512GB", "14\"", 1299.99m, 15, null, prod1.ProductId),
 
-                    ProductVariant.Create("XB16-PRO-BLK", "Black", "Intel i9", "32GB", "1TB", "16\"", 1899.99m, 10, null, prod2.ProductId),
+                    ProductVariant.Create("Black", "Intel i9", "32GB", "1TB", "16\"", 1899.99m, 10, null, prod2.ProductId),
 
-                    ProductVariant.Create("PPZ-128-SLV", "Silver", "ARM Octa", "6GB", "128GB", "6.1\"", 699.99m, 80, null, prod3.ProductId),
-                    ProductVariant.Create("PPZ-256-BLK", "Black", "ARM Octa", "8GB", "256GB", "6.1\"", 799.99m, 50, null, prod3.ProductId),
+                    ProductVariant.Create("Silver", "ARM Octa", "6GB", "128GB", "6.1\"", 699.99m, 80, null, prod3.ProductId),
+                    ProductVariant.Create("Black", "ARM Octa", "8GB", "256GB", "6.1\"", 799.99m, 50, null, prod3.ProductId),
 
-                    ProductVariant.Create("PPP-256-BLK", "Black", "ARM Octa Pro", "8GB", "256GB", "6.7\"", 999.99m, 40, null, prod4.ProductId),
-                    ProductVariant.Create("PPP-512-SLV", "Silver", "ARM Octa Pro", "12GB", "512GB", "6.7\"", 1199.99m, 25, null, prod4.ProductId),
+                    ProductVariant.Create("Black", "ARM Octa Pro", "8GB", "256GB", "6.7\"", 999.99m, 40, null, prod4.ProductId),
+                    ProductVariant.Create("Silver", "ARM Octa Pro", "12GB", "512GB", "6.7\"", 1199.99m, 25, null, prod4.ProductId),
 
-                    ProductVariant.Create("SBP-BLK", "Black", null, null, null, null, 149.99m, 100, null, prod5.ProductId),
-                    ProductVariant.Create("SBP-WHT", "White", null, null, null, null, 149.99m, 80, null, prod5.ProductId),
+                    ProductVariant.Create("Black", null, null, null, null, 149.99m, 100, null, prod5.ProductId),
+                    ProductVariant.Create("White", null, null, null, null, 149.99m, 80, null, prod5.ProductId),
 
-                    ProductVariant.Create("PB20-BLK", "Black", null, null, null, null, 59.99m, 200, null, prod6.ProductId),
+                    ProductVariant.Create("Black", null, null, null, null, 59.99m, 200, null, prod6.ProductId),
 
-                    ProductVariant.Create("TP11-SLV", "Silver", "ARM Pro", "8GB", "128GB", "11\"", 499.99m, 30, null, prod7.ProductId),
+                    ProductVariant.Create("Silver", "ARM Pro", "8GB", "128GB", "11\"", 499.99m, 30, null, prod7.ProductId),
                 };
 
                 context.ProductVariants.AddRange(variants);

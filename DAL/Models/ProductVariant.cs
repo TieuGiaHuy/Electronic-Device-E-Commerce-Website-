@@ -7,7 +7,7 @@ namespace DAL.Models
     public class ProductVariant : IBaseEntity
     {
         public Guid ProductVariantId { get; set; }
-        public string ProductCode { get; set; } = string.Empty;
+        //public string ProductCode { get; set; } = string.Empty;
         public string Sku { get; set; } = string.Empty;
         public string Color { get; set; } = string.Empty;
         public string? Cpu { get; set; }
@@ -28,7 +28,7 @@ namespace DAL.Models
 
 
         public static ProductVariant Create(
-            string productCode,
+            //string productCode,
             string color,
             string? cpu,
             string? ram,
@@ -40,15 +40,15 @@ namespace DAL.Models
             int productId, Guid? promotionId)
         {
             if (price < 0)
-                throw new ArgumentException("Giá tiền không được âm.", nameof(price));
+                throw new ArgumentException("Price cannot be negative.", nameof(price));
             if (stockQuantity < 0)
-                throw new ArgumentException("Số lượng tồn kho không được âm.", nameof(stockQuantity));
+                throw new ArgumentException("Stock quantity cannot be negative.", nameof(stockQuantity));
 
-            string sku = SkuGenerator.Generate(productCode, color, cpu, ram, storage);
+            string sku = SkuGenerator.Generate(productId, color, cpu, ram, storage, screenSize);
 
             var productVariant = new ProductVariant
             {
-                ProductCode = productCode,
+                //ProductCode = productCode,
                 Sku = sku,
                 Color = color,
                 Cpu = cpu,
@@ -66,7 +66,7 @@ namespace DAL.Models
         }
 
         public static ProductVariant Create(
-            string productCode, 
+            //string productCode, 
             string color, 
             string? cpu, 
             string? ram, 
@@ -82,11 +82,11 @@ namespace DAL.Models
             if (stockQuantity < 0)
                 throw new ArgumentException("Số lượng tồn kho không được âm.", nameof(stockQuantity));
 
-            string sku = SkuGenerator.Generate(productCode, color, cpu, ram, storage);
+            string sku = SkuGenerator.Generate(productId, color, cpu, ram, storage, screenSize);
 
             var productVariant = new ProductVariant
             {
-                ProductCode = productCode,
+                //ProductCode = productCode,
                 Sku = sku,
                 Color = color,
                 Cpu = cpu,
@@ -103,26 +103,26 @@ namespace DAL.Models
         }
 
         public void Update(
-            string productCode,
-            string color,
-            string? cpu,
-            string? ram,
-            string? storage,
-            string? screenSize,
-            decimal price,
-            int stockQuantity,
-            string? imageUrl,
+            //string productCode, 
+            string color, 
+            string? cpu, 
+            string? ram, 
+            string? storage, 
+            string? screenSize, 
+            decimal price, 
+            int stockQuantity, 
+            string? imageUrl, 
             int productId)
         {
             if (price < 0)
-                throw new ArgumentException("Giá tiền không được âm.", nameof(price));
+                throw new ArgumentException("Price cannot be negative.", nameof(price));
             if (stockQuantity < 0)
-                throw new ArgumentException("Số lượng tồn kho không được âm.", nameof(stockQuantity));
+                throw new ArgumentException("Stock quantity cannot be negative.", nameof(stockQuantity));
 
-            string sku = SkuGenerator.Generate(productCode, color, cpu, ram, storage);
+            string sku = SkuGenerator.Generate(productId, color, cpu, ram, storage, screenSize);
 
             Sku = sku;
-            ProductCode = productCode;
+            //ProductCode = productCode;
             Color = color;
             Cpu = cpu;
             Ram = ram;
@@ -136,7 +136,7 @@ namespace DAL.Models
         }
 
         public void Update(
-            string productCode, 
+            //string productCode, 
             string color, 
             string? cpu, 
             string? ram, 
@@ -152,7 +152,7 @@ namespace DAL.Models
             if (stockQuantity < 0)
                 throw new ArgumentException("Số lượng tồn kho không được âm.", nameof(stockQuantity));
 
-            string sku = SkuGenerator.Generate(productCode, color, cpu, ram, storage);
+            string sku = SkuGenerator.Generate(productId, color, cpu, ram, storage, screenSize);
 
             Sku = sku;
             ProductCode = productCode;
@@ -177,6 +177,9 @@ namespace DAL.Models
 
         public void StockIn(int increaseAmount)
         {
+            if (increaseAmount < 0)
+                throw new ArgumentException("The stock increase amount cannot be negative.", nameof(increaseAmount));
+
             StockQuantity += increaseAmount;
             UpdatedAt = DateTime.UtcNow;
         }

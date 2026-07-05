@@ -5,10 +5,13 @@
 @using BLL.DTOs.Promotion.PromotionList
 @using BLL.Services.Interfaces
 @using DAL.Enums
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.QuickGrid
 @rendermode InteractiveServer
 @inject IPromotionService PromotionService
 @inject NavigationManager NavigationManager
+
+@attribute [Authorize]
 
 <PageTitle>AdminPromotions - PromoManager</PageTitle>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">

@@ -118,9 +118,15 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="m-0 fw-medium ds-heading-accent">Variant List</h2>
-    <a asp-page="Create" asp-route-productId="@Model.productId" class="btn-ds-primary d-inline-flex align-items-center shadow-sm">
-        <i class="bi bi-plus-circle me-2"></i>Add Variant
-    </a>
+
+    <div class="d-flex gap-2">
+        <a asp-page="Create" asp-route-productId="@Model.productId" class="btn-ds-primary d-inline-flex align-items-center shadow-sm">
+            <i class="bi bi-plus-circle me-2"></i>Add Variant
+        </a>
+        <a asp-page="CreateVariants" asp-route-productId="@Model.productId" class="btn-ds-primary d-inline-flex align-items-center shadow-sm">
+            <i class="bi bi-plus-circle me-2"></i>Add Matrix Variants
+        </a>
+    </div>
 </div>
 
 <div class="card ds-card shadow-sm">
@@ -131,7 +137,6 @@
                     <tr>
                         <th class="py-3 px-4">SKU</th>
                         <th>Basic Configuration</th>
-                        <th>Specifications</th>
                         <th class="text-end">Price (VND)</th>
                         <th class="text-center">Stock</th>
                         <th>Promotion Name</th>
@@ -146,10 +151,6 @@
                     @foreach (var variant in Model.ProductVariants)
                     {
                         <tr class="border-bottom">
-                            <td class="px-4">
-                                <div class="fw-medium text-dark">@variant.ProductCode</div>
-                                <div class="text-muted small">@variant.Sku</div>
-                            </td>
                             <td>
                                 <span class="badge badge-attribute me-1">@variant.Color</span>
                                 <span class="badge badge-attribute">@variant.Storage</span>

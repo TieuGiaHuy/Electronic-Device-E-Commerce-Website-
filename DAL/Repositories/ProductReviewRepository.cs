@@ -15,22 +15,32 @@ namespace DAL.Repositories
 
         public async Task<List<ProductReview>> GetAllAsync()
         {
-            return await _context.ProductReviews.ToListAsync();
+            return await _context.ProductReviews
+                .Include(r => r.Customer)
+                .Include(r => r.Product)
+                .ToListAsync();
         }
 
         public async Task<ProductReview?> GetByIdAsync(int id)
         {
-            return await _context.ProductReviews.FindAsync(id);
+            return await _context.ProductReviews
+                .Include(r => r.Customer)
+                .Include(r => r.Product)
+                .FirstOrDefaultAsync(r => r.Id == id);
         }
 
         public async Task<List<ProductReview>> GetByProductIdAsync(int productId)
         {
-            return await _context.ProductReviews.Where(r => r.ProductId == productId).ToListAsync();
+            return await _context.ProductReviews
+                .Include(r => r.Customer)
+                .Include(r => r.Product)
+                .Where(r => r.ProductId == productId)
+                .ToListAsync();
         }
 
-        public async Task<List<ProductReview>> GetByUserIdAsync(int userId)
+        public async Task<List<ProductReview>> GetByCustomerIdAsync(int customerId)
         {
-            return await _context.ProductReviews.Where(r => r.UserId == userId).ToListAsync();
+            return await _context.ProductReviews.Where(r => r.CustomerId == customerId).ToListAsync();
         }
 
         public async Task<ProductReview> CreateAsync(ProductReview review)
@@ -58,6 +68,18 @@ namespace DAL.Repositories
             if (review != null)
             {
                 review.IsDeleted = true;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> FlagAsync(int id)
+        {
+            var review = await _context.ProductReviews.FirstOrDefaultAsync(r => r.Id == id);
+            if (review != null)
+            {
+                review.Flag();
                 await _context.SaveChangesAsync();
                 return true;
             }

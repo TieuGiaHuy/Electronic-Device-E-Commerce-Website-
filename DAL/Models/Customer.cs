@@ -1,3 +1,4 @@
+using DAL.Enums;
 using DAL.Models.Base;
 
 namespace DAL.Models
@@ -9,7 +10,7 @@ namespace DAL.Models
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public string PasswordHash { get; set; }
-        public UserRole Role { get; set; }
+        public RoleEnum Role { get; set; }
         public int Points { get; set; }
 
         public bool IsDeleted { get; set; }

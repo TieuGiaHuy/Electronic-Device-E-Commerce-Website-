@@ -1,4 +1,6 @@
-﻿using BLL.DTOs.Product;
+﻿using BLL.DTOs.Product.Staff;
+using BLL.DTOs.ProductVariant.Staff;
+using BLL.DTOs.Product;
 using BLL.DTOs.ProductVariant;
 using BLL.DTOs.Promotion;
 using BLL.Services.Interfaces;
@@ -21,8 +23,8 @@ namespace UserStaff.Razor.Pages.ProductVariants
         }
 
         [BindProperty]
-        public ProductVariantCreateDto ProductVariant { get; set; } = new();
-        public ProductDto? Product { get; set; } = new();
+        public ProductVariantStaffCreateDto ProductVariant { get; set; } = new();
+        public ProductStaffDto? Product { get; set; } = new();
         public List<PromotionDto> PromotionDtos { get; set; } = new();
 
         public async Task OnGetAsync(int productId)
@@ -37,17 +39,21 @@ namespace UserStaff.Razor.Pages.ProductVariants
             {
                 return Page();
             }
-
-            var result = await _productVariantService.CreateProductVariantAsync(ProductVariant);
-            if (result != null)
+            try
             {
+                await _productVariantService.CreateProductVariantAsync(ProductVariant);
+
                 TempData["SuccessMessage"] = "The variant was created successfully!";
-                return RedirectToPage("./Index" , new { productId = ProductVariant.ProductId });
+                return RedirectToPage("./Index", new { productId = ProductVariant.ProductId });
+
             }
-            
-            TempData["ErrorMessage"] = "Failed to create the variant!";
-            ModelState.AddModelError(string.Empty, "Failed to create the Product Variant.");
-            return Page();
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                ModelState.AddModelError(string.Empty, "Failed to create the Product Variant.");
+                return RedirectToPage("./Index", new { productId = ProductVariant.ProductId });
+            }
+
         }
     }
 }

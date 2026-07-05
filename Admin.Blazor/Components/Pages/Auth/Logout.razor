@@ -1,17 +1,13 @@
 @page "/auth/logout"
-@using Microsoft.AspNetCore.Authentication
-@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Authorization
 @inject NavigationManager Navigation
-@inject IHttpContextAccessor HttpContextAccessor
+
+@attribute [AllowAnonymous]
 
 @code {
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        var httpContext = HttpContextAccessor.HttpContext;
-        if (httpContext != null)
-        {
-            await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        }
-        Navigation.NavigateTo("/auth/login");
+        // Redirect to Razor Page handler that does the actual signout
+        Navigation.NavigateTo("/auth/logout-handler", forceLoad: true);
     }
 }
