@@ -418,6 +418,10 @@ namespace DAL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("product_id");
 
+                    b.Property<Guid?>("PromotionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("promotion_id");
+
                     b.Property<string>("Ram")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
@@ -455,6 +459,9 @@ namespace DAL.Migrations
 
                     b.HasIndex("ProductId")
                         .HasDatabaseName("ix_product_variants_product_id");
+
+                    b.HasIndex("PromotionId")
+                        .HasDatabaseName("ix_product_variants_promotion_id");
 
                     b.HasIndex("Sku")
                         .IsUnique()
@@ -690,7 +697,14 @@ namespace DAL.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_product_variants_products_product_id");
 
+                    b.HasOne("DAL.Models.Promotion", "Promotion")
+                        .WithMany()
+                        .HasForeignKey("PromotionId")
+                        .HasConstraintName("fk_product_variants_promotions_promotion_id");
+
                     b.Navigation("Product");
+
+                    b.Navigation("Promotion");
                 });
 
             modelBuilder.Entity("DAL.Models.Order", b =>

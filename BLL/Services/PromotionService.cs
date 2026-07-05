@@ -20,6 +20,60 @@ namespace BLL.Services
             _unitOfWork = unitOfWork;
         }
 
+        public async Task CreatePromotionAsync(PromotionCreateDto promotionCreateDto)
+        {
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+                var promotion = _mapper.Map<Promotion>(promotionCreateDto);
+                await _unitOfWork.Repository<Promotion>().AddAsync(promotion);
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                throw new Exception($"Error creating promotion: {ex.Message}");
+            }
+        }
+
+        public async Task DeletePromotionAsync(Guid id)
+        {
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+                var promotion = await _unitOfWork.Repository<Promotion>().Query().FirstOrDefaultAsync(p => p.PromotionId == id);
+                if (promotion is null)
+                {
+                    throw new Exception("Promotion not found");
+                }
+                promotion.Delete();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                throw new Exception($"Error deleting promotion: {ex.Message}");
+            }
+        }
+
+        public async Task<List<PromotionDto>> GetActiveAndUpcomingPromotionsAsync()
+        {
+            var promotionsQuery = _unitOfWork.Repository<Promotion>().Query()
+                .Where(p => !p.IsDeleted && !p.IsDisabled)
+                .Where(p =>
+                    // Active promotions
+                    (!p.IsLimitedTime && p.IsReservedStock && p.MaxReservedStock > 0) ||
+                    (p.IsLimitedTime && p.StartAt.HasValue && p.EndAt.HasValue && p.StartAt.Value <= DateTime.UtcNow && p.EndAt.Value >= DateTime.UtcNow && !p.IsReservedStock) ||
+                    (p.IsLimitedTime && p.StartAt.HasValue && p.EndAt.HasValue && p.StartAt.Value <= DateTime.UtcNow && p.EndAt.Value >= DateTime.UtcNow && p.IsReservedStock && p.MaxReservedStock > 0) ||
+                    // Upcoming promotions
+                    (p.IsLimitedTime && p.StartAt.HasValue && p.EndAt.HasValue && p.StartAt.Value > DateTime.UtcNow)
+                );
+            var promotions = await promotionsQuery.ToListAsync();
+            return _mapper.Map<List<PromotionDto>>(promotions);
+        }
+
         public async Task<PromotionListResponeDto> GetPromotionsListAsync(PromotionListRequest request)
         {
             // Query
@@ -27,7 +81,7 @@ namespace BLL.Services
 
             if (!string.IsNullOrEmpty(request.SearchTerm))
             {
-                promotionsQuery = promotionsQuery.Where(p => p.Name.Contains(request.SearchTerm));
+                promotionsQuery = promotionsQuery.Where(p => p.Name.ToLower().Contains(request.SearchTerm.ToLower()));
             }
 
             // Pagination
@@ -81,6 +135,37 @@ namespace BLL.Services
                     PageSize = request.Pagination.PageSize
                 }
             };
+        }
+
+        public async Task UpdatePromotionAsync(Guid id, PromotionUpdateDto promotionUpdateDto)
+        {
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+                var promotion = await _unitOfWork.Repository<Promotion>().Query().FirstOrDefaultAsync(p => p.PromotionId == id);
+                if (promotion is null)
+                {
+                    throw new Exception("Promotion not found");
+                }
+                promotion.Update(
+                    promotionUpdateDto.PromotionType,
+                    promotionUpdateDto.SalePrice,
+                    promotionUpdateDto.ThresholdPrice,
+                    promotionUpdateDto.Percentage,
+                    promotionUpdateDto.IsReservedStock,
+                    promotionUpdateDto.MaxReservedStock,
+                    promotionUpdateDto.IsLimitedTime,
+                    promotionUpdateDto.StartAt,
+                    promotionUpdateDto.EndAt
+                );
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                throw new Exception($"Error updating promotion: {ex.Message}");
+            }
         }
     }
 }

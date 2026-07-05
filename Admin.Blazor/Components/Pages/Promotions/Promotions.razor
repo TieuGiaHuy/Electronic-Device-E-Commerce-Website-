@@ -1,10 +1,12 @@
-@page "/promotions"
+﻿@page "/promotions"
+@using AutoMapper
 @using BLL.DTOs.Pagination
 @using BLL.DTOs.Promotion
 @using BLL.DTOs.Promotion.PromotionList
 @using BLL.Services.Interfaces
 @using DAL.Enums
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.QuickGrid
 @rendermode InteractiveServer
 @inject IPromotionService PromotionService
 @inject NavigationManager NavigationManager
@@ -22,7 +24,7 @@
             <h1 class="fw-bold mb-1">Promotion</h1>
         </div>
 
-        <button class="btn btn-danger px-4 py-2">
+        <button class="btn btn-danger px-4 py-2" @onclick="showCreate">
             <i class="bi bi-plus-lg"></i>
             Create Promotion
         </button>
@@ -88,7 +90,7 @@
                             </span>
                             <input type="text"
                                    class="form-control border-start-0 bg-light"
-                                   placeholder="Search promotion name..." @bind="searchName">
+                                   placeholder="Search promotion name..." @bind="searchName" @bind:event="oninput" @onkeyup="LoadPromotions">
                         </div>
                     </div>
 
@@ -175,7 +177,7 @@
                                 }
                                 else
                                 {
-                                    <td>Unlimited from @promotion.StartAt to @promotion.EndAt</td>
+                                    <td class="col-3">Unlimited from @promotion.StartAt to @promotion.EndAt</td>
                                 }
 
                                 @if (promotion.StartAt.HasValue && promotion.EndAt.HasValue)
@@ -208,10 +210,10 @@
                                     }
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn btn-sm btn-primary me-2">
+                                    <button class="btn btn-sm btn-primary me-2" @onclick="() => showEdit(promotion)">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger">
+                                    <button class="btn btn-sm btn-danger" @onclick="() => showDelete(promotion)">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </td>
@@ -231,10 +233,10 @@
                             Showing 1 to 10 of 50 entries
                         </span>
 
-                        <select class="form-select form-select-sm w-auto">
-                            <option>10</option>
-                            <option>25</option>
-                            <option>50</option>
+                        <select class="form-select form-select-sm w-auto" @onchange="OnPageSizeChanged">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
                         </select>
                     </div>
 
@@ -275,11 +277,63 @@
 
     </div>
 </div>
+@if (showCreateModal)
+{
+    <div class="modal fade show d-block"
+         tabindex="-1"
+         style="background:rgba(0,0,0,.4);backdrop-filter:blur(4px);">
+
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+
+                <!-- Copy phần form trong HTML vào đây -->
+                <CreatePromotion OnCreated="OnSaved" OnCancel="ClosePanels"/>
+            </div>
+        </div>
+    </div>
+}
+@if (showEditModal && selectedPromotion != null)
+{
+    <div class="modal fade show d-block"
+         tabindex="-1"
+         style="background:rgba(0,0,0,.4);backdrop-filter:blur(4px);">
+
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+
+                <!-- Copy phần form trong HTML vào đây -->
+                <UpdatePromotion PromotionDto="selectedPromotion" OnEdited="OnSaved" OnCancel="ClosePanels" />
+            </div>
+        </div>
+    </div>
+}
+@if (showDeleteModal && selectedPromotion != null)
+{
+    <div class="modal fade show d-block"
+         tabindex="-1"
+         style="background:rgba(0,0,0,.4);backdrop-filter:blur(4px);">
+
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+
+                <!-- Copy phần form trong HTML vào đây -->
+                <DeletePromotion promotionId="selectedPromotion.PromotionId" OnDeleted="OnSaved" OnCancel="ClosePanels" />
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     private PromotionListResponeDto? promotions;
     private string searchName = string.Empty;
-    private PromotionStatusEnum promotionStatus;
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private bool showCreateModal = false;
+    private bool showEditModal = false;
+    private bool showDeleteModal = false;
+    private bool showDetailsModal = false;
+    private PromotionDto? selectedPromotion;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -294,11 +348,57 @@
             IncludeDeleted = false,
             Pagination = new PaginationRequest
             {
-                Page = 1,
-                PageSize = 10
+                Page = currentPage,
+                PageSize = pageSize
             }
         };
         promotions = await PromotionService.GetPromotionsListAsync(request);
+    }
+
+    private async Task OnPageSizeChanged(ChangeEventArgs e)
+    {
+        pageSize = int.Parse(e.Value!.ToString()!);
+        currentPage = 1;
+        await LoadPromotions();
+    }
+
+    private async Task OnPageChanged(int page)
+    {
+        currentPage = page;
+        await LoadPromotions();
+    }
+
+    private async Task OnSaved()
+    {
+        await LoadPromotions();
+        ClosePanels();
+    }
+
+    private void ClosePanels()
+    {
+        showCreateModal = showEditModal = showDetailsModal = showDeleteModal = false;
+        selectedPromotion = null;
+    }
+
+    private void showCreate()
+    {
+        showCreateModal = true;
+        showEditModal = showDetailsModal = showDeleteModal = false;
+        selectedPromotion = null;
+    }
+
+    private void showEdit(PromotionDto promotion)
+    {
+        selectedPromotion = promotion;
+        showEditModal = true;
+        showCreateModal = showDetailsModal = showDeleteModal = false;
+    }
+
+    private void showDelete(PromotionDto promotion)
+    {
+        selectedPromotion = promotion;
+        showEditModal = showCreateModal = showDetailsModal = false;
+        showDeleteModal = true;
     }
 
     private async Task<PromotionStatusEnum> GetStatus(PromotionDto promotion)
@@ -312,7 +412,7 @@
         {
             return PromotionStatusEnum.Disabled;
         }
-        
+
         if (promotion.IsLimitedTime && promotion.StartAt.HasValue && promotion.EndAt.HasValue)
         {
             var currentDate = DateTime.UtcNow;

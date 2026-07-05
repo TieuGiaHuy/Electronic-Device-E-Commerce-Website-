@@ -75,7 +75,8 @@ namespace BLL.Services
                 productVariant.Price,
                 productVariant.StockQuantity,
                 productVariant.ImageUrl,
-                productVariant.ProductId
+                productVariant.ProductId,
+                productVariant.PromotionId
             );
             var createdVariant = await _productVariantRepository.CreateProductVariantAsync(newVariant);
 
@@ -92,6 +93,7 @@ namespace BLL.Services
                 StockQuantity = createdVariant.StockQuantity,
                 ImageUrl = createdVariant.ImageUrl,
                 ProductId = createdVariant.ProductId,
+                PromotionId = createdVariant.PromotionId,  
                 IsDeleted = createdVariant.IsDeleted,
                 CreatedAt = createdVariant.CreatedAt,
                 UpdatedAt = createdVariant.UpdatedAt
@@ -115,7 +117,8 @@ namespace BLL.Services
                 productVariant.Price,
                 productVariant.StockQuantity,
                 productVariant.ImageUrl,
-                productVariant.ProductId
+                productVariant.ProductId,
+                productVariant.PromotionId
             );
 
             return await _productVariantRepository.UpdateProductVariantAsync(existingVariant);
@@ -142,6 +145,8 @@ namespace BLL.Services
                 StockQuantity = v.StockQuantity,
                 ImageUrl = v.ImageUrl,
                 ProductId = v.ProductId,
+                PromotionId = v.PromotionId,
+                Promotion = v.Promotion,
                 IsDeleted = v.IsDeleted,
                 CreatedAt = v.CreatedAt,
                 UpdatedAt = v.UpdatedAt
