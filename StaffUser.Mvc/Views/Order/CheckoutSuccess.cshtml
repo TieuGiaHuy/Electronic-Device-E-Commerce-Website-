@@ -1,3 +1,4 @@
+@using System.Globalization
 @model BLL.DTOs.Order.OrderCheckoutResultDto
 @{
     ViewData["Title"] = "Order Created";
@@ -25,19 +26,19 @@
                     <div class="col-md-3">
                         <div class="p-3 bg-light rounded-3 h-100">
                             <div class="text-muted small">Subtotal</div>
-                            <div class="fw-semibold">@Model.Subtotal.ToString("C")</div>
+                            <div class="fw-semibold">@Model.Subtotal.ToString("C", new CultureInfo("vi-VN"))</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="p-3 bg-light rounded-3 h-100">
                             <div class="text-muted small">Shipping</div>
-                            <div class="fw-semibold">@Model.Shipping.ToString("C")</div>
+                            <div class="fw-semibold">@Model.Shipping.ToString("C", new CultureInfo("vi-VN"))</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="p-3 bg-light rounded-3 h-100">
                             <div class="text-muted small">Total</div>
-                            <div class="fw-bold text-danger fs-5">@Model.Total.ToString("C")</div>
+                            <div class="fw-bold text-danger fs-5">@Model.Total.ToString("C", new CultureInfo("vi-VN"))</div>
                         </div>
                     </div>
                 </div>
@@ -61,8 +62,8 @@
                                         <div class="text-muted small">@item.ProductVariantDetails</div>
                                     </td>
                                     <td class="text-end">@item.Quantity</td>
-                                    <td class="text-end">@item.PriceAtPurchase.ToString("C")</td>
-                                    <td class="text-end">@((item.PriceAtPurchase * item.Quantity).ToString("C"))</td>
+                                    <td class="text-end">@item.PriceAtPurchase.ToString("C", new CultureInfo("vi-VN"))</td>
+                                    <td class="text-end">@((item.PriceAtPurchase * item.Quantity).ToString("C", new CultureInfo("vi-VN")))</td>
                                 </tr>
                             }
                         </tbody>

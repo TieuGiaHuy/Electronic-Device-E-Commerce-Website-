@@ -1,5 +1,5 @@
 ﻿@page
-@model UserStaff.Razor.Pages.ProductVariants.IndexModel
+@model Staff.Razor.Pages.ProductVariants.IndexModel
 @{
     ViewData["Title"] = "Product Variant Management";
 }
@@ -164,6 +164,10 @@
                                     @if (!string.IsNullOrEmpty(variant.Cpu))
                                     {
                                         <span class="d-block"><b>CPU:</b> @variant.Cpu</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(variant.ScreenSize))
+                                    {
+                                        <span class="d-block"><b>Screen:</b> @variant.ScreenSize</span>
                                     }
                                 </div>
                             </td>

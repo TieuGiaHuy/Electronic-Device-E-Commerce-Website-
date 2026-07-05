@@ -1,7 +1,7 @@
 using BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using StaffUser.Mvc.Models;
+using Customer.Mvc.Models;
 using System.Security.Claims;
 
 namespace StaffUser.Mvc.Controllers

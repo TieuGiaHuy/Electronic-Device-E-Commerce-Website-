@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
 
-namespace UserStaff.Razor.Pages.Auth
+namespace Staff.Razor.Pages.Auth
 {
     public class SetNewPasswordModel : PageModel
     {

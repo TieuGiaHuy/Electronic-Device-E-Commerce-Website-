@@ -3,7 +3,7 @@ using BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace UserStaff.Razor.Pages.Reviews
+namespace Staff.Razor.Pages.Reviews
 {
     public class IndexModel : PageModel
     {
