@@ -11,6 +11,15 @@
         <h2 class="fw-bold text-dark mb-4"><i class="bi bi-cart3 me-2 text-danger"></i>Shopping Cart</h2>
     </div>
 
+    @if (TempData["CheckoutError"] != null)
+    {
+        <div class="col-12">
+            <div class="alert alert-danger border-0 shadow-sm" role="alert">
+                @TempData["CheckoutError"]
+            </div>
+        </div>
+    }
+
     @if (Model == null || !Model.Any())
     {
         <div class="col-12">
@@ -111,24 +120,6 @@
             </div>
         </div>
     }
-</div>
-
-<div class="modal fade" id="checkoutDevModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header border-0 pb-0">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4 text-center">
-                <i class="bi bi-info-circle text-primary" style="font-size: 3rem;"></i>
-                <h5 class="fw-bold text-dark mt-3">Checkout & Order</h5>
-                <p class="text-muted mt-2">The checkout process and order creation features are currently under development. These features will be integrated soon!</p>
-            </div>
-            <div class="modal-footer border-0 justify-content-center pb-4">
-                <button type="button" class="btn btn-secondary px-4 py-2" data-bs-dismiss="modal" style="border-radius: 8px;">Close</button>
-            </div>
-        </div>
-    </div>
 </div>
 
 @section Scripts {
@@ -270,8 +261,7 @@
                 showToast("Please select at least one item to proceed to order.", "info", "No Items Selected");
                 return;
             }
-            var myModal = new bootstrap.Modal(document.getElementById('checkoutDevModal'));
-            myModal.show();
+            document.getElementById('checkoutForm').submit();
         }
     </script>
 }

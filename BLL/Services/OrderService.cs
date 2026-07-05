@@ -1,8 +1,10 @@
 using BLL.DTOs.Order;
 using BLL.DTOs.OrderItem;
 using BLL.Services.Interfaces;
+using DAL.Data;
 using DAL.Models;
 using DAL.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BLL.Services
 {
@@ -15,15 +17,21 @@ namespace BLL.Services
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderItemRepository _orderItemRepository;
+        private readonly ICartItemRepository _cartItemRepository;
+        private readonly AppDbContext _context;
         private readonly IProductVariantRepository _productVariantRepository;
 
         public OrderService(
             IOrderRepository orderRepository,
             IOrderItemRepository orderItemRepository,
+            ICartItemRepository cartItemRepository,
+            AppDbContext context,
             IProductVariantRepository productVariantRepository)
         {
             _orderRepository = orderRepository;
             _orderItemRepository = orderItemRepository;
+            _cartItemRepository = cartItemRepository;
+            _context = context;
             _productVariantRepository = productVariantRepository;
         }
 
@@ -93,6 +101,119 @@ namespace BLL.Services
             // Save to database
             var createdOrder = await _orderRepository.CreateOrderAsync(newOrder);
             return MapOrderToDto(createdOrder);
+        }
+
+        public async Task<OrderCheckoutResultDto> CheckoutCartAsync(int customerId, IReadOnlyCollection<int> selectedCartItemIds)
+        {
+            if (customerId <= 0)
+            {
+                throw new ArgumentException("Customer is invalid.", nameof(customerId));
+            }
+
+            var uniqueSelectedIds = selectedCartItemIds.Distinct().ToList();
+            if (!uniqueSelectedIds.Any())
+            {
+                throw new ArgumentException("At least one cart item must be selected.", nameof(selectedCartItemIds));
+            }
+
+            var cartItems = await _cartItemRepository.GetCartItemsByCustomerIdAsync(customerId);
+            var selectedCartItems = cartItems.Where(item => uniqueSelectedIds.Contains(item.CartItemId)).ToList();
+
+            if (selectedCartItems.Count != uniqueSelectedIds.Count)
+            {
+                throw new InvalidOperationException("One or more selected cart items are invalid or no longer available.");
+            }
+
+            decimal subtotal = 0m;
+            decimal discount = 0m;
+            decimal shipping = 0m;
+            var orderItems = new List<OrderItem>();
+
+            foreach (var cartItem in selectedCartItems)
+            {
+                var variant = cartItem.ProductVariant;
+                if (variant == null)
+                {
+                    throw new InvalidOperationException($"Product variant for cart item {cartItem.CartItemId} could not be loaded.");
+                }
+
+                if (variant.IsDeleted)
+                {
+                    throw new InvalidOperationException($"Product variant {variant.ProductVariantId} is no longer available.");
+                }
+
+                if (variant.Product == null || variant.Product.IsDeleted)
+                {
+                    throw new InvalidOperationException($"Product for variant {variant.ProductVariantId} is no longer available.");
+                }
+
+                if (cartItem.Quantity <= 0)
+                {
+                    throw new InvalidOperationException($"Quantity for cart item {cartItem.CartItemId} must be greater than zero.");
+                }
+
+                if (cartItem.Quantity > variant.StockQuantity)
+                {
+                    throw new InvalidOperationException($"Only {variant.StockQuantity} units are available for variant {variant.ProductVariantId}.");
+                }
+
+                var unitPrice = variant.Price;
+                if (unitPrice < 0)
+                {
+                    throw new InvalidOperationException($"Price for variant {variant.ProductVariantId} is invalid.");
+                }
+
+                subtotal += unitPrice * cartItem.Quantity;
+
+                orderItems.Add(OrderItem.Create(
+                    Guid.Empty,
+                    variant.ProductVariantId,
+                    cartItem.Quantity,
+                    unitPrice));
+            }
+
+            var total = subtotal - discount + shipping;
+            if (total < 0)
+            {
+                total = 0;
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var order = Order.Create(customerId, null, total, "Pending");
+
+                foreach (var orderItem in orderItems)
+                {
+                    var orderItemWithOrderId = OrderItem.Create(
+                        order.OrderId,
+                        orderItem.ProductVariantId,
+                        orderItem.Quantity,
+                        orderItem.PriceAtPurchase);
+
+                    order.AddOrderItem(orderItemWithOrderId);
+                }
+
+                var createdOrder = await _orderRepository.CreateOrderAsync(order);
+                await _cartItemRepository.DeleteCartItemsAsync(uniqueSelectedIds);
+                await transaction.CommitAsync();
+
+                return new OrderCheckoutResultDto
+                {
+                    Order = MapOrderToDto(createdOrder),
+                    Subtotal = subtotal,
+                    Discount = discount,
+                    Shipping = shipping,
+                    Total = total,
+                    PaymentStatus = "Unpaid"
+                };
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         /// <summary>
