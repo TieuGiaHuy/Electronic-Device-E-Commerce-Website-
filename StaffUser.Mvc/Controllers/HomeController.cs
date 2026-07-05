@@ -3,8 +3,9 @@ using StaffUser.Mvc.Models;
 using BLL.Services.Interfaces;
 using System.Diagnostics;
 using BLL.DTOs.Product.Staff;
+using Microsoft.AspNetCore.Authorization;
 
-namespace StaffUser.Mvc.Controllers
+namespace Customer.Mvc.Controllers
 {
     public class HomeController : Controller
     {
@@ -101,6 +102,7 @@ namespace StaffUser.Mvc.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

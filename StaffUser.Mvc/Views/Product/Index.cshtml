@@ -231,27 +231,25 @@
                             Status: <strong id="txtStockStatus" class="text-success">In Stock</strong>
                         </div>
 
-                        <form asp-controller="Product" asp-action="AddToCart" method="post">
-                            <input type="hidden" id="selectedVariantId" name="variantId" value="@defaultVariant.ProductVariantId" />
+                        <div id="selectedVariantId" data-variant-id="@defaultVariant.ProductVariantId"></div>
 
-                            <div class="d-flex flex-column gap-2 mb-4">
-                                <span class="fw-bold text-secondary small text-uppercase">Quantity:</span>
-                                <div class="input-group quantity-wrapper">
-                                    <button class="btn btn-outline-secondary" type="button" id="btnMinus">-</button>
-                                    <input type="number" id="inputQuantity" name="quantity" class="form-control" value="1" min="1" autocomplete="off" />
-                                    <button class="btn btn-outline-secondary" type="button" id="btnPlus">+</button>
-                                </div>
-                                <div id="lblQuantityWarning" class="text-danger small fw-bold d-none">
-                                    ⚠️ Not enough items available in stock!
-                                </div>
+                        <div class="d-flex flex-column gap-2 mb-4">
+                            <span class="fw-bold text-secondary small text-uppercase">Quantity:</span>
+                            <div class="input-group quantity-wrapper">
+                                <button class="btn btn-outline-secondary" type="button" id="btnMinus">-</button>
+                                <input type="number" id="inputQuantity" class="form-control" value="1" min="1" autocomplete="off" />
+                                <button class="btn btn-outline-secondary" type="button" id="btnPlus">+</button>
                             </div>
+                            <div id="lblQuantityWarning" class="text-danger small fw-bold d-none">
+                                ⚠️ Not enough items available in stock!
+                            </div>
+                        </div>
 
-                            <div>
-                                <button type="submit" id="btnActionSubmit" class="btn-cps-buy">
-                                    <i class="bi bi-cart-plus-fill me-2"></i> Add To Cart
-                                </button>
-                            </div>
-                        </form>
+                        <div>
+                            <button type="button" id="btnActionSubmit" class="btn-cps-buy" onclick="submitAddToCart()">
+                                <i class="bi bi-cart-plus-fill me-2"></i> Add To Cart
+                            </button>
+                        </div>
                     </div>
                 </div>
             }
@@ -425,7 +423,7 @@
             const inputQty = document.getElementById('inputQuantity');
 
             if (exactMatch) {
-                inputIdEl.value = exactMatch.productVariantId;
+                document.getElementById('selectedVariantId').setAttribute('data-variant-id', exactMatch.productVariantId);
                 priceEl.innerText = new Intl.NumberFormat('vi-VN').format(exactMatch.price);
                 skuEl.innerText = exactMatch.sku;
                 if (exactMatch.imageUrl) imgEl.src = exactMatch.imageUrl;
@@ -456,6 +454,38 @@
                 txtStockStatus.className = "text-secondary fw-bold";
                 document.getElementById('lblQuantityWarning').classList.add('d-none');
             }
+        }
+
+        function submitAddToCart() {
+            const variantId = document.getElementById('selectedVariantId').getAttribute('data-variant-id');
+            const qty = parseInt(document.getElementById('inputQuantity').value) || 1;
+            const btn = document.getElementById('btnActionSubmit');
+
+            btn.disabled = true;
+
+            $.ajax({
+                url: '@Url.Action("AddToCart", "Cart")',
+                type: 'POST',
+                data: { variantId: variantId, quantity: qty },
+                success: function (response) {
+                    btn.disabled = false;
+                    if (response.success) {
+                        $("#cart-count").text(response.totalCount);
+                        showToast(response.message, "success", "Cart Updated");
+                    } else {
+                        showToast(response.message, "error", "Add to Cart Failed");
+                    }
+                },
+                error: function (xhr) {
+                    btn.disabled = false;
+                    if (xhr.status === 401 || xhr.status === 403) {
+                        // Chưa đăng nhập -> CartController có [Authorize]
+                        window.location.href = '@Url.Action("Login", "Auth")?returnUrl=' + encodeURIComponent(window.location.pathname);
+                    } else {
+                        showToast("Error communicating with cart.", "error", "Connection Error");
+                    }
+                }
+            });
         }
     </script>
 }

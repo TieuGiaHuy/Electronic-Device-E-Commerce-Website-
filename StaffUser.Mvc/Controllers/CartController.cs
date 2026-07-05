@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace StaffUser.Mvc.Controllers
+namespace Customer.Mvc.Controllers
 {
     [Authorize]
     public class CartController : Controller
@@ -84,7 +84,7 @@ namespace StaffUser.Mvc.Controllers
                 var cartItems = await _cartItemService.GetCartItemsByCustomerIdAsync(CustomerId);
                 var totalCount = cartItems.Sum(i => i.Quantity);
 
-                return Json(new { success = true, message = "Product added to cart!", totalCount = totalCount });
+                return Json(new { success = true, message = "Product added to cart!", totalCount });
             }
             catch (ArgumentException ex)
             {

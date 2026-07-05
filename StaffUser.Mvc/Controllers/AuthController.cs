@@ -6,20 +6,21 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System;
+using Microsoft.AspNetCore.Authorization;
 // Removed MVC ViewModels; using BLL DTOs for set-new-password flow
 
-namespace StaffUser.Mvc.Controllers
+namespace Customer.Mvc.Controllers
 {
     public class AuthController : Controller
     {
-                /*
-                 MVC AuthController
-                 - Handles Login/Logout/Register/ForgotPassword/SetNewPassword for customers (site users)
-                 - Uses ICustomerService to validate credentials, create users, and reset passwords
-                 - Uses cookie authentication via HttpContext.SignInAsync / SignOutAsync
-                 - Note: ForgotPassword uses a simplified dev flow (redirect to SetNewPassword).
-                     In production, use a token emailed to the user instead.
-                */
+        /*
+         MVC AuthController
+         - Handles Login/Logout/Register/ForgotPassword/SetNewPassword for customers (site users)
+         - Uses ICustomerService to validate credentials, create users, and reset passwords
+         - Uses cookie authentication via HttpContext.SignInAsync / SignOutAsync
+         - Note: ForgotPassword uses a simplified dev flow (redirect to SetNewPassword).
+             In production, use a token emailed to the user instead.
+        */
         private readonly ICustomerService _customerService;
 
         public AuthController(ICustomerService customerService)
@@ -27,11 +28,13 @@ namespace StaffUser.Mvc.Controllers
             _customerService = customerService;
         }
 
+        [AllowAnonymous]
         public IActionResult Login()
         {
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
@@ -93,11 +96,13 @@ namespace StaffUser.Mvc.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        [AllowAnonymous]
         public IActionResult ForgotPassword()
         {
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(string email)
@@ -121,9 +126,10 @@ namespace StaffUser.Mvc.Controllers
 
             // For a simplified dev flow, redirect the user to a page
             // where they can set a new password. In production use a secure token+email.
-            return RedirectToAction("SetNewPassword", new { email = email });
+            return RedirectToAction("SetNewPassword", new { email });
         }
 
+        [AllowAnonymous]
         public IActionResult SetNewPassword(string email)
         {
             if (string.IsNullOrWhiteSpace(email)) return RedirectToAction("ForgotPassword");
@@ -131,6 +137,7 @@ namespace StaffUser.Mvc.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetNewPassword(CustomerSetPasswordDto model)
@@ -153,16 +160,19 @@ namespace StaffUser.Mvc.Controllers
             return RedirectToAction("Login");
         }
 
+        [AllowAnonymous]
         public IActionResult AccessDenied()
         {
             return View();
         }
 
+        [AllowAnonymous]
         public IActionResult Register()
         {
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Register(CustomerRegisterDto registerDto)
         {
