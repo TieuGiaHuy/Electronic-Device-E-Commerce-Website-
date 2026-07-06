@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
 
-namespace UserStaff.Razor.Pages.Profile
+namespace Staff.Razor.Pages.Profile
 {
     [Authorize]
     public class ChangePasswordModel : PageModel

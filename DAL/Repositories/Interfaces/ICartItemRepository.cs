@@ -10,6 +10,7 @@ namespace DAL.Repositories.Interfaces
         Task<bool> UpdateCartItemAsync(CartItem cartItem);
         Task<bool> UpdateCartItemQuantityAsync(int cartItemId, int quantity);
         Task<bool> DeleteCartItemAsync(int cartItemId);
+        Task<bool> DeleteCartItemsAsync(IEnumerable<int> cartItemIds);
         Task<CartItem?> GetCartItemByCustomerIdAndVariantIdAsync(int customerId, Guid productVariantId);
     }
 }

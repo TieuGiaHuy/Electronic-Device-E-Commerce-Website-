@@ -9,6 +9,8 @@ namespace Customer.Mvc.Controllers
 {
     public class ReviewsController : Controller
     {
+        private bool IsAjax() => Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+
         private readonly IProductReviewService _productReviewService;
         private readonly IProductService _productService;
 
@@ -114,7 +116,7 @@ namespace Customer.Mvc.Controllers
                 if (hasReviewed)
                 {
                     TempData["InfoMessage"] = "You have already reviewed this product. You can edit your existing review.";
-                    return RedirectToAction("ProductReviews", new { productId = productId.Value });
+                    return RedirectToAction("Index", "Product", new { id = productId.Value }, "reviews");
                 }
             }
 
@@ -129,45 +131,40 @@ namespace Customer.Mvc.Controllers
         {
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(email))
-            {
-                return RedirectToAction("Login", "Auth");
-            }
+                return IsAjax() ? Json(new { success = false, message = "Please log in." }) : RedirectToAction("Login", "Auth");
 
-            // Get customer ID from email
             var customerService = HttpContext.RequestServices.GetRequiredService<ICustomerService>();
             var customer = await customerService.GetByEmailAsync(email);
             if (customer == null)
-            {
-                return RedirectToAction("Login", "Auth");
-            }
+                return IsAjax() ? Json(new { success = false, message = "Please log in." }) : RedirectToAction("Login", "Auth");
 
-            // Check if user already reviewed this product
             var existingReviews = await _productReviewService.GetProductReviewsByProductIdAsync(model.ProductId);
-            var hasReviewed = existingReviews.Any(r => r.CustomerId == customer.CustomerId && !r.IsDeleted);
-            
-            if (hasReviewed)
+            if (existingReviews.Any(r => r.CustomerId == customer.CustomerId && !r.IsDeleted))
             {
-                ModelState.AddModelError("", "You have already reviewed this product. You can update your existing review.");
-                var product = await _productService.GetProductByIdAsync(model.ProductId);
-                ViewBag.Product = product;
+                var msg = "You have already reviewed this product. Please edit your existing review.";
+                if (IsAjax()) return Json(new { success = false, message = msg });
+                ModelState.AddModelError("", msg);
+                ViewBag.Product = await _productService.GetProductByIdAsync(model.ProductId);
                 return View(model);
             }
 
             if (!ModelState.IsValid)
             {
-                var product = await _productService.GetProductByIdAsync(model.ProductId);
-                ViewBag.Product = product;
+                if (IsAjax())
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    return Json(new { success = false, message = string.Join(" ", errors) });
+                }
+                ViewBag.Product = await _productService.GetProductByIdAsync(model.ProductId);
                 return View(model);
             }
 
-            // Set customer ID
             model.CustomerId = customer.CustomerId;
-
-            // Create review using service
             await _productReviewService.CreateProductReviewAsync(model);
 
+            if (IsAjax()) return Json(new { success = true, message = "Review submitted successfully!" });
             TempData["SuccessMessage"] = "Review submitted successfully!";
-            return RedirectToAction("ProductReviews", new { productId = model.ProductId });
+            return RedirectToAction("Index", "Product", new { id = model.ProductId }, "reviews");
         }
 
         [Authorize]
@@ -233,6 +230,11 @@ namespace Customer.Mvc.Controllers
 
             if (!ModelState.IsValid)
             {
+                if (IsAjax())
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    return Json(new { success = false, message = string.Join(" ", errors) });
+                }
                 var productInfo = await _productService.GetProductByIdAsync(review.ProductId);
                 ViewBag.Product = productInfo;
                 return View(model);
@@ -243,16 +245,16 @@ namespace Customer.Mvc.Controllers
                 var result = await _productReviewService.UpdateProductReviewAsync(model);
                 if (result)
                 {
+                    if (IsAjax()) return Json(new { success = true, message = "Review updated successfully!" });
                     TempData["SuccessMessage"] = "Review updated successfully!";
-                    return RedirectToAction("ProductReviews", new { productId = review.ProductId });
+                    return RedirectToAction("Index", "Product", new { id = review.ProductId }, "reviews");
                 }
-                else
-                {
-                    ModelState.AddModelError("", "Failed to update review.");
-                }
+                if (IsAjax()) return Json(new { success = false, message = "Failed to update review." });
+                ModelState.AddModelError("", "Failed to update review.");
             }
             catch (Exception ex)
             {
+                if (IsAjax()) return Json(new { success = false, message = "Error: " + ex.Message });
                 ModelState.AddModelError("", "An error occurred while updating your review: " + ex.Message);
             }
 
