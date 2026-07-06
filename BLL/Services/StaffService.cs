@@ -1,7 +1,10 @@
+using AutoMapper;
+using BLL.DTOs.Pagination;
 using BLL.DTOs.Staff;
 using BLL.Services.Interfaces;
 using DAL.Models;
 using DAL.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace BLL.Services
@@ -17,11 +20,15 @@ namespace BLL.Services
         */
         private readonly IStaffRepository _staffRepository;
         private readonly ILogger<StaffService> _logger;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public StaffService(IStaffRepository staffRepository, ILogger<StaffService> logger)
+        public StaffService(IStaffRepository staffRepository, ILogger<StaffService> logger, IUnitOfWork unitOfWork, IMapper mapper)
         {
             _staffRepository = staffRepository;
             _logger = logger;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<StaffDto?> GetByEmailAsync(string email)
@@ -34,7 +41,7 @@ namespace BLL.Services
                 StaffId = staff.StaffId,
                 FullName = staff.FullName,
                 Email = staff.Email,
-                Role = (int)staff.Role,
+                Role = staff.Role,
                 IsActive = staff.IsActive,
                 CreatedAt = staff.CreatedAt,
                 UpdatedAt = staff.UpdatedAt
@@ -54,7 +61,7 @@ namespace BLL.Services
                 StaffId = staff.StaffId,
                 FullName = staff.FullName,
                 Email = staff.Email,
-                Role = (int)staff.Role,
+                Role = staff.Role,
                 IsActive = staff.IsActive,
                 CreatedAt = staff.CreatedAt,
                 UpdatedAt = staff.UpdatedAt
@@ -69,7 +76,7 @@ namespace BLL.Services
                 FullName = createDto.FullName,
                 Email = createDto.Email,
                 PasswordHash = passwordHash,
-                Role = (DAL.Enums.RoleEnum)createDto.Role,
+                Role = createDto.Role,
                 IsActive = createDto.IsActive,
                 IsDeleted = false,
                 CreatedAt = DateTime.UtcNow
@@ -81,7 +88,7 @@ namespace BLL.Services
                 StaffId = created.StaffId,
                 FullName = created.FullName,
                 Email = created.Email,
-                Role = (int)created.Role,
+                Role = created.Role,
                 IsActive = created.IsActive,
                 CreatedAt = created.CreatedAt,
                 UpdatedAt = created.UpdatedAt
@@ -103,6 +110,70 @@ namespace BLL.Services
             staff.UpdatedAt = DateTime.UtcNow;
 
             return await _staffRepository.UpdateAsync(staff);
+        }
+
+        public async Task<StaffDashBoardDto?> GetStaffsListAsync(StaffDashBoardRequestDto requestDto)
+        {
+            var staffQuery = _unitOfWork.Repository<Staff>().Query();
+            var staffList = await staffQuery
+                .Where(s => !s.IsDeleted)
+                .ToListAsync();
+            var result = new StaffDashBoardDto
+            {
+                ActiveCount = await staffQuery.CountAsync(s => s.IsActive && !s.IsDeleted),
+                Pagination = new PaginatedResponse<StaffDto>
+                {
+
+                    Items = _mapper.Map<List<StaffDto>>(staffList),
+                    Page = requestDto.PageNumber,
+                    PageSize = requestDto.PageSize,
+                    TotalCount = staffList.Count
+                }
+            };
+            return result;
+        }
+
+        public async Task UpdateStaffAsync(int id, StaffUpdateDto staffUpdateDto)
+        {
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+                var staff = await _unitOfWork.Repository<Staff>().Query().FirstOrDefaultAsync(s => s.StaffId == id);
+                if (staff is null)
+                {
+                    throw new Exception("Staff Not Found!");
+                }
+                staff.Update(staffUpdateDto.Email, staffUpdateDto.FullName, staffUpdateDto.Role, staffUpdateDto.IsActive);
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task DeleteStaffAsync(int id)
+        {
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+                var staff = await _unitOfWork.Repository<Staff>().Query().FirstOrDefaultAsync(s => s.StaffId == id);
+                if (staff is null)
+                {
+                    throw new Exception($"Staff Not Found!");
+                }
+                staff.IsDeleted = true;
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
+
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

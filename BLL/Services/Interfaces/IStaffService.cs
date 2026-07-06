@@ -9,5 +9,8 @@ namespace BLL.Services.Interfaces
         Task<StaffDto> CreateAsync(StaffCreateDto createDto);
         Task<bool> SetPasswordAsync(int staffId, string newPassword);
         Task<bool> UpdateProfileAsync(int staffId, StaffProfileDto profileDto);
+        Task<StaffDashBoardDto?> GetStaffsListAsync(StaffDashBoardRequestDto requestDto);
+        Task UpdateStaffAsync(int id, StaffUpdateDto staffUpdateDto);
+        Task DeleteStaffAsync(int id);
     }
 }

@@ -23,7 +23,7 @@ namespace DAL.Models
         public bool IsDeleted { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public Guid? PromotionId { get; set; } = Guid.Empty;
+        public Guid? PromotionId { get; set; } = null;
         virtual public Promotion? Promotion { get; set; }
 
 

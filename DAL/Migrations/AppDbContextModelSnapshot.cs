@@ -110,6 +110,10 @@ namespace DAL.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("full_name");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit")
                         .HasColumnName("is_deleted");

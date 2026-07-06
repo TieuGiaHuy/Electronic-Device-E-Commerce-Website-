@@ -1,25 +1,33 @@
+using AutoMapper;
 using BLL.DTOs.Customer;
+using BLL.DTOs.Pagination;
+using BLL.DTOs.Staff;
 using BLL.Services.Interfaces;
 using DAL.Enums;
 using DAL.Models;
 using DAL.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BLL.Services
 {
     public class CustomerService : ICustomerService
     {
-                /*
-                 CustomerService (BLL)
-                 - Provides high-level operations for customer entities used by MVC/UI layers
-                 - Responsibilities: lookup by email, validate login (BCrypt.Verify), create user
-                     (hashes password with BCrypt), and set password (hash+update)
-                 - This layer calls repository interfaces (ICustomerRepository) to access DB
-                */
+        /*
+         CustomerService (BLL)
+         - Provides high-level operations for customer entities used by MVC/UI layers
+         - Responsibilities: lookup by email, validate login (BCrypt.Verify), create user
+             (hashes password with BCrypt), and set password (hash+update)
+         - This layer calls repository interfaces (ICustomerRepository) to access DB
+        */
         private readonly ICustomerRepository _customerRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public CustomerService(ICustomerRepository customerRepository)
+        public CustomerService(ICustomerRepository customerRepository, IUnitOfWork unitOfWork, IMapper mapper)
         {
             _customerRepository = customerRepository;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<CustomerDto?> GetByEmailAsync(string email)
@@ -34,7 +42,7 @@ namespace BLL.Services
                 FullName = customer.FullName,
                 Email = customer.Email,
                 PhoneNumber = customer.PhoneNumber,
-                Role = (int)customer.Role,
+                Role = customer.Role,
                 Points = customer.Points,
                 CreatedAt = customer.CreatedAt,
                 UpdatedAt = customer.UpdatedAt
@@ -56,7 +64,7 @@ namespace BLL.Services
                 FullName = customer.FullName,
                 Email = customer.Email,
                 PhoneNumber = customer.PhoneNumber,
-                Role = (int)customer.Role,
+                Role = customer.Role,
                 Points = customer.Points,
                 CreatedAt = customer.CreatedAt,
                 UpdatedAt = customer.UpdatedAt
@@ -86,7 +94,7 @@ namespace BLL.Services
                 FullName = created.FullName,
                 Email = created.Email,
                 PhoneNumber = created.PhoneNumber,
-                Role = (int)created.Role,
+                Role = created.Role,
                 Points = created.Points,
                 CreatedAt = created.CreatedAt,
                 UpdatedAt = created.UpdatedAt
@@ -110,6 +118,62 @@ namespace BLL.Services
             customer.UpdatedAt = DateTime.UtcNow;
 
             return await _customerRepository.UpdateAsync(customer);
+        }
+
+        public async Task<CustomerDashBoardDto> GetCustomersAsync(CustomerDashBoardRequestDto requestDto)
+        {
+            var query = _unitOfWork.Repository<Customer>().Query();
+            var items = _mapper.Map<List<CustomerDto>>(await query.Where(c => c.IsDeleted == false).ToListAsync());
+            var page = new PaginatedResponse<CustomerDto>()
+            {
+                Items = items,
+                Page = requestDto.PageNumber,
+                PageSize = requestDto.PageSize,
+                TotalCount = items.Count
+            };
+            var result = new CustomerDashBoardDto()
+            {
+                ActiveCount = items.Where(c => c.IsActive == true && c.IsDeleted == false).Count(),
+                Pagination = page,
+            };
+            return result;
+        }
+
+        public async Task UpdateCustomerAsync(int customerId, CustomerUpdateDto customerUpdateDto)
+        {
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+                var customer = await _unitOfWork.Repository<Customer>().Query().FirstOrDefaultAsync(c => c.CustomerId == customerId);
+                if (customer is null) throw new Exception("Customer not found!");
+                customer.Update(customerUpdateDto.FullName, customerUpdateDto.Email, customerUpdateDto.PhoneNumber, customerUpdateDto.Role, customerUpdateDto.Points, customerUpdateDto.IsActive);
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
+
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task DeleteCustomerAsync(int customerId)
+        {
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+                var customer = await _unitOfWork.Repository<Customer>().Query().FirstOrDefaultAsync(c => c.CustomerId == customerId);
+                if (customer is null) throw new Exception("Customer not found!");
+                customer.Delete(true);
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

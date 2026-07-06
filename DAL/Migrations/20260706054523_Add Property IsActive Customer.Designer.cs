@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260705054251_Add Property Promotion For Product Variant")]
-    partial class AddPropertyPromotionForProductVariant
+    [Migration("20260706054523_Add Property IsActive Customer")]
+    partial class AddPropertyIsActiveCustomer
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,36 @@ namespace DAL.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("DAL.Models.CartItem", b =>
+                {
+                    b.Property<int>("CartItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("cart_item_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CartItemId"));
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int")
+                        .HasColumnName("customer_id");
+
+                    b.Property<Guid>("ProductVariantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("product_variant_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int")
+                        .HasColumnName("quantity");
+
+                    b.HasKey("CartItemId")
+                        .HasName("pk_cart_items");
+
+                    b.HasIndex("ProductVariantId")
+                        .HasDatabaseName("ix_cart_items_product_variant_id");
+
+                    b.ToTable("cart_items", (string)null);
+                });
 
             modelBuilder.Entity("DAL.Models.Category", b =>
                 {
@@ -82,6 +112,10 @@ namespace DAL.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("full_name");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit")
@@ -316,9 +350,17 @@ namespace DAL.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int")
+                        .HasColumnName("customer_id");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit")
                         .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsFlagged")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_flagged");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int")
@@ -332,18 +374,14 @@ namespace DAL.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("user_id");
-
                     b.HasKey("Id")
                         .HasName("pk_product_reviews");
 
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("ix_product_reviews_customer_id");
+
                     b.HasIndex("ProductId")
                         .HasDatabaseName("ix_product_reviews_product_id");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_product_reviews_user_id");
 
                     b.ToTable("product_reviews", (string)null);
                 });
@@ -382,12 +420,6 @@ namespace DAL.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("price");
-
-                    b.Property<string>("ProductCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("product_code");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int")
@@ -597,66 +629,16 @@ namespace DAL.Migrations
                     b.ToTable("staffs", (string)null);
                 });
 
-            modelBuilder.Entity("DAL.Models.User", b =>
+            modelBuilder.Entity("DAL.Models.CartItem", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Email")
+                    b.HasOne("DAL.Models.ProductVariant", "ProductVariant")
+                        .WithMany()
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("email");
+                        .HasConstraintName("fk_cart_items_product_variants_product_variant_id");
 
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("full_name");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("password_hash");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("phone_number");
-
-                    b.Property<int>("Points")
-                        .HasColumnType("int")
-                        .HasColumnName("points");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("int")
-                        .HasColumnName("role");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("pk_users");
-
-                    b.HasIndex("Email")
-                        .IsUnique()
-                        .HasDatabaseName("ix_users_email");
-
-                    b.ToTable("users", (string)null);
+                    b.Navigation("ProductVariant");
                 });
 
             modelBuilder.Entity("DAL.Models.OrderItem", b =>
@@ -694,6 +676,13 @@ namespace DAL.Migrations
 
             modelBuilder.Entity("DAL.Models.ProductReview", b =>
                 {
+                    b.HasOne("DAL.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_reviews_customers_customer_id");
+
                     b.HasOne("DAL.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
@@ -701,16 +690,9 @@ namespace DAL.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_product_reviews_products_product_id");
 
-                    b.HasOne("DAL.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_product_reviews_users_user_id");
+                    b.Navigation("Customer");
 
                     b.Navigation("Product");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DAL.Models.ProductVariant", b =>

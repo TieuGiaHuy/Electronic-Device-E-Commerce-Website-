@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDatabase : Migration
+    public partial class Databasever2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -68,6 +68,31 @@ namespace DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "promotions",
+                columns: table => new
+                {
+                    promotion_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
+                    name = table.Column<string>(type: "nvarchar(255)", nullable: false),
+                    promotion_type = table.Column<int>(type: "int", nullable: false),
+                    sale_price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    threshold_price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    percentage = table.Column<byte>(type: "tinyint", nullable: true),
+                    is_reserved_stock = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    max_reserved_stock = table.Column<int>(type: "int", nullable: true),
+                    is_limited_time = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    start_at = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    end_at = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    is_deleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    is_disabled = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_promotions", x => x.promotion_id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "staffs",
                 columns: table => new
                 {
@@ -88,46 +113,17 @@ namespace DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "users",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    full_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    phone_number = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    password_hash = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    role = table.Column<int>(type: "int", nullable: false),
-                    points = table.Column<int>(type: "int", nullable: false),
-                    is_deleted = table.Column<bool>(type: "bit", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_users", x => x.id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "products",
                 columns: table => new
                 {
                     product_id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    product_name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    product_name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     brand = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     category_id = table.Column<int>(type: "int", nullable: false),
-                    sku = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    color = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    cpu = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    ram = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    storage = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    screen_size = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    stock_quantity = table.Column<int>(type: "int", nullable: false),
-                    image_url = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    image_url = table.Column<string>(type: "varchar(max)", nullable: true),
                     is_deleted = table.Column<bool>(type: "bit", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     updated_at = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -147,11 +143,12 @@ namespace DAL.Migrations
                 {
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    user_id = table.Column<int>(type: "int", nullable: false),
+                    customer_id = table.Column<int>(type: "int", nullable: false),
                     product_id = table.Column<int>(type: "int", nullable: false),
                     rating = table.Column<int>(type: "int", nullable: false),
                     comment = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     is_deleted = table.Column<bool>(type: "bit", nullable: false),
+                    is_flagged = table.Column<bool>(type: "bit", nullable: false),
                     created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
                     updated_at = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -159,16 +156,16 @@ namespace DAL.Migrations
                 {
                     table.PrimaryKey("pk_product_reviews", x => x.id);
                     table.ForeignKey(
+                        name: "fk_product_reviews_customers_customer_id",
+                        column: x => x.customer_id,
+                        principalTable: "customers",
+                        principalColumn: "customer_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "fk_product_reviews_products_product_id",
                         column: x => x.product_id,
                         principalTable: "products",
                         principalColumn: "product_id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_product_reviews_users_user_id",
-                        column: x => x.user_id,
-                        principalTable: "users",
-                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -177,7 +174,6 @@ namespace DAL.Migrations
                 columns: table => new
                 {
                     product_variant_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    product_code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     sku = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     color = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     cpu = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
@@ -190,7 +186,8 @@ namespace DAL.Migrations
                     product_id = table.Column<int>(type: "int", nullable: false),
                     is_deleted = table.Column<bool>(type: "bit", nullable: false),
                     created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    promotion_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -200,6 +197,32 @@ namespace DAL.Migrations
                         column: x => x.product_id,
                         principalTable: "products",
                         principalColumn: "product_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_product_variants_promotions_promotion_id",
+                        column: x => x.promotion_id,
+                        principalTable: "promotions",
+                        principalColumn: "promotion_id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "cart_items",
+                columns: table => new
+                {
+                    cart_item_id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    customer_id = table.Column<int>(type: "int", nullable: false),
+                    product_variant_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    quantity = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_cart_items", x => x.cart_item_id);
+                    table.ForeignKey(
+                        name: "fk_cart_items_product_variants_product_variant_id",
+                        column: x => x.product_variant_id,
+                        principalTable: "product_variants",
+                        principalColumn: "product_variant_id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -235,31 +258,10 @@ namespace DAL.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "promotions",
-                columns: table => new
-                {
-                    promotion_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    product_variant_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    sale_price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    max_reserved_stock = table.Column<int>(type: "int", nullable: false),
-                    start_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    end_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    is_deleted = table.Column<bool>(type: "bit", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    is_disabled = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_promotions", x => x.promotion_id);
-                    table.ForeignKey(
-                        name: "fk_promotions_product_variants_product_variant_id",
-                        column: x => x.product_variant_id,
-                        principalTable: "product_variants",
-                        principalColumn: "product_variant_id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+            migrationBuilder.CreateIndex(
+                name: "ix_cart_items_product_variant_id",
+                table: "cart_items",
+                column: "product_variant_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_customers_email",
@@ -293,19 +295,24 @@ namespace DAL.Migrations
                 columns: new[] { "status", "created_at" });
 
             migrationBuilder.CreateIndex(
+                name: "ix_product_reviews_customer_id",
+                table: "product_reviews",
+                column: "customer_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_product_reviews_product_id",
                 table: "product_reviews",
                 column: "product_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_product_reviews_user_id",
-                table: "product_reviews",
-                column: "user_id");
-
-            migrationBuilder.CreateIndex(
                 name: "ix_product_variants_product_id",
                 table: "product_variants",
                 column: "product_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_product_variants_promotion_id",
+                table: "product_variants",
+                column: "promotion_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductVariant_Price",
@@ -324,30 +331,38 @@ namespace DAL.Migrations
                 column: "product_name");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Product_Sku",
-                table: "products",
-                column: "sku",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "ix_products_category_id",
                 table: "products",
                 column: "category_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_promotions_product_variant_id",
+                name: "ix_promotions_end_at",
                 table: "promotions",
-                column: "product_variant_id");
+                column: "end_at");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_promotions_is_deleted",
+                table: "promotions",
+                column: "is_deleted");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_promotions_is_disabled",
+                table: "promotions",
+                column: "is_disabled");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_promotions_promotion_type",
+                table: "promotions",
+                column: "promotion_type");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_promotions_start_at",
+                table: "promotions",
+                column: "start_at");
 
             migrationBuilder.CreateIndex(
                 name: "ix_staffs_email",
                 table: "staffs",
-                column: "email",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "ix_users_email",
-                table: "users",
                 column: "email",
                 unique: true);
         }
@@ -356,7 +371,7 @@ namespace DAL.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "customers");
+                name: "cart_items");
 
             migrationBuilder.DropTable(
                 name: "order_items");
@@ -365,22 +380,22 @@ namespace DAL.Migrations
                 name: "product_reviews");
 
             migrationBuilder.DropTable(
-                name: "promotions");
-
-            migrationBuilder.DropTable(
                 name: "staffs");
 
             migrationBuilder.DropTable(
                 name: "orders");
 
             migrationBuilder.DropTable(
-                name: "users");
-
-            migrationBuilder.DropTable(
                 name: "product_variants");
 
             migrationBuilder.DropTable(
+                name: "customers");
+
+            migrationBuilder.DropTable(
                 name: "products");
+
+            migrationBuilder.DropTable(
+                name: "promotions");
 
             migrationBuilder.DropTable(
                 name: "categories");
