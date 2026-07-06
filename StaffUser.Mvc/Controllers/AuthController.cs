@@ -197,7 +197,7 @@ namespace Customer.Mvc.Controllers
                 Email = registerDto.Email,
                 PhoneNumber = registerDto.PhoneNumber,
                 Password = registerDto.Password,
-                Role = (int)DAL.Enums.RoleEnum.Customer,
+                Role = DAL.Enums.RoleEnum.Customer,
                 Points = 0
             });
             return RedirectToAction("Login", "Auth");
