@@ -2,6 +2,8 @@
 @using BLL.DTOs.Staff
 @using BLL.Services.Interfaces
 @using DAL.Enums
+@using FluentValidation
+@inject IValidator<StaffCreateDto> Validator
 @rendermode InteractiveServer
 @inject IStaffService StaffService
 @inject NavigationManager NavigationManager
@@ -22,30 +24,42 @@
         <!-- Name -->
         <div class="col-md-6">
             <label class="form-label fw-semibold">
-                Full Name
+                Full Name <span class="text-danger">*</span>
             </label>
 
-            <input class="form-control"
+            <input class="form-control @(HasValidationError(nameof(staffCreateDto.FullName)) ? "is-invalid" : "")"
                    placeholder="Enter full name..." @bind="staffCreateDto.FullName" />
+            @if (HasValidationError(nameof(staffCreateDto.FullName)))
+            {
+                <div class="invalid-feedback">@GetValidationError(nameof(staffCreateDto.FullName))</div>
+            }
         </div>
 
-        <!-- Type -->
+        <!-- email -->
         <div class="col-md-6">
             <label class="form-label fw-semibold">
-                Email
+                Email <span class="text-danger">*</span>
             </label>
 
-            <input class="form-control"
+            <input class="form-control @(HasValidationError(nameof(staffCreateDto.Email)) ? "is-invalid" : "")"
                    placeholder="Enter email..." @bind="staffCreateDto.Email" />
+            @if (HasValidationError(nameof(staffCreateDto.Email)))
+            {
+                <div class="invalid-feedback">@GetValidationError(nameof(staffCreateDto.Email))</div>
+            }
         </div>
 
         <!--Pass-->
         <div class="col-md-6">
             <label class="form-label fw-semibold">
-                Password
+                Password <span class="text-danger">*</span>
             </label>
 
-            <input class="form-control" placeholder="Enter password..." @bind="staffCreateDto.Password"/>
+            <input class="form-control @(HasValidationError(nameof(staffCreateDto.Password)) ? "is-invalid" : "")" placeholder="Enter password..." @bind="staffCreateDto.Password" />
+            @if (HasValidationError(nameof(staffCreateDto.Password)))
+            {
+                <div class="invalid-feedback">@GetValidationError(nameof(staffCreateDto.Password))</div>
+            }
         </div>
 
         <!--Role-->
@@ -98,19 +112,51 @@
     private string errorMessage = string.Empty;
 
     private StaffCreateDto staffCreateDto = new StaffCreateDto();
+    private Dictionary<string, List<string>> validationErrors = new();
 
     private async Task Create()
     {
         try
         {
+            errorMessage = string.Empty;
+            validationErrors.Clear();
+
+            var result = await Validator.ValidateAsync(staffCreateDto);
+            if (!result.IsValid)
+            {
+                foreach (var err in result.Errors)
+                {
+                    if (!validationErrors.ContainsKey(err.PropertyName))
+                        validationErrors[err.PropertyName] = new List<string>();
+                    validationErrors[err.PropertyName].Add(err.ErrorMessage);
+                }
+
+                var first = result.Errors.FirstOrDefault();
+                if (first != null) errorMessage = $"Validation failed: {first.ErrorMessage}";
+                return;
+            }
+
             await StaffService.CreateAsync(staffCreateDto);
             await OnCreated.InvokeAsync();
+        }
+        catch (FluentValidation.ValidationException vex)
+        {
+            foreach (var err in vex.Errors)
+            {
+                if (!validationErrors.ContainsKey(err.PropertyName))
+                    validationErrors[err.PropertyName] = new List<string>();
+                validationErrors[err.PropertyName].Add(err.ErrorMessage);
+            }
+            errorMessage = "Validation failed";
         }
         catch (Exception ex)
         {
             errorMessage = ex.Message;
         }
     }
+
+    private bool HasValidationError(string field) => validationErrors.ContainsKey(field);
+    private string GetValidationError(string field) => validationErrors.TryGetValue(field, out var errs) ? string.Join(", ", errs) : string.Empty;
 
     private bool IsRoleSelected(RoleEnum staff, RoleEnum role)
     {

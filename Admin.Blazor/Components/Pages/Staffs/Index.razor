@@ -53,7 +53,7 @@
             </div>
         </div>
 
-      @*   <div class="col-lg-3 col-md-6">
+        @*   <div class="col-lg-3 col-md-6">
             <div class="card rounded-4 h-100">
                 <div class="card-body py-4">
                     <p class="text-uppercase text-warning fw-semibold small mb-2">
@@ -93,26 +93,81 @@
                         </div>
                     </div>
 
-                    <!-- Date Range -->
+                    <!-- Filter Button -->
                     <div class="col-lg-3">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white">
-                                <i class="bi bi-calendar3"></i>
-                            </span>
-                            <input type="text"
-                                   class="form-control"
-                                   value="01/01/2024 - 31/12/2024"
-                                   readonly>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary w-100" @onclick="ToggleFilterPopup">
+                                <i class="bi bi-funnel me-2"></i>
+                                Filter
+                                @if (showFilterPopup)
+                                {
+                                    <i class="bi bi-chevron-up ms-1"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-chevron-down ms-1"></i>
+                                }
+                            </button>
+                            <button class="btn btn-outline-secondary" @onclick="ClearFilters" title="Clear filters">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Filter Button -->
-                    <div class="col-lg-2">
-                        <button class="btn btn-light border w-100">
-                            <i class="bi bi-funnel me-2"></i>
-                            Filter
-                        </button>
-                    </div>
+                    <!-- Filter Popup -->
+                    @if (showFilterPopup)
+                    {
+                        <div class="row mt-3 pt-3 border-top">
+                            <div class="col-12">
+                                <div class="d-flex flex-wrap gap-4">
+                                    <!-- Include Deleted -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               id="includeDeleted"
+                                               @bind="includeDeleted"
+                                               @bind:event="oninput"
+                                               @onchange="LoadStaffs">
+                                        <label class="form-check-label fw-semibold" for="includeDeleted">
+                                            <i class="bi bi-trash text-danger me-1"></i>
+                                            Include Deleted
+                                        </label>
+                                    </div>
+
+                                    <!-- Include Disabled -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               id="includeDisabled"
+                                               @bind="includeDisabled"
+                                               @bind:event="oninput"
+                                               @onchange="LoadStaffs">
+                                        <label class="form-check-label fw-semibold" for="includeDisabled">
+                                            <i class="bi bi-eye-slash text-secondary me-1"></i>
+                                            Include Disabled
+                                        </label>
+                                    </div>
+
+                                    <!-- Active Filters Display -->
+                                    @if (HasActiveFilters())
+                                    {
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-info text-dark">
+                                                <i class="bi bi-funnel-fill me-1"></i>
+                                                Active Filters
+                                            </span>
+                                            @if (includeDeleted)
+                                            {
+                                                <span class="badge bg-danger">Deleted</span>
+                                            }
+                                            @if (includeDisabled)
+                                            {
+                                                <span class="badge bg-secondary">Disabled</span>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -161,15 +216,32 @@
                                 <td>@staff.Email</td>
                                 <td>@staff.Role</td>
                                 <td>
-                                    @GetStatus(staff)
+                                    @switch (GetStatus(staff))
+                                    {
+                                        case "Active":
+                                            <span class="badge bg-success">Active</span>
+                                            break;
+                                        case "Unknown":
+                                            <span class="badge bg-warning text-dark">Upcoming</span>
+                                            break;
+                                        case "Inactive":
+                                            <span class="badge bg-secondary">Inactive</span>
+                                            break;
+                                        case "Deleted":
+                                            <span class="badge bg-dark">Deleted</span>
+                                            break;
+                                    }
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn btn-sm btn-primary me-2" @onclick="() => showEdit(staff)">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" @onclick="() => showDelete(staff)">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
+                                    @if (!GetStatus(staff).Equals("Deleted"))
+                                    {
+                                        <button class="btn btn-sm btn-primary me-2" @onclick="() => showEdit(staff)">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" @onclick="() => showDelete(staff)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
                                 </td>
                             </tr>
                             index++;
@@ -241,7 +313,7 @@
             <div class="modal-content">
 
                 <!-- Copy phần form trong HTML vào đây -->
-                <CreateStaff OnCreated="OnSaved" OnCancel="ClosePanels"/>
+                <CreateStaff OnCreated="OnSaved" OnCancel="ClosePanels" />
             </div>
         </div>
     </div>
@@ -287,6 +359,9 @@
     private bool showDeleteModal = false;
     private bool showDetailsModal = false;
     private StaffDto? selectedStaff;
+    private bool showFilterPopup = false;
+    private bool includeDeleted = false;
+    private bool includeDisabled = false;
 
 
     protected override async Task OnInitializedAsync()
@@ -298,9 +373,14 @@
     {
         var requestDto = new StaffDashBoardRequestDto
         {
-            PageNumber = currentPage,
-            PageSize = pageSize,
-            SearchTerm = searchName
+            SearchTerm = searchName,
+            IncludeDelete = includeDeleted,
+            IncludeDisable = includeDisabled,
+            Pagination = new PaginationRequest
+            {
+                Page = currentPage,
+                PageSize = pageSize
+            }
         };
         staffs = await StaffService.GetStaffsListAsync(requestDto);
     }
@@ -356,10 +436,12 @@
         if (staff.IsActive && !staff.IsDeleted)
         {
             return "Active";
-        } else if (!staff.IsActive && !staff.IsDeleted)
+        }
+        else if (!staff.IsActive && !staff.IsDeleted)
         {
             return "Inactive";
-        } else if (staff.IsDeleted)
+        }
+        else if (staff.IsDeleted)
         {
             return "Deleted";
         }
@@ -367,5 +449,25 @@
         {
             return "Unknown";
         }
+    }
+
+    private void ToggleFilterPopup()
+    {
+        showFilterPopup = !showFilterPopup;
+    }
+
+    private async Task ClearFilters()
+    {
+        searchName = string.Empty;
+        includeDeleted = false;
+        includeDisabled = false;
+        currentPage = 1;
+        showFilterPopup = false;
+        await LoadStaffs();
+    }
+
+    private bool HasActiveFilters()
+    {
+        return includeDeleted || includeDisabled || !string.IsNullOrEmpty(searchName);
     }
 }

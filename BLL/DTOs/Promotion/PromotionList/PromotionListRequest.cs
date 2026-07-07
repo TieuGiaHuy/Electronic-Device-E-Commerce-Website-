@@ -11,6 +11,9 @@ namespace BLL.DTOs.Promotion.PromotionList
     {
         public string? SearchTerm { get; set; } = null;
         public bool IncludeDeleted { get; set; } = false;
+        public bool IncludeDisable { get; set; } = false;
+        public DateTime? StartAt { get; set; }
+        public DateTime? EndAt { get; set; }
         public PaginationRequest Pagination { get; set; } = new PaginationRequest();
     }
 }

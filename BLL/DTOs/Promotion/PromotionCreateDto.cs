@@ -26,5 +26,6 @@ namespace BLL.DTOs.Promotion
         public bool IsLimitedTime { get; set; } = false;
         public DateTime? StartAt { get; set; }
         public DateTime? EndAt { get; set; }
+        public bool IsDisable { get; set; } = false;
     }
 }

@@ -114,10 +114,17 @@ namespace BLL.Services
 
         public async Task<StaffDashBoardDto?> GetStaffsListAsync(StaffDashBoardRequestDto requestDto)
         {
-            var staffQuery = _unitOfWork.Repository<Staff>().Query();
-            var staffList = await staffQuery
-                .Where(s => !s.IsDeleted)
-                .ToListAsync();
+            var staffQuery = _unitOfWork.Repository<Staff>().Query().IgnoreQueryFilters();
+
+            if (!string.IsNullOrEmpty(requestDto.SearchTerm)) { staffQuery = staffQuery.Where(s => s.FullName.ToLower().Contains(requestDto.SearchTerm!.ToLower())); }
+
+            if (!requestDto.IncludeDisable) { staffQuery = staffQuery.Where(s => s.IsActive); }
+            if (!requestDto.IncludeDelete) { staffQuery = staffQuery.Where(s => !s.IsDeleted); }
+
+            staffQuery = staffQuery.Skip((requestDto.Pagination.Page - 1) * requestDto.Pagination.PageSize).Take(requestDto.Pagination.PageSize);
+
+            var staffList = await staffQuery.ToListAsync();
+
             var result = new StaffDashBoardDto
             {
                 ActiveCount = await staffQuery.CountAsync(s => s.IsActive && !s.IsDeleted),
@@ -125,8 +132,8 @@ namespace BLL.Services
                 {
 
                     Items = _mapper.Map<List<StaffDto>>(staffList),
-                    Page = requestDto.PageNumber,
-                    PageSize = requestDto.PageSize,
+                    Page = requestDto.Pagination.Page,
+                    PageSize = requestDto.Pagination.PageSize,
                     TotalCount = staffList.Count
                 }
             };

@@ -122,13 +122,30 @@ namespace BLL.Services
 
         public async Task<CustomerDashBoardDto> GetCustomersAsync(CustomerDashBoardRequestDto requestDto)
         {
-            var query = _unitOfWork.Repository<Customer>().Query();
-            var items = _mapper.Map<List<CustomerDto>>(await query.Where(c => c.IsDeleted == false).ToListAsync());
+            var query = _unitOfWork.Repository<Customer>().Query().IgnoreQueryFilters();
+            if (!string.IsNullOrEmpty(requestDto.SearchTerm))
+            {
+                query = query.Where(c => c.FullName.ToLower().Contains(requestDto.SearchTerm.ToLower()));
+            }
+
+            if (!requestDto.IncludeDelete)
+            {
+                query = query.Where(c => !c.IsDeleted);
+            }
+
+            if (!requestDto.IncludeDisable)
+            {
+                query = query.Where(c => c.IsActive);
+            }
+
+            query = query.Skip((requestDto.Pagination.Page - 1) * requestDto.Pagination.PageSize).Take(requestDto.Pagination.PageSize);
+
+            var items = _mapper.Map<List<CustomerDto>>(await query.ToListAsync());
             var page = new PaginatedResponse<CustomerDto>()
             {
                 Items = items,
-                Page = requestDto.PageNumber,
-                PageSize = requestDto.PageSize,
+                Page = requestDto.Pagination.Page,
+                PageSize = requestDto.Pagination.PageSize,
                 TotalCount = items.Count
             };
             var result = new CustomerDashBoardDto()

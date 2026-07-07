@@ -32,5 +32,6 @@ namespace BLL.DTOs.Promotion
         public DateTime? StartAt { get; set; }
         public DateTime? EndAt { get; set; }
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public bool IsDisable { get; set; } = false;
     }
 }

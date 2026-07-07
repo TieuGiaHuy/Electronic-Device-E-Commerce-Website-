@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BLL.DTOs.Pagination;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,8 +9,9 @@ namespace BLL.DTOs.Customer
 {
     public class CustomerDashBoardRequestDto
     {
-        public int PageNumber { get; set; } = 1;
-        public int PageSize { get; set; } = 10;
         public string? SearchTerm { get; set; }
+        public bool IncludeDelete { get; set; } = false;
+        public bool IncludeDisable { get; set; } = false;
+        public PaginationRequest Pagination { get; set; } = new PaginationRequest();
     }
 }

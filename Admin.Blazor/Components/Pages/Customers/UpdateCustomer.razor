@@ -2,6 +2,8 @@
 @using BLL.DTOs.Customer
 @using BLL.Services.Interfaces
 @using DAL.Enums
+@using FluentValidation
+@inject IValidator<CustomerUpdateDto> Validator
 @rendermode InteractiveServer
 @inject ICustomerService CustomerService
 @inject NavigationManager NavigationManager
@@ -22,31 +24,43 @@
         <!-- Name -->
         <div class="col-md-6">
             <label class="form-label fw-semibold">
-                Full Name
+                Full Name <span class="text-danger">*</span>
             </label>
 
-            <input class="form-control"
-                   placeholder="Enter full name..." @bind="staffUpdateDto.FullName" />
+            <input class="form-control @(HasValidationError(nameof(customerUpdateDto.FullName)) ? "is-invalid" : "")"
+                   placeholder="Enter full name..." @bind="customerUpdateDto.FullName" />
+            @if (HasValidationError(nameof(customerUpdateDto.FullName)))
+            {
+                <div class="invalid-feedback">@GetValidationError(nameof(customerUpdateDto.FullName))</div>
+            }
         </div>
 
         <!-- mail -->
         <div class="col-md-6">
             <label class="form-label fw-semibold">
-                Email
+                Email <span class="text-danger">*</span>
             </label>
 
-            <input class="form-control"
-                   placeholder="Enter email..." @bind="staffUpdateDto.Email" />
+            <input class="form-control @(HasValidationError(nameof(customerUpdateDto.Email)) ? "is-invalid" : "")"
+                   placeholder="Enter email..." @bind="customerUpdateDto.Email" />
+            @if (HasValidationError(nameof(customerUpdateDto.Email)))
+            {
+                <div class="invalid-feedback">@GetValidationError(nameof(customerUpdateDto.Email))</div>
+            }
         </div>
 
         <!-- phone -->
         <div class="col-md-6">
             <label class="form-label fw-semibold">
-                Phone
+                Phone <span class="text-danger">*</span>
             </label>
 
-            <input class="form-control"
-                   placeholder="Enter phone..." @bind="staffUpdateDto.PhoneNumber" />
+            <input class="form-control @(HasValidationError(nameof(customerUpdateDto.PhoneNumber)) ? "is-invalid" : "")"
+                   placeholder="Enter phone..." @bind="customerUpdateDto.PhoneNumber" />
+            @if (HasValidationError(nameof(customerUpdateDto.PhoneNumber)))
+            {
+                <div class="invalid-feedback">@GetValidationError(nameof(customerUpdateDto.PhoneNumber))</div>
+            }
         </div>
 
         <!--Role-->
@@ -54,10 +68,10 @@
             <label class="form-label fw-semibold">
                 Staff Role
             </label>
-            <select class=" form-control" @bind="staffUpdateDto.Role">
+            <select class=" form-control" @bind="customerUpdateDto.Role">
                 @foreach (var role in Enum.GetValues<RoleEnum>())
                 {
-                    <option selected="@IsRoleSelected(staffUpdateDto.Role, role)" value="@role">@role</option>
+                    <option selected="@IsRoleSelected(customerUpdateDto.Role, role)" value="@role">@role</option>
                 }
             </select>
         </div>
@@ -65,7 +79,7 @@
         <!--isactive-->
         <div class="col-md-6">
             <div class="form-check mt-4">
-                <input class="form-check-input" type="checkbox" @bind="staffUpdateDto.IsActive" id="isActiveCheck" />
+                <input class="form-check-input" type="checkbox" @bind="customerUpdateDto.IsActive" id="isActiveCheck" />
                 <label class="form-check-label fw-semibold" for="isActiveCheck">
                     Staff Is Active
                 </label>
@@ -97,22 +111,23 @@
     [Parameter]
     public EventCallback OnCancel { get; set; }
     private string errorMessage = string.Empty;
+    private Dictionary<string, List<string>> validationErrors = new();
 
-    [Parameter] public CustomerDto staffDto { get; set; } = new CustomerDto();
-    private CustomerUpdateDto staffUpdateDto = new CustomerUpdateDto();
+    [Parameter] public CustomerDto customerDto { get; set; } = new CustomerDto();
+    private CustomerUpdateDto customerUpdateDto = new CustomerUpdateDto();
 
     protected override void OnParametersSet()
     {
-        if (staffDto != null)
+        if (customerDto != null)
         {
-            staffUpdateDto = new CustomerUpdateDto
+            customerUpdateDto = new CustomerUpdateDto
             {
-                FullName = staffDto.FullName,
-                Email = staffDto.Email,
-                PhoneNumber = staffDto.PhoneNumber,
-                Role = staffDto.Role,
-                Points = staffDto.Points,
-                IsActive = staffDto.IsActive
+                FullName = customerDto.FullName,
+                Email = customerDto.Email,
+                PhoneNumber = customerDto.PhoneNumber,
+                Role = customerDto.Role,
+                Points = customerDto.Points,
+                IsActive = customerDto.IsActive
             };
         }
     }
@@ -121,8 +136,36 @@
     {
         try
         {
-            await CustomerService.UpdateCustomerAsync(staffDto.CustomerId, staffUpdateDto);
+            errorMessage = string.Empty;
+            validationErrors.Clear();
+
+            var result = await Validator.ValidateAsync(customerUpdateDto);
+            if (!result.IsValid)
+            {
+                foreach (var err in result.Errors)
+                {
+                    if (!validationErrors.ContainsKey(err.PropertyName))
+                        validationErrors[err.PropertyName] = new List<string>();
+                    validationErrors[err.PropertyName].Add(err.ErrorMessage);
+                }
+
+                var first = result.Errors.FirstOrDefault();
+                if (first != null) errorMessage = $"Validation failed: {first.ErrorMessage}";
+                return;
+            }
+
+            await CustomerService.UpdateCustomerAsync(customerDto.CustomerId, customerUpdateDto);
             await OnEdited.InvokeAsync();
+        }
+        catch (FluentValidation.ValidationException vex)
+        {
+            foreach (var err in vex.Errors)
+            {
+                if (!validationErrors.ContainsKey(err.PropertyName))
+                    validationErrors[err.PropertyName] = new List<string>();
+                validationErrors[err.PropertyName].Add(err.ErrorMessage);
+            }
+            errorMessage = "Validation failed";
         }
         catch (Exception ex)
         {
@@ -138,4 +181,8 @@
         }
         return false;
     }
+
+    private bool HasValidationError(string field) => validationErrors.ContainsKey(field);
+    private string GetValidationError(string field) => validationErrors.TryGetValue(field, out var errs) ? string.Join(", ", errs) : string.Empty;
+
 }
