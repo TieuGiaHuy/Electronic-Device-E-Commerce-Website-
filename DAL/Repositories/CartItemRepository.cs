@@ -65,7 +65,7 @@ namespace DAL.Repositories
         {
             var cartItems = await _context.CartItems
                 .Include(ci => ci.ProductVariant)
-                .ThenInclude(pv => pv.Product)
+                .ThenInclude(pv => pv!.Product)
                 .Where(ci => ci.CustomerId == customerId)
                 .ToListAsync();
             return cartItems;

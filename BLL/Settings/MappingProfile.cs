@@ -15,8 +15,8 @@ namespace BLL.Settings
             CreateMap<Promotion, PromotionDto>().ReverseMap();
             CreateMap<CartItem, CartItemDTO>();
             CreateMap<ProductVariant, CartItemProductVariantDto>()
-                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.ProductName))
-                .ForMember(dest => dest.Brand, opt => opt.MapFrom(src => src.Product.Brand));
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product!.ProductName))
+                .ForMember(dest => dest.Brand, opt => opt.MapFrom(src => src.Product!.Brand));
 
             CreateMap<ProductVariant, ProductVariantStaffDto>();
             CreateMap<ProductVariant, ProductVariantStaffCreateDto>();

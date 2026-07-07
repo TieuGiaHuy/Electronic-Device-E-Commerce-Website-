@@ -124,7 +124,7 @@ namespace BLL.Services
             
             return new ProductReviewDto
             {
-                Id = reviewWithNav.Id,
+                Id = reviewWithNav!.Id,
                 CustomerId = reviewWithNav.CustomerId,
                 CustomerName = reviewWithNav.Customer?.FullName ?? string.Empty,
                 CustomerEmail = reviewWithNav.Customer?.Email ?? string.Empty,

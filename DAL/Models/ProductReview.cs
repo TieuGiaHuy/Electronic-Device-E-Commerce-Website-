@@ -8,15 +8,15 @@ namespace DAL.Models
         public int CustomerId { get; set; }
         public int ProductId { get; set; }
         public int Rating { get; set; } // 1 to 5 stars
-        public string Comment { get; set; }
+        public string Comment { get; set; } = string.Empty;
 
         public bool IsDeleted { get; set; }
         public bool IsFlagged { get; set; } = false;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
-        public virtual Customer Customer { get; set; }
-        public virtual Product Product { get; set; }
+        public virtual Customer Customer { get; set; } = new Customer();
+        public virtual Product Product { get; set; } = new Product();
 
         public static ProductReview Create(int customerId, int productId, int rating, string comment)
         {

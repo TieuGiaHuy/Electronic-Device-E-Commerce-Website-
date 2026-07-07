@@ -7,13 +7,13 @@ namespace DAL.Models
     {
         public int ProductId { get; set; }
 
-        public string ProductName { get; set; }
+        public string ProductName { get; set; } = string.Empty;
 
-        public string Brand { get; set; }
+        public string Brand { get; set; } = string.Empty;
 
         public int CategoryId { get; set; }
-        virtual public Category Category { get; set; }
-        virtual public ICollection<ProductVariant> ProductVariants { get; set; }
+        virtual public Category Category { get; set; } = new Category();
+        virtual public ICollection<ProductVariant> ProductVariants { get; set; } = new List<ProductVariant>();
 
         public string? ImageUrl { get; set; }
 

@@ -2,7 +2,7 @@ namespace BLL.DTOs.ProductVariant.Customer
 {
     public class ProductVariantCustomerCreateDto
     {
-        public string Color { get; set; }
+        public string Color { get; set; } = string.Empty;
         public string? Cpu { get; set; }
         public string? Ram { get; set; }
         public string? Storage { get; set; }

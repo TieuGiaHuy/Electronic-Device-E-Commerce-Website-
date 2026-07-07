@@ -6,8 +6,8 @@ namespace BLL.DTOs.ProductVariant.Staff
     public class ProductVariantStaffDto
     {
         public Guid ProductVariantId { get; set; }
-        public string Sku { get; set; }
-        public string Color { get; set; }
+        public string Sku { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
         public string? Cpu { get; set; }
         public string? Ram { get; set; }
         public string? Storage { get; set; }
