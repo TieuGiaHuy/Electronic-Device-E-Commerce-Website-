@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using BLL.DTOs.Customer;
 using BLL.DTOs.Pagination;
 using BLL.DTOs.Staff;
@@ -57,6 +57,8 @@ namespace BLL.Services
 
             var verified = BCrypt.Net.BCrypt.Verify(password, customer.PasswordHash);
             if (!verified) return null;
+
+            if (!customer.IsActive || customer.IsDeleted) return null;
 
             return new CustomerDto
             {
@@ -123,37 +125,39 @@ namespace BLL.Services
         public async Task<CustomerDashBoardDto> GetCustomersAsync(CustomerDashBoardRequestDto requestDto)
         {
             var query = _unitOfWork.Repository<Customer>().Query().IgnoreQueryFilters();
+
             if (!string.IsNullOrEmpty(requestDto.SearchTerm))
-            {
                 query = query.Where(c => c.FullName.ToLower().Contains(requestDto.SearchTerm.ToLower()));
-            }
 
             if (!requestDto.IncludeDelete)
-            {
                 query = query.Where(c => !c.IsDeleted);
-            }
 
-            if (!requestDto.IncludeDisable)
-            {
-                query = query.Where(c => c.IsActive);
-            }
+            //if (!requestDto.IncludeDisable)
+            //    query = query.Where(c => c.IsActive);
 
-            query = query.Skip((requestDto.Pagination.Page - 1) * requestDto.Pagination.PageSize).Take(requestDto.Pagination.PageSize);
+            var totalCount = await query.CountAsync();
+            var activeCount = await query.CountAsync(c => c.IsActive && !c.IsDeleted);
 
-            var items = _mapper.Map<List<CustomerDto>>(await query.ToListAsync());
-            var page = new PaginatedResponse<CustomerDto>()
+            var pagedItems = await query
+                .Skip((requestDto.Pagination.Page - 1) * requestDto.Pagination.PageSize)
+                .Take(requestDto.Pagination.PageSize)
+                .ToListAsync();
+
+            var items = _mapper.Map<List<CustomerDto>>(pagedItems);
+
+            var page = new PaginatedResponse<CustomerDto>
             {
                 Items = items,
                 Page = requestDto.Pagination.Page,
                 PageSize = requestDto.Pagination.PageSize,
-                TotalCount = items.Count
+                TotalCount = totalCount     
             };
-            var result = new CustomerDashBoardDto()
+
+            return new CustomerDashBoardDto
             {
-                ActiveCount = items.Where(c => c.IsActive == true && c.IsDeleted == false).Count(),
-                Pagination = page,
+                ActiveCount = activeCount,     
+                Pagination = page
             };
-            return result;
         }
 
         public async Task UpdateCustomerAsync(int customerId, CustomerUpdateDto customerUpdateDto)

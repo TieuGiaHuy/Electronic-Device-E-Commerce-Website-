@@ -638,6 +638,18 @@ namespace DAL.Migrations
                     b.Navigation("ProductVariant");
                 });
 
+            modelBuilder.Entity("DAL.Models.Order", b =>
+                {
+                    b.HasOne("DAL.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_orders_customers_customer_id");
+
+                    b.Navigation("Customer");
+                });
+
             modelBuilder.Entity("DAL.Models.OrderItem", b =>
                 {
                     b.HasOne("DAL.Models.Order", "Order")

@@ -3,10 +3,13 @@
 @using BLL.Services.Interfaces
 @using DAL.Enums
 @using FluentValidation
+@using Microsoft.AspNetCore.Authorization
 @inject IValidator<CustomerUpdateDto> Validator
 @rendermode InteractiveServer
 @inject ICustomerService CustomerService
 @inject NavigationManager NavigationManager
+
+@attribute [Authorize(Roles = "Admin")]
 
 <div class="modal-header">
     <h5 class="modal-title fw-bold">Update Staff</h5>
@@ -63,19 +66,6 @@
             }
         </div>
 
-        <!--Role-->
-        <div class="col-md-6">
-            <label class="form-label fw-semibold">
-                Staff Role
-            </label>
-            <select class=" form-control" @bind="customerUpdateDto.Role">
-                @foreach (var role in Enum.GetValues<RoleEnum>())
-                {
-                    <option selected="@IsRoleSelected(customerUpdateDto.Role, role)" value="@role">@role</option>
-                }
-            </select>
-        </div>
-
         <!--isactive-->
         <div class="col-md-6">
             <div class="form-check mt-4">
@@ -100,7 +90,7 @@
     </button>
 
     <button class="btn btn-danger" @onclick="Update">
-        Update Promotion
+        Update
     </button>
 
 </div>
@@ -125,7 +115,7 @@
                 FullName = customerDto.FullName,
                 Email = customerDto.Email,
                 PhoneNumber = customerDto.PhoneNumber,
-                Role = customerDto.Role,
+                Role = RoleEnum.Customer,
                 Points = customerDto.Points,
                 IsActive = customerDto.IsActive
             };
@@ -171,15 +161,6 @@
         {
             errorMessage = ex.Message;
         }
-    }
-
-    private bool IsRoleSelected(RoleEnum staff, RoleEnum role)
-    {
-        if (staff == role)
-        {
-            return true;
-        }
-        return false;
     }
 
     private bool HasValidationError(string field) => validationErrors.ContainsKey(field);

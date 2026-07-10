@@ -56,6 +56,8 @@ namespace BLL.Services
             var verified = BCrypt.Net.BCrypt.Verify(password, staff.PasswordHash);
             if (!verified) return null;
 
+            if (!staff.IsActive || staff.IsDeleted) return null;
+
             return new StaffDto
             {
                 StaffId = staff.StaffId,
@@ -116,28 +118,31 @@ namespace BLL.Services
         {
             var staffQuery = _unitOfWork.Repository<Staff>().Query().IgnoreQueryFilters();
 
-            if (!string.IsNullOrEmpty(requestDto.SearchTerm)) { staffQuery = staffQuery.Where(s => s.FullName.ToLower().Contains(requestDto.SearchTerm!.ToLower())); }
+            if (!string.IsNullOrEmpty(requestDto.SearchTerm))
+                staffQuery = staffQuery.Where(s => s.FullName.ToLower().Contains(requestDto.SearchTerm!.ToLower()));
 
-            if (!requestDto.IncludeDisable) { staffQuery = staffQuery.Where(s => s.IsActive); }
-            if (!requestDto.IncludeDelete) { staffQuery = staffQuery.Where(s => !s.IsDeleted); }
+            //if (!requestDto.IncludeDisable) staffQuery = staffQuery.Where(s => s.IsActive);
+            if (!requestDto.IncludeDelete) staffQuery = staffQuery.Where(s => !s.IsDeleted);
 
-            staffQuery = staffQuery.Skip((requestDto.Pagination.Page - 1) * requestDto.Pagination.PageSize).Take(requestDto.Pagination.PageSize);
+            var totalCount = await staffQuery.CountAsync();
+            var activeCount = await staffQuery.CountAsync(s => s.IsActive && !s.IsDeleted);
 
-            var staffList = await staffQuery.ToListAsync();
+            var staffList = await staffQuery
+                .Skip((requestDto.Pagination.Page - 1) * requestDto.Pagination.PageSize)
+                .Take(requestDto.Pagination.PageSize)
+                .ToListAsync();
 
-            var result = new StaffDashBoardDto
+            return new StaffDashBoardDto
             {
-                ActiveCount = await staffQuery.CountAsync(s => s.IsActive && !s.IsDeleted),
+                ActiveCount = activeCount,
                 Pagination = new PaginatedResponse<StaffDto>
                 {
-
                     Items = _mapper.Map<List<StaffDto>>(staffList),
                     Page = requestDto.Pagination.Page,
                     PageSize = requestDto.Pagination.PageSize,
-                    TotalCount = staffList.Count
+                    TotalCount = totalCount
                 }
             };
-            return result;
         }
 
         public async Task UpdateStaffAsync(int id, StaffUpdateDto staffUpdateDto)

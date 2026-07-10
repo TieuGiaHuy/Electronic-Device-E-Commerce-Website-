@@ -1,10 +1,12 @@
 using BLL.DTOs.ProductReview;
 using BLL.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Staff.Razor.Pages.Reviews
 {
+    [Authorize]
     public class IndexModel : PageModel
     {
         private readonly IProductReviewService _productReviewService;

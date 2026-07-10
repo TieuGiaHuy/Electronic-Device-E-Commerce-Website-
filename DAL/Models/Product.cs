@@ -12,7 +12,7 @@ namespace DAL.Models
         public string Brand { get; set; } = string.Empty;
 
         public int CategoryId { get; set; }
-        virtual public Category Category { get; set; } = new Category();
+        virtual public Category? Category { get; set; }
         virtual public ICollection<ProductVariant> ProductVariants { get; set; } = new List<ProductVariant>();
 
         public string? ImageUrl { get; set; }

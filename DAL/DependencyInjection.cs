@@ -8,7 +8,7 @@ namespace DAL
 {
     public static class DependencyInjection
     {
-        public static IServiceProvider AddDataAccessLayer(this IServiceCollection services, string connectionString)
+        public static IServiceCollection AddDataAccessLayer(this IServiceCollection services, string connectionString)
         {
             // Register the DbContext with the connection string from configuration
             services.AddDbContext<AppDbContext>(options =>
@@ -28,7 +28,7 @@ namespace DAL
             services.AddScoped<IStaffRepository, StaffRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            return services.BuildServiceProvider();
+            return services;
         }
     }
 }

@@ -9,7 +9,7 @@
 @inject IProductReviewService ReviewService
 @inject IPromotionService PromotionService
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Dashboard - ElectroNexus Admin</PageTitle>
 
@@ -96,10 +96,10 @@
             <!-- Recent orders -->
             <div class="col-lg-8">
                 <div class="admin-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    @* <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold text-secondary m-0">Recent Orders</h5>
                         <a href="orders" class="btn btn-sm btn-outline-secondary">View all</a>
-                    </div>
+                    </div> *@
                     @if (!orders.Any())
                     {
                         <p class="text-muted">No orders yet.</p>
@@ -122,7 +122,7 @@
                                     {
                                         <tr>
                                             <td class="small">@order.OrderId.ToString().Substring(0, 8)</td>
-                                            <td>#@order.CustomerId</td>
+                                            <td>@order.CustomerName</td>
                                             <td class="fw-semibold">@order.TotalAmount.ToString("C")</td>
                                             <td><span class="badge @GetStatusBadgeClass(order.Status)">@order.Status</span></td>
                                             <td class="small text-muted">@order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>

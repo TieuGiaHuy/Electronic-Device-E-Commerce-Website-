@@ -3,10 +3,13 @@
 @using BLL.Services.Interfaces
 @using DAL.Enums
 @using FluentValidation
+@using Microsoft.AspNetCore.Authorization
 @inject IValidator<CustomerCreateDto> Validator
 @rendermode InteractiveServer
 @inject ICustomerService CustomerService
 @inject NavigationManager NavigationManager
+
+@attribute [Authorize(Roles = "Admin")]
 
 <div class="modal-header">
     <h5 class="modal-title fw-bold">Create Staff</h5>
@@ -76,19 +79,6 @@
             }
         </div>
 
-        <!--Role-->
-        <div class="col-md-6">
-            <label class="form-label fw-semibold">
-                Staff Role
-            </label>
-            <select class=" form-control" @bind="customerCreateDto.Role">
-                @foreach (var role in Enum.GetValues<RoleEnum>())
-                {
-                    <option selected="@IsRoleSelected(customerCreateDto.Role, role)" value="@role">@role</option>
-                }
-            </select>
-        </div>
-
         <!--isactive-->
         <div class="col-md-6">
             <div class="form-check mt-4">
@@ -113,7 +103,7 @@
     </button>
 
     <button class="btn btn-danger" @onclick="Create">
-        Create Staff
+        Create Customer
     </button>
 
 </div>
@@ -135,6 +125,7 @@
             errorMessage = string.Empty;
             validationErrors.Clear();
 
+            customerCreateDto.Role = RoleEnum.Customer;
             var result = await Validator.ValidateAsync(customerCreateDto);
             if (!result.IsValid)
             {
@@ -171,13 +162,4 @@
 
     private bool HasValidationError(string field) => validationErrors.ContainsKey(field);
     private string GetValidationError(string field) => validationErrors.TryGetValue(field, out var errs) ? string.Join(", ", errs) : string.Empty;
-
-    private bool IsRoleSelected(RoleEnum staff, RoleEnum role)
-    {
-        if (staff == role)
-        {
-            return true;
-        }
-        return false;
-    }
 }

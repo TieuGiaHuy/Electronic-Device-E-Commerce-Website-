@@ -9,7 +9,7 @@
 @inject IProductVariantService ProductVariantService
 @inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Environment
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Manage Orders - ElectroNexus Admin</PageTitle>
 

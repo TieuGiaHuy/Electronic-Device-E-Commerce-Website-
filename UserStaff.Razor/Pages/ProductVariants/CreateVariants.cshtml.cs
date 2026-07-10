@@ -1,14 +1,15 @@
 ﻿using AutoMapper;
 using BLL.DTOs.ProductVariant.Staff;
-using BLL.Services;
 using BLL.Services.Interfaces;
 using DAL.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
 
 namespace Staff.Razor.Pages.ProductVariants
 {
+    [Authorize]
     public class CreateVariantsModel : PageModel
     {
         private readonly IProductVariantService _variantService;

@@ -103,6 +103,11 @@ namespace BLL.Services
             return await _productReviewRepository.FlagAsync(id);
         }
 
+        public async Task<bool> UnflagProductReviewAsync(int id)
+        {
+            return await _productReviewRepository.UnflagAsync(id);
+        }
+
         public async Task<bool> DeleteProductReviewAsync(int id)
         {
             return await _productReviewRepository.DeleteAsync(id);

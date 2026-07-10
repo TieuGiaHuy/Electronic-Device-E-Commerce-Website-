@@ -7,7 +7,7 @@
 @inject IPromotionService PromotionService
 @inject NavigationManager NavigationManager
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 
 <div class="modal-header">
     <h5 class="modal-title fw-bold">Delete Promotion</h5>

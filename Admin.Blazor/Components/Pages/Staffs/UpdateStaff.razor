@@ -3,10 +3,13 @@
 @using BLL.Services.Interfaces
 @using DAL.Enums
 @using FluentValidation
+@using Microsoft.AspNetCore.Authorization
 @inject IValidator<StaffUpdateDto> Validator
 @rendermode InteractiveServer
 @inject IStaffService StaffService
 @inject NavigationManager NavigationManager
+
+@attribute [Authorize(Roles = "Admin")]
 
 <div class="modal-header">
     <h5 class="modal-title fw-bold">Update Staff</h5>
@@ -54,7 +57,7 @@
                 Staff Role 
             </label>
             <select class=" form-control @(HasValidationError(nameof(staffUpdateDto.Role)) ? "is-invalid" : "")" @bind="staffUpdateDto.Role">
-                @foreach (var role in Enum.GetValues<RoleEnum>())
+                @foreach (var role in Enum.GetValues<RoleEnum>().Where(r => r != RoleEnum.Customer))
                 {
                     <option selected="@IsRoleSelected(staffUpdateDto.Role, role)" value="@role">@role</option>
                 }
@@ -90,7 +93,7 @@
     </button>
 
     <button class="btn btn-danger" @onclick="Update">
-        Update Promotion
+        Update
     </button>
 
 </div>

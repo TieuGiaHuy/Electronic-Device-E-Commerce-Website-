@@ -1,11 +1,13 @@
 ﻿using BLL.DTOs.ProductVariant.Staff;
 using BLL.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace Staff.Razor.Pages.ProductVariants
 {
+    [Authorize]
     public class IndexModel : PageModel
     {
         private readonly IProductVariantService _productVariantService;

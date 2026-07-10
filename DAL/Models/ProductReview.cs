@@ -15,8 +15,8 @@ namespace DAL.Models
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
-        public virtual Customer Customer { get; set; } = new Customer();
-        public virtual Product Product { get; set; } = new Product();
+        public virtual Customer? Customer { get; set; }
+        public virtual Product? Product { get; set; }
 
         public static ProductReview Create(int customerId, int productId, int rating, string comment)
         {
@@ -41,6 +41,12 @@ namespace DAL.Models
         public void Flag()
         {
             IsFlagged = true;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void Unflag()
+        {
+            IsFlagged = false;
             UpdatedAt = DateTime.UtcNow;
         }
     }

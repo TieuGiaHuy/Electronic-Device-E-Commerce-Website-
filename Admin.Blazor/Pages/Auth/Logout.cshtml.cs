@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Admin.Blazor.Pages.Auth
 {
+    // Admin.Blazor/Pages/Auth/Logout.cshtml.cs
     [IgnoreAntiforgeryToken]
     public class Logout : PageModel
     {
-        public IActionResult OnGet()
+        public async Task<IActionResult> OnGetAsync()
         {
-            // Removes the auth cookie for the current user
-            HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme).GetAwaiter().GetResult();
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return LocalRedirect("/auth/login");
         }
     }

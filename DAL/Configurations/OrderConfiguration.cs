@@ -62,6 +62,11 @@ namespace DAL.Configurations
                 .HasForeignKey(oi => oi.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasOne(o => o.Customer)
+                .WithMany()
+                .HasForeignKey(o => o.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Configure soft delete
             builder.HasQueryFilter(o => !o.IsDeleted);
         }
