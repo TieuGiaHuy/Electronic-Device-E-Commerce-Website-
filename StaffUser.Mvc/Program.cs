@@ -14,6 +14,7 @@ builder.Services.AddControllersWithViews( options =>
 {
     var policy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
+        .RequireRole("Customer")
         .Build();   
     options.Filters.Add(new AuthorizeFilter(policy));
 });
@@ -72,24 +73,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
-// Seed customer user if not exists (for testing)
-using (var scope = app.Services.CreateScope())
-{
-    var customerService = scope.ServiceProvider.GetRequiredService<ICustomerService>();
-    var existing = customerService.GetByEmailAsync("customer@local").GetAwaiter().GetResult();
-    if (existing == null)
-    {
-        var createDto = new CustomerCreateDto
-        {
-            FullName = "Customer User",
-            Email = "customer@local",
-            PhoneNumber = "0123456789",
-            Password = "P@ssw0rd",
-            Role = RoleEnum.Customer // Customer
-        };
-        customerService.CreateAsync(createDto).GetAwaiter().GetResult();
-    }
-}
 
 app.Run();

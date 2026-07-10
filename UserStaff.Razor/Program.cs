@@ -13,8 +13,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("StaffOnly", p => p.RequireRole(
-        ((int)RoleEnum.Staff).ToString(),
-        ((int)RoleEnum.Admin).ToString()));
+        (RoleEnum.Staff).ToString(),
+        (RoleEnum.Admin).ToString()));
 });
 
 builder.Services.AddRazorPages(options => { 
@@ -37,25 +37,6 @@ builder.Services.AddAuthorization();
 builder.Services.AddSession();
 
 var app = builder.Build();
-
-// Seed test staff account
-using (var scope = app.Services.CreateScope())
-{
-    var staffService = scope.ServiceProvider.GetRequiredService<IStaffService>();
-    var existingStaff = staffService.GetByEmailAsync("staff@local").GetAwaiter().GetResult();
-    if (existingStaff == null)
-    {
-        var createDto = new StaffCreateDto
-        {
-            FullName = "Test Staff",
-            Email = "staff@local",
-            Password = "P@ssw0rd",
-            Role = RoleEnum.Staff, // Staff role
-            IsActive = true
-        };
-        staffService.CreateAsync(createDto).GetAwaiter().GetResult();
-    }
-}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

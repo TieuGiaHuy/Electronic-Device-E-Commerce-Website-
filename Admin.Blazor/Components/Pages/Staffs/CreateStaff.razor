@@ -3,10 +3,13 @@
 @using BLL.Services.Interfaces
 @using DAL.Enums
 @using FluentValidation
+@using Microsoft.AspNetCore.Authorization
 @inject IValidator<StaffCreateDto> Validator
 @rendermode InteractiveServer
 @inject IStaffService StaffService
 @inject NavigationManager NavigationManager
+
+@attribute [Authorize(Roles = "Admin")]
 
 <div class="modal-header">
     <h5 class="modal-title fw-bold">Create Staff</h5>
@@ -68,7 +71,7 @@
                 Staff Role
             </label>
             <select class=" form-control" @bind="staffCreateDto.Role">
-                @foreach (var role in Enum.GetValues<RoleEnum>())
+                @foreach (var role in Enum.GetValues<RoleEnum>().Where(r => r != RoleEnum.Customer))
                 {
                     <option selected="@IsRoleSelected(staffCreateDto.Role, role)" value="@role">@role</option>
                 }

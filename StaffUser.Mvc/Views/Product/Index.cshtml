@@ -466,12 +466,13 @@
         let maxAvailableStock = @(defaultVariant?.StockQuantity ?? 0);
 
         // Đối tượng lưu vết lựa chọn hiện tại của khách hàng
+        
         let currentSelection = {
-            cpu: "@Html.Raw(defaultVariant?.Cpu)",
-            ram: "@Html.Raw(defaultVariant?.Ram)",
-            storage: "@Html.Raw(defaultVariant?.Storage)",
-            screenSize: "@Html.Raw(defaultVariant?.ScreenSize)",
-            color: "@Html.Raw(defaultVariant?.Color)"
+            cpu: @Html.Raw(Json.Serialize(defaultVariant?.Cpu ?? "")),
+            ram: @Html.Raw(Json.Serialize(defaultVariant?.Ram ?? "")),
+            storage: @Html.Raw(Json.Serialize(defaultVariant?.Storage ?? "")),
+            screenSize: @Html.Raw(Json.Serialize(defaultVariant?.ScreenSize ?? "")),
+            color: @Html.Raw(Json.Serialize(defaultVariant?.Color ?? ""))
         };
 
         document.addEventListener("DOMContentLoaded", function() {

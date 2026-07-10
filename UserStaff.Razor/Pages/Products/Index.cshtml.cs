@@ -1,10 +1,11 @@
 using BLL.DTOs.Product.Staff;
 using BLL.Services.Interfaces;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Staff.Razor.Pages.Products
 {
+    [Authorize]
     public class IndexModel : PageModel
     {
         private readonly IProductService _productService;

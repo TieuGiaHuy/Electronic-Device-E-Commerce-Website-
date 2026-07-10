@@ -1,14 +1,16 @@
-﻿using BLL.DTOs.Product.Staff;
-using BLL.DTOs.ProductVariant.Staff;
-using BLL.DTOs.Product;
+﻿using BLL.DTOs.Product;
+using BLL.DTOs.Product.Staff;
 using BLL.DTOs.ProductVariant;
+using BLL.DTOs.ProductVariant.Staff;
 using BLL.DTOs.Promotion;
 using BLL.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Staff.Razor.Pages.ProductVariants
 {
+    [Authorize]
     public class UpdateModel : PageModel
     {
         private readonly IProductVariantService _productVariantService;

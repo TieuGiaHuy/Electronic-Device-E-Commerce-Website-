@@ -270,6 +270,7 @@ namespace BLL.Services
             {
                 OrderId = order.OrderId,
                 CustomerId = order.CustomerId,
+                CustomerName = order.Customer?.FullName ?? "",
                 PromotionId = order.PromotionId,
                 TotalAmount = order.TotalAmount,
                 Status = order.Status,

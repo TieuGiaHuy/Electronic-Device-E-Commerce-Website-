@@ -9,7 +9,7 @@
 @inject IProductVariantService ProductVariantService
 @inject NavigationManager Navigation
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Order Items - ElectroNexus Admin</PageTitle>
 

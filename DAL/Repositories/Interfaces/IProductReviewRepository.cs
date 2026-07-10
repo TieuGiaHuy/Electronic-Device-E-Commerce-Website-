@@ -12,5 +12,6 @@ namespace DAL.Repositories.Interfaces
         Task<bool> UpdateAsync(ProductReview review);
         Task<bool> DeleteAsync(int id);
         Task<bool> FlagAsync(int id);
+        Task<bool> UnflagAsync(int id);
     }
 }

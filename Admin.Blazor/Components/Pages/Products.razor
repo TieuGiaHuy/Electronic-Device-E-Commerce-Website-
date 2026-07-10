@@ -14,7 +14,7 @@
 @inject Microsoft.AspNetCore.SignalR.IHubContext<Admin.Blazor.Hubs.AdminHub> HubContext
 @implements IAsyncDisposable
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Manage Products - ElectroNexus Admin</PageTitle>
 

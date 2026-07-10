@@ -10,7 +10,7 @@
 @inject NavigationManager NavigationManager
 @inject IValidator<PromotionUpdateDto> Validator
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 
 <div class="modal-header">
     <h5 class="modal-title fw-bold">Update Promotion</h5>

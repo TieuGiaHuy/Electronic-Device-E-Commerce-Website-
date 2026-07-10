@@ -10,7 +10,7 @@ namespace BLL
 {
     public static class DependencyInjection
     {
-        public static IServiceProvider AddBusinessLogicLayer(this IServiceCollection services, string connectionString)
+        public static IServiceCollection AddBusinessLogicLayer(this IServiceCollection services, string connectionString)
         {
             services.AddDataAccessLayer(connectionString);
             // Register business logic services here
@@ -32,7 +32,7 @@ namespace BLL
             {
                 cfg.AddMaps(Assembly.GetExecutingAssembly());
             });
-            return services.BuildServiceProvider();
+            return services;
         }
     }
 }

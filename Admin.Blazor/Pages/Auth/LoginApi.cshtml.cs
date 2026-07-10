@@ -7,39 +7,31 @@ using System.Security.Claims;
 
 namespace Admin.Blazor.Pages.Auth
 {
+    // Admin.Blazor/Pages/Auth/LoginApi.cshtml.cs
     [IgnoreAntiforgeryToken]
     public class LoginApi : PageModel
     {
         private readonly IStaffService _staffService;
+        public LoginApi(IStaffService staffService) => _staffService = staffService;
 
-        public LoginApi(IStaffService staffService)
+        public async Task<IActionResult> OnPostAsync(string email, string password)
         {
-            _staffService = staffService;
-        }
-
-        public IActionResult OnPost(string email, string password)
-        {
-            // Validate credentials using BLL service which verifies the hashed password
-            var staff = _staffService.ValidateLoginAsync(email, password).GetAwaiter().GetResult();
+            var staff = await _staffService.ValidateLoginAsync(email, password);
             if (staff == null)
-            {
-                return RedirectToPage("/auth/login");
-            }
+                return LocalRedirect("/auth/login");
 
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, staff.StaffId.ToString()),
-                new Claim(ClaimTypes.Name, staff.FullName),
-                new Claim(ClaimTypes.Email, staff.Email),
-                new Claim(ClaimTypes.Role, staff.Role.ToString())
-            };
+        {
+            new(ClaimTypes.NameIdentifier, staff.StaffId.ToString()),
+            new(ClaimTypes.Name, staff.FullName),
+            new(ClaimTypes.Email, staff.Email),
+            new(ClaimTypes.Role, staff.Role.ToString())
+        };
 
-            // Create identity and sign in (issues the authentication cookie)
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 
-            HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal).GetAwaiter().GetResult();
-
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
             return LocalRedirect("/");
         }
     }

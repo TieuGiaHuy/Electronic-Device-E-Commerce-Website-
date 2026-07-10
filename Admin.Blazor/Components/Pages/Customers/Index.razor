@@ -10,7 +10,7 @@
 @inject ICustomerService CustomerService
 @inject NavigationManager NavigationManager
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>AdminCustomers - CustomersManager</PageTitle>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -245,43 +245,70 @@
 
                     <div class="d-flex align-items-center gap-2">
                         <span class="text-secondary">
-                            Showing 1 to 10 of 50 entries
+                            Showing @customers.Pagination.StartIndex to @customers.Pagination.EndIndex of @customers.Pagination.TotalCount entries
                         </span>
 
                         <select class="form-select form-select-sm w-auto" @onchange="OnPageSizeChanged">
-                            <option value="10">10</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
+                            <option value="10" selected="@(pageSize == 10)">10</option>
+                            <option value="25" selected="@(pageSize == 25)">25</option>
+                            <option value="50" selected="@(pageSize == 50)">50</option>
                         </select>
                     </div>
 
                     <nav>
                         <ul class="pagination pagination-sm mb-0">
-
-                            <li class="page-item disabled">
-                                <a class="page-link" href="#">
+                            <!-- Previous -->
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" href="#" @onclick="() => OnPageChanged(currentPage - 1)" @onclick:preventDefault="true">
                                     <i class="bi bi-chevron-left"></i>
                                 </a>
                             </li>
 
-                            <li class="page-item active">
-                                <a class="page-link" href="#">1</a>
-                            </li>
+                            <!-- First page -->
+                            @if (customers.Pagination.TotalPages > 0)
+                            {
+                                <li class="page-item @(currentPage == 1 ? "active" : "")">
+                                    <a class="page-link" href="#" @onclick="() => OnPageChanged(1)" @onclick:preventDefault="true">1</a>
+                                </li>
+                            }
 
-                            <li class="page-item">
-                                <a class="page-link" href="#">2</a>
-                            </li>
+                            <!-- Ellipsis after first page -->
+                            @if (currentPage > 3 && customers.Pagination.TotalPages > 4)
+                            {
+                                <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                            }
 
-                            <li class="page-item">
-                                <a class="page-link" href="#">3</a>
-                            </li>
+                            <!-- Pages around current -->
+                            @for (int i = Math.Max(2, currentPage - 1); i <= Math.Min(customers.Pagination.TotalPages - 1, currentPage + 1); i++)
+                            {
+                                if (i != 1 && i != customers.Pagination.TotalPages)
+                                {
+                                    <li class="page-item @(i == currentPage ? "active" : "")">
+                                        <a class="page-link" href="#" @onclick="() => OnPageChanged(i)" @onclick:preventDefault="true">@i</a>
+                                    </li>
+                                }
+                            }
 
-                            <li class="page-item">
-                                <a class="page-link" href="#">
+                            <!-- Ellipsis before last page -->
+                            @if (currentPage < customers.Pagination.TotalPages - 2 && customers.Pagination.TotalPages > 4)
+                            {
+                                <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                            }
+
+                            <!-- Last page -->
+                            @if (customers.Pagination.TotalPages > 1)
+                            {
+                                <li class="page-item @(currentPage == customers.Pagination.TotalPages ? "active" : "")">
+                                    <a class="page-link" href="#" @onclick="() => OnPageChanged(customers.Pagination.TotalPages)" @onclick:preventDefault="true">@customers.Pagination.TotalPages</a>
+                                </li>
+                            }
+
+                            <!-- Next -->
+                            <li class="page-item @(currentPage == customers.Pagination.TotalPages ? "disabled" : "")">
+                                <a class="page-link" href="#" @onclick="() => OnPageChanged(currentPage + 1)" @onclick:preventDefault="true">
                                     <i class="bi bi-chevron-right"></i>
                                 </a>
                             </li>
-
                         </ul>
                     </nav>
 

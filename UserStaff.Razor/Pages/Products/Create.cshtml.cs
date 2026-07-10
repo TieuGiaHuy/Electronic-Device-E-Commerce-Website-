@@ -1,10 +1,12 @@
 using BLL.DTOs.Product.Staff;
 using BLL.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Staff.Razor.Pages.Products
 {
+    [Authorize]
     public class CreateModel : PageModel
     {
         private readonly IProductService _productService;

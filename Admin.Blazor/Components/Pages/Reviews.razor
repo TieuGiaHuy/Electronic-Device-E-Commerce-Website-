@@ -5,7 +5,7 @@
 @using Microsoft.AspNetCore.Authorization
 @inject IProductReviewService ProductReviewService
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Manage Reviews - ElectroNexus Admin</PageTitle>
 
@@ -165,6 +165,10 @@
                                                 <button class="btn btn-sm btn-outline-warning me-2" @onclick="() => ConfirmFlag(review.Id, review.CustomerName)" title="Flag as spam">
                                                     <i class="bi bi-flag"></i> Flag
                                                 </button>
+                                            } else {
+                                                <button class="btn btn-sm btn-outline-secondary me-2" @onclick="() => ConfirmUnflag(review.Id, review.CustomerName)" title="Unflag">
+                                                    <i class="bi bi-flag"></i> Unflag
+                                                </button>
                                             }
                                             <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmDelete(review.Id, review.CustomerName)" title="Delete">
                                                 <i class="bi bi-trash"></i> Delete
@@ -198,6 +202,28 @@
                 <div class="modal-footer border-0 p-3 justify-content-center">
                     <button type="button" class="btn btn-light px-4 py-2 border" @onclick="CloseFlagConfirmation">Cancel</button>
                     <button type="button" class="btn btn-warning px-4 py-2 text-white" @onclick="ExecuteFlag">Flag Review</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showUnflagConfirmation)
+{
+    <div class="modal fade show" tabindex="-1" role="dialog" style="display: block; background-color: rgba(0,0,0,0.5); z-index: 1050;">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+                <div class="modal-header bg-secondary text-white border-0" style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                    <h5 class="modal-title fw-bold">Confirm Unflag Review</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CloseUnflagConfirmation" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="fs-5 m-0 text-dark">Are you sure you want to unflag this review?</p>
+                    <p class="text-muted mt-2 mb-0" style="font-size: 0.85rem;">Customer: <strong>@reviewToFlagName</strong></p>
+                </div>
+                <div class="modal-footer border-0 p-3 justify-content-center">
+                    <button type="button" class="btn btn-light px-4 py-2 border" @onclick="CloseUnflagConfirmation">Cancel</button>
+                    <button type="button" class="btn btn-secondary px-4 py-2 text-white" @onclick="ExecuteUnflag">Unflag Review</button>
                 </div>
             </div>
         </div>
@@ -238,6 +264,7 @@
 
     // Flag confirmation states
     private bool showFlagConfirmation = false;
+    private bool showUnflagConfirmation = false;
     private int reviewToFlagId = 0;
     private string reviewToFlagName = "";
 
@@ -308,6 +335,20 @@
         showFlagConfirmation = true;
     }
 
+    private void ConfirmUnflag(int id, string customerName)
+    {
+        reviewToFlagId = id;
+        reviewToFlagName = customerName;
+        showUnflagConfirmation = true;
+    }
+
+    private void CloseUnflagConfirmation()
+    {
+        showUnflagConfirmation = false;
+        reviewToFlagId = 0;
+        reviewToFlagName = "";
+    }
+
     private void CloseFlagConfirmation()
     {
         showFlagConfirmation = false;
@@ -337,6 +378,31 @@
         finally
         {
             CloseFlagConfirmation();
+        }
+    }
+
+    private async Task ExecuteUnflag()
+    {
+        try
+        {
+            var result = await ProductReviewService.UnflagProductReviewAsync(reviewToFlagId);
+            if (result)
+            {
+                successMessage = "Review unflagged successfully!";
+                await LoadData();
+            }
+            else
+            {
+                errorMessage = "Review not found or already unflagged!";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            CloseUnflagConfirmation();
         }
     }
 

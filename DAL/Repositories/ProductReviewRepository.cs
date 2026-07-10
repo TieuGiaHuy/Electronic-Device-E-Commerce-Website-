@@ -85,5 +85,17 @@ namespace DAL.Repositories
             }
             return false;
         }
+
+        public async Task<bool> UnflagAsync(int id)
+        {
+            var review = await _context.ProductReviews.FirstOrDefaultAsync(r => r.Id == id);
+            if (review != null)
+            {
+                review.Unflag();
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
     }
 }
