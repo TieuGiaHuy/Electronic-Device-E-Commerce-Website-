@@ -34,10 +34,11 @@ namespace DAL.Models
         public DateTime? UpdatedAt { get; set; }
         public bool IsDisabled { get; set; } = false;
 
-        public Promotion Create(PromotionTypeEnum promotionTypeEnum, decimal? salePrice = null, decimal? thresholdPrice = null, byte? percentage = null, bool isReservedStock = true, int? maxReservedStock = null, bool isLimitedTime = false, DateTime? startAt = null, DateTime? endAt = null)
+        public Promotion Create(string name,PromotionTypeEnum promotionTypeEnum, decimal? salePrice = null, decimal? thresholdPrice = null, byte? percentage = null, bool isReservedStock = true, int? maxReservedStock = null, bool isLimitedTime = false, DateTime? startAt = null, DateTime? endAt = null, bool isDisable = false)
         {
             return new Promotion
             {
+                Name = name,
                 PromotionId = Guid.NewGuid(),
                 PromotionType = promotionTypeEnum,
                 SalePrice = salePrice,
@@ -46,13 +47,15 @@ namespace DAL.Models
                 IsReservedStock = isReservedStock,
                 MaxReservedStock = maxReservedStock,
                 IsLimitedTime = isLimitedTime,
+                IsDisabled = isDisable,
                 StartAt = startAt,
                 EndAt = endAt
             };
         }
 
-        public void Update(PromotionTypeEnum promotionTypeEnum, decimal? salePrice = null, decimal? thresholdPrice = null, byte? percentage = null, bool isReservedStock = true, int? maxReservedStock = null, bool isLimitedTime = false, DateTime? startAt = null, DateTime? endAt = null)
+        public void Update(string name, PromotionTypeEnum promotionTypeEnum, decimal? salePrice = null, decimal? thresholdPrice = null, byte? percentage = null, bool isReservedStock = true, int? maxReservedStock = null, bool isLimitedTime = false, DateTime? startAt = null, DateTime? endAt = null, bool isDisable = false)
         {
+            Name = name;
             PromotionType = promotionTypeEnum;
             SalePrice = salePrice;
             ThresholdPrice = thresholdPrice;
@@ -63,12 +66,12 @@ namespace DAL.Models
             StartAt = startAt;
             EndAt = endAt;
             UpdatedAt = DateTime.UtcNow;
+            IsDisabled = isDisable;
         }
 
-        public void Delete()
+        public void Delete(bool isDelete)
         {
-            IsDeleted = true;
-            UpdatedAt = DateTime.UtcNow;
+            IsDeleted = isDelete;
         }
 
         public bool IsActive()

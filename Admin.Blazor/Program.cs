@@ -2,12 +2,14 @@ using Admin.Blazor.Components;
 using Admin.Blazor.Components.Auth;
 using Admin.Blazor.Hubs;
 using BLL;
+using BLL.DTOs.Validators.PromotionValidator;
 using BLL.Settings;
 using DAL.Data;
-using Microsoft.EntityFrameworkCore;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddValidatorsFromAssemblyContaining<PromotionCreateDtoValidator>();
 
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();

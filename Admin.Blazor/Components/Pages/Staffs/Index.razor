@@ -1,19 +1,18 @@
-﻿@page "/promotions"
+﻿@page "/staff_management"
 @using AutoMapper
 @using BLL.DTOs.Pagination
-@using BLL.DTOs.Promotion
-@using BLL.DTOs.Promotion.PromotionList
+@using BLL.DTOs.Staff
 @using BLL.Services.Interfaces
 @using DAL.Enums
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.QuickGrid
 @rendermode InteractiveServer
-@inject IPromotionService PromotionService
+@inject IStaffService StaffService
 @inject NavigationManager NavigationManager
 
 @attribute [Authorize]
 
-<PageTitle>AdminPromotions - PromoManager</PageTitle>
+<PageTitle>AdminStaffs - StaffManager</PageTitle>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 <div class="container py-5">
@@ -21,12 +20,12 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
-            <h1 class="fw-bold mb-1">Promotion</h1>
+            <h1 class="fw-bold mb-1">Staff</h1>
         </div>
 
         <button class="btn btn-danger px-4 py-2" @onclick="showCreate">
             <i class="bi bi-plus-lg"></i>
-            Create Promotion
+            Create Staff
         </button>
     </div>
 
@@ -36,9 +35,9 @@
             <div class="card rounded-4 h-100">
                 <div class="card-body py-4">
                     <p class="text-uppercase text-secondary fw-semibold small mb-2">
-                        Total Promotions
+                        Total Staffs
                     </p>
-                    <h1 class="fw-bold mb-0">@promotions?.Pagination.TotalCount</h1>
+                    <h1 class="fw-bold mb-0">@staffs?.Pagination.TotalCount</h1>
                 </div>
             </div>
         </div>
@@ -49,12 +48,12 @@
                     <p class="text-uppercase text-success fw-semibold small mb-2">
                         Active
                     </p>
-                    <h1 class="fw-bold text-success mb-0">@promotions?.ActiveCount</h1>
+                    <h1 class="fw-bold text-success mb-0">@staffs?.ActiveCount</h1>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6">
+        @*   <div class="col-lg-3 col-md-6">
             <div class="card rounded-4 h-100">
                 <div class="card-body py-4">
                     <p class="text-uppercase text-warning fw-semibold small mb-2">
@@ -63,18 +62,18 @@
                     <h1 class="fw-bold text-warning mb-0">@promotions?.Upcoming</h1>
                 </div>
             </div>
-        </div>
+        </div> *@
 
-        <div class="col-lg-3 col-md-6">
+        @* <div class="col-lg-3 col-md-6">
             <div class="card rounded-4 h-100">
                 <div class="card-body py-4">
                     <p class="text-uppercase text-danger fw-semibold small mb-2">
                         Expired
                     </p>
-                    <h1 class="text-bold text-danger mb-0">@promotions?.ExpiredOrDisabledCount</h1>
+                    <h1 class="text-uppercase text-danger fw-semibold small mb-2">@promotions?.ExpiredOrDisabledCount</h1>
                 </div>
             </div>
-        </div>
+        </div> *@
     </div>
 
     <!-- Filter -->
@@ -90,38 +89,93 @@
                             </span>
                             <input type="text"
                                    class="form-control border-start-0 bg-light"
-                                   placeholder="Search promotion name..." @bind="searchName" @bind:event="oninput" @onkeyup="LoadPromotions">
-                        </div>
-                    </div>
-
-                    <!-- Date Range -->
-                    <div class="col-lg-3">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white">
-                                <i class="bi bi-calendar3"></i>
-                            </span>
-                            <input type="text"
-                                   class="form-control"
-                                   value="01/01/2024 - 31/12/2024"
-                                   readonly>
+                                   placeholder="Search staff name..." @bind="searchName" @bind:event="oninput" @onkeyup="LoadStaffs">
                         </div>
                     </div>
 
                     <!-- Filter Button -->
-                    <div class="col-lg-2">
-                        <button class="btn btn-light border w-100">
-                            <i class="bi bi-funnel me-2"></i>
-                            Filter
-                        </button>
+                    <div class="col-lg-3">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary w-100" @onclick="ToggleFilterPopup">
+                                <i class="bi bi-funnel me-2"></i>
+                                Filter
+                                @if (showFilterPopup)
+                                {
+                                    <i class="bi bi-chevron-up ms-1"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-chevron-down ms-1"></i>
+                                }
+                            </button>
+                            <button class="btn btn-outline-secondary" @onclick="ClearFilters" title="Clear filters">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- Filter Popup -->
+                    @if (showFilterPopup)
+                    {
+                        <div class="row mt-3 pt-3 border-top">
+                            <div class="col-12">
+                                <div class="d-flex flex-wrap gap-4">
+                                    <!-- Include Deleted -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               id="includeDeleted"
+                                               @bind="includeDeleted"
+                                               @bind:event="oninput"
+                                               @onchange="LoadStaffs">
+                                        <label class="form-check-label fw-semibold" for="includeDeleted">
+                                            <i class="bi bi-trash text-danger me-1"></i>
+                                            Include Deleted
+                                        </label>
+                                    </div>
+
+                                    <!-- Include Disabled -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               id="includeDisabled"
+                                               @bind="includeDisabled"
+                                               @bind:event="oninput"
+                                               @onchange="LoadStaffs">
+                                        <label class="form-check-label fw-semibold" for="includeDisabled">
+                                            <i class="bi bi-eye-slash text-secondary me-1"></i>
+                                            Include Disabled
+                                        </label>
+                                    </div>
+
+                                    <!-- Active Filters Display -->
+                                    @if (HasActiveFilters())
+                                    {
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-info text-dark">
+                                                <i class="bi bi-funnel-fill me-1"></i>
+                                                Active Filters
+                                            </span>
+                                            @if (includeDeleted)
+                                            {
+                                                <span class="badge bg-danger">Deleted</span>
+                                            }
+                                            @if (includeDisabled)
+                                            {
+                                                <span class="badge bg-secondary">Disabled</span>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Promotions List -->
+    <!-- Staffs List -->
     <div class="card rounded-4 shadow-sm mt-4">
-        @if (promotions == null)
+        @if (staffs == null)
         {
             <div class="card-body text-center">
                 <div class="spinner-border text-primary" role="status">
@@ -129,10 +183,10 @@
                 </div>
             </div>
         }
-        else if (promotions.Pagination.Items.Count == 0)
+        else if (staffs.Pagination.Items.Count == 0)
         {
             <div class="card-body text-center">
-                <p class="text-secondary mb-0">No promotions found.</p>
+                <p class="text-secondary mb-0">No staffs found.</p>
             </div>
         }
         else
@@ -143,10 +197,8 @@
                         <tr>
                             <th>Index</th>
                             <th>Name</th>
-                            <th>Type</th>
-                            <th>Value</th>
-                            <th>Stock</th>
-                            <th>Duration</th>
+                            <th>Email</th>
+                            <th>Role</th>
                             <th>Status</th>
                             <th class="text-center">Actions</th>
                         </tr>
@@ -154,68 +206,42 @@
 
                     <tbody>
                         @{
-                            int index = promotions.Pagination.StartIndex;
+                            int index = staffs.Pagination.StartIndex;
                         }
-                        @foreach (var promotion in promotions.Pagination.Items)
+                        @foreach (var staff in staffs.Pagination.Items)
                         {
                             <tr>
                                 <td>@index</td>
-                                <td>@promotion.Name</td>
-                                <td>@promotion.PromotionType</td>
-                                @if (promotion.PromotionType == DAL.Enums.PromotionTypeEnum.Percentage)
-                                {
-                                    <td>@promotion.Percentage %</td>
-                                }
-                                else
-                                {
-                                    <td>@promotion.SalePrice</td>
-                                }
-
-                                @if (promotion.IsReservedStock == true)
-                                {
-                                    <td>@promotion.MaxReservedStock</td>
-                                }
-                                else
-                                {
-                                    <td class="col-3">Unlimited from @promotion.StartAt to @promotion.EndAt</td>
-                                }
-
-                                @if (promotion.StartAt.HasValue && promotion.EndAt.HasValue)
-                                {
-                                    <td>@promotion.StartAt.Value.ToString("dd/MM/yyyy HH:mm:ss") - @promotion.EndAt.Value.ToString("dd/MM/yyyy HH:mm:ss")</td>
-                                }
-                                else
-                                {
-                                    <td>Unlimited</td>
-                                }
-
+                                <td>@staff.FullName</td>
+                                <td>@staff.Email</td>
+                                <td>@staff.Role</td>
                                 <td>
-                                    @switch (GetStatus(promotion).Result)
+                                    @switch (GetStatus(staff))
                                     {
-                                        case PromotionStatusEnum.Active:
+                                        case "Active":
                                             <span class="badge bg-success">Active</span>
                                             break;
-                                        case PromotionStatusEnum.Upcoming:
+                                        case "Unknown":
                                             <span class="badge bg-warning text-dark">Upcoming</span>
                                             break;
-                                        case PromotionStatusEnum.Expired:
-                                            <span class="badge bg-danger">Expired</span>
+                                        case "Inactive":
+                                            <span class="badge bg-secondary">Inactive</span>
                                             break;
-                                        case PromotionStatusEnum.Disabled:
-                                            <span class="badge bg-secondary">Disabled</span>
-                                            break;
-                                        case PromotionStatusEnum.Deleted:
+                                        case "Deleted":
                                             <span class="badge bg-dark">Deleted</span>
                                             break;
                                     }
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn btn-sm btn-primary me-2" @onclick="() => showEdit(promotion)">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" @onclick="() => showDelete(promotion)">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
+                                    @if (!GetStatus(staff).Equals("Deleted"))
+                                    {
+                                        <button class="btn btn-sm btn-primary me-2" @onclick="() => showEdit(staff)">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" @onclick="() => showDelete(staff)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
                                 </td>
                             </tr>
                             index++;
@@ -287,12 +313,12 @@
             <div class="modal-content">
 
                 <!-- Copy phần form trong HTML vào đây -->
-                <CreatePromotion OnCreated="OnSaved" OnCancel="ClosePanels"/>
+                <CreateStaff OnCreated="OnSaved" OnCancel="ClosePanels" />
             </div>
         </div>
     </div>
 }
-@if (showEditModal && selectedPromotion != null)
+@if (showEditModal && selectedStaff != null)
 {
     <div class="modal fade show d-block"
          tabindex="-1"
@@ -302,12 +328,12 @@
             <div class="modal-content">
 
                 <!-- Copy phần form trong HTML vào đây -->
-                <UpdatePromotion PromotionDto="selectedPromotion" OnEdited="OnSaved" OnCancel="ClosePanels" />
+                <UpdateStaff staffDto="selectedStaff" OnEdited="OnSaved" OnCancel="ClosePanels" />
             </div>
         </div>
     </div>
 }
-@if (showDeleteModal && selectedPromotion != null)
+@if (showDeleteModal && selectedStaff != null)
 {
     <div class="modal fade show d-block"
          tabindex="-1"
@@ -317,14 +343,14 @@
             <div class="modal-content">
 
                 <!-- Copy phần form trong HTML vào đây -->
-                <DeletePromotion promotionId="selectedPromotion.PromotionId" OnDeleted="OnSaved" OnCancel="ClosePanels" />
+                <DeleteStaff staffId="selectedStaff.StaffId" OnDeleted="OnSaved" OnCancel="ClosePanels" />
             </div>
         </div>
     </div>
 }
 
 @code {
-    private PromotionListResponeDto? promotions;
+    private StaffDashBoardDto? staffs;
     private string searchName = string.Empty;
     private int currentPage = 1;
     private int pageSize = 10;
@@ -332,109 +358,116 @@
     private bool showEditModal = false;
     private bool showDeleteModal = false;
     private bool showDetailsModal = false;
-    private PromotionDto? selectedPromotion;
+    private StaffDto? selectedStaff;
+    private bool showFilterPopup = false;
+    private bool includeDeleted = false;
+    private bool includeDisabled = false;
 
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadPromotions();
+        await LoadStaffs();
     }
 
-    private async Task LoadPromotions()
+    private async Task LoadStaffs()
     {
-        var request = new PromotionListRequest
+        var requestDto = new StaffDashBoardRequestDto
         {
             SearchTerm = searchName,
-            IncludeDeleted = false,
+            IncludeDelete = includeDeleted,
+            IncludeDisable = includeDisabled,
             Pagination = new PaginationRequest
             {
                 Page = currentPage,
                 PageSize = pageSize
             }
         };
-        promotions = await PromotionService.GetPromotionsListAsync(request);
+        staffs = await StaffService.GetStaffsListAsync(requestDto);
     }
 
     private async Task OnPageSizeChanged(ChangeEventArgs e)
     {
         pageSize = int.Parse(e.Value!.ToString()!);
         currentPage = 1;
-        await LoadPromotions();
+        await LoadStaffs();
     }
 
     private async Task OnPageChanged(int page)
     {
         currentPage = page;
-        await LoadPromotions();
+        await LoadStaffs();
     }
 
     private async Task OnSaved()
     {
-        await LoadPromotions();
+        await LoadStaffs();
         ClosePanels();
     }
 
     private void ClosePanels()
     {
         showCreateModal = showEditModal = showDetailsModal = showDeleteModal = false;
-        selectedPromotion = null;
+        selectedStaff = null;
     }
 
     private void showCreate()
     {
         showCreateModal = true;
         showEditModal = showDetailsModal = showDeleteModal = false;
-        selectedPromotion = null;
+        selectedStaff = null;
     }
 
-    private void showEdit(PromotionDto promotion)
+    private void showEdit(StaffDto staff)
     {
-        selectedPromotion = promotion;
+        selectedStaff = staff;
         showEditModal = true;
         showCreateModal = showDetailsModal = showDeleteModal = false;
     }
 
-    private void showDelete(PromotionDto promotion)
+    private void showDelete(StaffDto staff)
     {
-        selectedPromotion = promotion;
+        selectedStaff = staff;
         showEditModal = showCreateModal = showDetailsModal = false;
         showDeleteModal = true;
     }
 
-    private async Task<PromotionStatusEnum> GetStatus(PromotionDto promotion)
+    private string GetStatus(StaffDto staff)
     {
-        if (promotion.IsDeleted)
+        if (staff.IsActive && !staff.IsDeleted)
         {
-            return PromotionStatusEnum.Deleted;
+            return "Active";
         }
-
-        if (promotion.IsDisabled)
+        else if (!staff.IsActive && !staff.IsDeleted)
         {
-            return PromotionStatusEnum.Disabled;
+            return "Inactive";
         }
-
-        if (promotion.IsLimitedTime && promotion.StartAt.HasValue && promotion.EndAt.HasValue)
+        else if (staff.IsDeleted)
         {
-            var currentDate = DateTime.UtcNow;
-
-            if (currentDate < promotion.StartAt.Value)
-            {
-                return PromotionStatusEnum.Upcoming;
-            }
-            else if (currentDate > promotion.EndAt.Value)
-            {
-                return PromotionStatusEnum.Expired;
-            }
+            return "Deleted";
         }
-
-        if (promotion.IsReservedStock && promotion.MaxReservedStock.HasValue)
+        else
         {
-            if (promotion.MaxReservedStock.Value <= 0)
-            {
-                return PromotionStatusEnum.Expired;
-            }
+            return "Unknown";
         }
+    }
 
-        return await Task.FromResult(PromotionStatusEnum.Active);
+    private void ToggleFilterPopup()
+    {
+        showFilterPopup = !showFilterPopup;
+    }
+
+    private async Task ClearFilters()
+    {
+        searchName = string.Empty;
+        includeDeleted = false;
+        includeDisabled = false;
+        currentPage = 1;
+        showFilterPopup = false;
+        await LoadStaffs();
+    }
+
+    private bool HasActiveFilters()
+    {
+        return includeDeleted || includeDisabled || !string.IsNullOrEmpty(searchName);
     }
 }

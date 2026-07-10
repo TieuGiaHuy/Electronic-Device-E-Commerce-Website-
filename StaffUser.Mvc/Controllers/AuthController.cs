@@ -84,7 +84,7 @@ namespace Customer.Mvc.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Logout(string returnUrl = null)
+        public async Task<IActionResult> Logout(string returnUrl = null!)
         {
             // POST /Auth/Logout
             // Signs the user out by removing the authentication cookie
@@ -197,7 +197,7 @@ namespace Customer.Mvc.Controllers
                 Email = registerDto.Email,
                 PhoneNumber = registerDto.PhoneNumber,
                 Password = registerDto.Password,
-                Role = (int)DAL.Enums.RoleEnum.Customer,
+                Role = DAL.Enums.RoleEnum.Customer,
                 Points = 0
             });
             return RedirectToAction("Login", "Auth");

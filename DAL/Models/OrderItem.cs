@@ -14,8 +14,8 @@ namespace DAL.Models
         public bool IsDeleted { get; set; }
 
         // Navigation properties
-        public virtual Order Order { get; set; }
-        public virtual ProductVariant ProductVariant { get; set; }
+        public virtual Order Order { get; set; } = new Order();
+        public virtual ProductVariant ProductVariant { get; set; } = new ProductVariant();
 
         /// <summary>
         /// Factory method to create a new OrderItem using builder pattern

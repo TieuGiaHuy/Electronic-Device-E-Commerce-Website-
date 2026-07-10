@@ -2,7 +2,7 @@ namespace BLL.DTOs.ProductVariant.Staff
 {
     public class ProductVariantStaffCreateDto
     {
-        public string Color { get; set; }
+        public string Color { get; set; } = string.Empty;
         public string? Cpu { get; set; }
         public string? Ram { get; set; }
         public string? Storage { get; set; }

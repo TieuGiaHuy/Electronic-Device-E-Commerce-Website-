@@ -50,7 +50,7 @@ using (var scope = app.Services.CreateScope())
             FullName = "Test Staff",
             Email = "staff@local",
             Password = "P@ssw0rd",
-            Role = (int)RoleEnum.Staff, // Staff role
+            Role = RoleEnum.Staff, // Staff role
             IsActive = true
         };
         staffService.CreateAsync(createDto).GetAwaiter().GetResult();

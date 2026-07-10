@@ -86,7 +86,7 @@ using (var scope = app.Services.CreateScope())
             Email = "customer@local",
             PhoneNumber = "0123456789",
             Password = "P@ssw0rd",
-            Role = (int)RoleEnum.Customer // Customer
+            Role = RoleEnum.Customer // Customer
         };
         customerService.CreateAsync(createDto).GetAwaiter().GetResult();
     }

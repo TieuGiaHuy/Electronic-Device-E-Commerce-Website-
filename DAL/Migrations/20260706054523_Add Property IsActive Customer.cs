@@ -5,14 +5,14 @@
 namespace DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class AddIsFlaggedToProductReview : Migration
+    public partial class AddPropertyIsActiveCustomer : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<bool>(
-                name: "is_flagged",
-                table: "product_reviews",
+                name: "is_active",
+                table: "customers",
                 type: "bit",
                 nullable: false,
                 defaultValue: false);
@@ -22,8 +22,8 @@ namespace DAL.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "is_flagged",
-                table: "product_reviews");
+                name: "is_active",
+                table: "customers");
         }
     }
 }

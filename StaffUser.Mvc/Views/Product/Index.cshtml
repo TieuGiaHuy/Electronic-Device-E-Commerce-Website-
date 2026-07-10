@@ -281,7 +281,7 @@
                     <h6 class="fw-bold text-dark mb-3">@(myReview == null ? "Write a Review" : "Edit Your Review")</h6>
                     @Html.AntiForgeryToken()
                     <input type="hidden" id="reviewId" value="@(myReview?.Id ?? 0)" />
-                    <input type="hidden" id="reviewProductId" value="@Model.ProductId" />
+                    <input type="hidden" id="reviewProductId" value="@Model!.ProductId" />
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold mb-2">Your Rating <span class="text-danger">*</span></label>
@@ -329,7 +329,7 @@
         else
         {
             <div class="alert alert-light border text-center mb-4">
-                <a href="@Url.Action("Login", "Auth")?returnUrl=@Url.Action("Index", "Product", new { id = Model.ProductId })">Log in</a> to write a review.
+                <a href="@Url.Action("Login", "Auth")?returnUrl=@Url.Action("Index", "Product", new { id = Model!.ProductId })">Log in</a> to write a review.
             </div>
         }
 

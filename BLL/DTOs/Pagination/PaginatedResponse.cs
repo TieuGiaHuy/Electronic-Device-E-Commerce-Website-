@@ -9,6 +9,7 @@ namespace BLL.DTOs.Pagination
     public class PaginatedResponse<T>
     {
         public int StartIndex => (Page - 1) * PageSize + 1;
+        public int EndIndex => StartIndex + PageSize - 1; 
         public List<T> Items { get; set; } = new List<T>();
         public int Page { get; set; }
         public int PageSize { get; set; }

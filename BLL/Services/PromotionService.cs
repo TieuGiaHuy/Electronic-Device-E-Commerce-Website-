@@ -47,7 +47,7 @@ namespace BLL.Services
                 {
                     throw new Exception("Promotion not found");
                 }
-                promotion.Delete();
+                promotion.Delete(true);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitAsync();
             }
@@ -77,7 +77,20 @@ namespace BLL.Services
         public async Task<PromotionListResponeDto> GetPromotionsListAsync(PromotionListRequest request)
         {
             // Query
-            var promotionsQuery = _unitOfWork.Repository<Promotion>().Query();
+            var promotionsQuery = _unitOfWork.Repository<Promotion>().Query().IgnoreQueryFilters();
+
+            if (request.StartAt.HasValue) promotionsQuery = promotionsQuery.Where(p => p.StartAt >= request.StartAt);
+            if (request.EndAt.HasValue) promotionsQuery = promotionsQuery.Where(p => p.EndAt <= request.EndAt);
+
+            if (!request.IncludeDeleted)
+            {
+                promotionsQuery = promotionsQuery.Where(p => !p.IsDeleted);
+            }
+
+            if (!request.IncludeDisable)
+            {
+                promotionsQuery = promotionsQuery.Where(p => !p.IsDisabled);
+            }
 
             if (!string.IsNullOrEmpty(request.SearchTerm))
             {
@@ -107,18 +120,13 @@ namespace BLL.Services
                 )
                 .CountAsync();
 
-            var expiredOrDisabledCount = await promotionsQuery
-                .Where(p =>
-                    p.IsDisabled ||
-                    p.IsDeleted ||
-                    (p.IsLimitedTime && p.EndAt.HasValue && p.EndAt.Value < DateTime.UtcNow)
-                )
+            var expiredCount = await promotionsQuery
+                .Where(p => !p.IsDeleted && !p.IsDisabled)
+                .Where(p => (p.IsLimitedTime && p.EndAt.HasValue && p.EndAt.Value < DateTime.UtcNow))
                 .CountAsync();
 
-            var promotions = await promotionsQuery
-                .Skip((request.Pagination.Page - 1) * request.Pagination.PageSize)
-                .Take(request.Pagination.PageSize)
-                .ToListAsync();
+            var promotions = await promotionsQuery.Skip((request.Pagination.Page - 1) * request.Pagination.PageSize).Take(request.Pagination.PageSize).ToListAsync();
+
             var promotionDtos = _mapper.Map<List<PromotionDto>>(promotions);
 
             // Return response
@@ -126,7 +134,7 @@ namespace BLL.Services
             {
                 ActiveCount = activeCount,
                 Upcoming = upcomingCount,
-                ExpiredOrDisabledCount = expiredOrDisabledCount,
+                ExpiredOrDisabledCount = expiredCount,
                 Pagination = new PaginatedResponse<PromotionDto>
                 {
                     Items = promotionDtos,
@@ -148,6 +156,7 @@ namespace BLL.Services
                     throw new Exception("Promotion not found");
                 }
                 promotion.Update(
+                    promotionUpdateDto.Name,
                     promotionUpdateDto.PromotionType,
                     promotionUpdateDto.SalePrice,
                     promotionUpdateDto.ThresholdPrice,
@@ -156,7 +165,8 @@ namespace BLL.Services
                     promotionUpdateDto.MaxReservedStock,
                     promotionUpdateDto.IsLimitedTime,
                     promotionUpdateDto.StartAt,
-                    promotionUpdateDto.EndAt
+                    promotionUpdateDto.EndAt,
+                    promotionUpdateDto.IsDisable
                 );
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitAsync();

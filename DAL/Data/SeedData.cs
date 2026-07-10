@@ -94,6 +94,7 @@ namespace DAL.Data
 
                 // 1. Active - Percentage Discount (Flash Sale)
                 promotions.Add(new Promotion().Create(
+                    "Active - Percentage Discount (Flash Sale)",
                     PromotionTypeEnum.Percentage,
                     percentage: 20,
                     maxReservedStock: 10,
@@ -107,6 +108,7 @@ namespace DAL.Data
                 if (variant2 != null)
                 {
                     promotions.Add(new Promotion().Create(
+                        "Active - Fixed Amount (Seasonal Sale)",
                         PromotionTypeEnum.FixedAmount,
                         salePrice: Math.Round(variant2.Price * 0.85m, 2),
                         maxReservedStock: 5,
@@ -118,6 +120,7 @@ namespace DAL.Data
 
                 // 3. Upcoming - Percentage (Pre-order)
                 promotions.Add(new Promotion().Create(
+                    "Upcoming - Percentage (Pre-order)",
                     PromotionTypeEnum.Percentage,
                     percentage: 15,
                     maxReservedStock: 20,
@@ -131,6 +134,7 @@ namespace DAL.Data
                 if (variant4 != null)
                 {
                     promotions.Add(new Promotion().Create(
+                        "Upcoming - Fixed Amount (Early Bird)",
                         PromotionTypeEnum.FixedAmount,
                         salePrice: Math.Round(variant4.Price * 0.9m, 2),
                         maxReservedStock: 15,
@@ -142,6 +146,7 @@ namespace DAL.Data
 
                 // 5. Expired - Percentage (Past Promotion)
                 promotions.Add(new Promotion().Create(
+                    "Expired - Percentage (Past Promotion)",
                     PromotionTypeEnum.Percentage,
                     percentage: 30,
                     maxReservedStock: 10,
@@ -155,6 +160,7 @@ namespace DAL.Data
                 if (variant6 != null)
                 {
                     promotions.Add(new Promotion().Create(
+                        "Expired - Fixed Amount (Past Promotion)",
                         PromotionTypeEnum.FixedAmount,
                         salePrice: Math.Round(variant6.Price * 0.75m, 2),
                         maxReservedStock: 8,
@@ -169,6 +175,7 @@ namespace DAL.Data
                 if (variant7 != null)
                 {
                     promotions.Add(new Promotion().Create(
+                        "Active - No time limit (Always on sale)",
                         PromotionTypeEnum.FixedAmount,
                         salePrice: Math.Round(variant7.Price * 0.88m, 2),
                         maxReservedStock: 30,
@@ -180,6 +187,7 @@ namespace DAL.Data
 
                 // 11. Disabled promotion
                 var promoDisabled = new Promotion().Create(
+                    "Disabled promotion",
                     PromotionTypeEnum.Percentage,
                     percentage: 25,
                     maxReservedStock: 10,
