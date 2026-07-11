@@ -1,4 +1,6 @@
-using BLL.DTOs.Product;
+using AutoMapper;
+using BLL.DTOs.Product.Customer;
+using BLL.DTOs.Product.Staff;
 using BLL.Services.Interfaces;
 using DAL.Models;
 using DAL.Repositories.Interfaces;
@@ -8,30 +10,24 @@ namespace BLL.Services
     public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepository;
+        private readonly IMapper _mapper;
 
-        public ProductService(IProductRepository productRepository)
+        public ProductService(IProductRepository productRepository, IMapper mapper)
         {
             _productRepository = productRepository;
+            _mapper = mapper;
         }
 
-        public async Task<List<ProductDto>> GetAllProductsAsync()
+        public async Task<List<ProductStaffDto>> GetAllProductsAsync()
         {
             var products = await _productRepository.GetAllProductsAsync();
-            var productDtos = products.Select(p => new ProductDto
+            var productDtos = products.Select(p => new ProductStaffDto
             {
                 ProductId = p.ProductId,
                 ProductName = p.ProductName,
                 Brand = p.Brand,
                 CategoryId = p.CategoryId,
                 CategoryName = p.Category != null ? p.Category.Name : string.Empty,
-                Sku = p.Sku,
-                Color = p.Color,
-                Cpu = p.Cpu,
-                Ram = p.Ram,
-                Storage = p.Storage,
-                ScreenSize = p.ScreenSize,
-                Price = p.Price,
-                StockQuantity = p.StockQuantity,
                 ImageUrl = p.ImageUrl,
                 IsDeleted = p.IsDeleted,
                 CreatedAt = p.CreatedAt,
@@ -41,26 +37,30 @@ namespace BLL.Services
             return productDtos;
         }
 
-        public async Task<ProductDto?> GetProductByIdAsync(int id)
+        public async Task<ProductCustomerDto?> GetProductCustomerByIdAsync(int productId)
+        {
+            var product = await _productRepository.GetProductByIdAsync(productId);
+
+            if (product == null)
+            {
+                return null;
+            }
+
+            return _mapper.Map<ProductCustomerDto>(product);
+        }
+
+        public async Task<ProductStaffDto?> GetProductByIdAsync(int id)
         {
             var product = await _productRepository.GetProductByIdAsync(id);
             if (product != null)
             {
-                return new ProductDto
+                return new ProductStaffDto
                 {
                     ProductId = product.ProductId,
                     ProductName = product.ProductName,
                     Brand = product.Brand,
                     CategoryId = product.CategoryId,
                     CategoryName = product.Category != null ? product.Category.Name : string.Empty,
-                    Sku = product.Sku,
-                    Color = product.Color,
-                    Cpu = product.Cpu,
-                    Ram = product.Ram,
-                    Storage = product.Storage,
-                    ScreenSize = product.ScreenSize,
-                    Price = product.Price,
-                    StockQuantity = product.StockQuantity,
                     ImageUrl = product.ImageUrl,
                     IsDeleted = product.IsDeleted,
                     CreatedAt = product.CreatedAt,
@@ -69,20 +69,12 @@ namespace BLL.Services
             }
             return null;
         }
-        public async Task<ProductDto> CreateProductAsync(ProductCreateDto productCreateDto)
+        public async Task<ProductStaffDto> CreateProductAsync(ProductStaffCreateDto productCreateDto)
         {
             var newProduct = Product.Create(
                  productCreateDto.ProductName,
                  productCreateDto.Brand,
                  productCreateDto.CategoryId,
-                 productCreateDto.Sku,
-                 productCreateDto.Color,
-                 productCreateDto.Cpu,
-                 productCreateDto.Ram,
-                 productCreateDto.Storage,
-                 productCreateDto.ScreenSize,
-                 productCreateDto.Price,
-                 productCreateDto.StockQuantity,
                  productCreateDto.ImageUrl
             );
 
@@ -94,21 +86,13 @@ namespace BLL.Services
                 return populatedProduct;
             }
 
-            return new ProductDto
+            return new ProductStaffDto
             {
                 ProductId = createdProduct.ProductId,
                 ProductName = createdProduct.ProductName,
                 Brand = createdProduct.Brand,
                 CategoryId = createdProduct.CategoryId,
                 CategoryName = string.Empty,
-                Sku = createdProduct.Sku,
-                Color = createdProduct.Color,
-                Cpu = createdProduct.Cpu,
-                Ram = createdProduct.Ram,
-                Storage = createdProduct.Storage,
-                ScreenSize = createdProduct.ScreenSize,
-                Price = createdProduct.Price,
-                StockQuantity = createdProduct.StockQuantity,
                 ImageUrl = createdProduct.ImageUrl,
                 IsDeleted = createdProduct.IsDeleted,
                 CreatedAt = createdProduct.CreatedAt,
@@ -116,7 +100,7 @@ namespace BLL.Services
             };
         }
 
-        public async Task<bool> UpdateProductAsync(ProductUpdateDto productUpdateDto)
+        public async Task<bool> UpdateProductAsync(ProductStaffUpdateDto productUpdateDto)
         {
             var product = new Product
             {
@@ -127,43 +111,27 @@ namespace BLL.Services
                 productUpdateDto.ProductName,
                 productUpdateDto.Brand,
                 productUpdateDto.CategoryId,
-                productUpdateDto.Sku,
-                productUpdateDto.Color,
-                productUpdateDto.Cpu,
-                productUpdateDto.Ram,
-                productUpdateDto.Storage,
-                productUpdateDto.ScreenSize,
-                productUpdateDto.Price,
-                productUpdateDto.StockQuantity,
                 productUpdateDto.ImageUrl
             );
             
             return await _productRepository.UpdateProductAsync(product); ;
         }
 
-        public async Task<bool> DeleteProductAsync(ProductDeleteDto productDeleteDto)
+        public async Task<bool> DeleteProductAsync(ProductStaffDeleteDto productDeleteDto)
         {
             return await _productRepository.DeleteProductAsync(productDeleteDto.ProductId); ;
         }
 
-        public async Task<List<ProductDto>> GetProductsByCategoryIdAsync(int categoryId)
+        public async Task<List<ProductStaffDto>> GetProductsByCategoryIdAsync(int categoryId)
         {
             var products = await _productRepository.GetProductsByCategoryIdAsync(categoryId);
-            var productDtos = products.Select(p => new ProductDto
+            var productDtos = products.Select(p => new ProductStaffDto
             {
                 ProductId = p.ProductId,
                 ProductName = p.ProductName,
                 Brand = p.Brand,
                 CategoryId = p.CategoryId,
                 CategoryName = p.Category != null ? p.Category.Name : string.Empty,
-                Sku = p.Sku,
-                Color = p.Color,
-                Cpu = p.Cpu,
-                Ram = p.Ram,
-                Storage = p.Storage,
-                ScreenSize = p.ScreenSize,
-                Price = p.Price,
-                StockQuantity = p.StockQuantity,
                 ImageUrl = p.ImageUrl,
                 IsDeleted = p.IsDeleted,
                 CreatedAt = p.CreatedAt,
@@ -173,26 +141,18 @@ namespace BLL.Services
             return productDtos;
         }
 
-        public async Task<ProductDto?> GetProductWithVariantsAsync(Guid productVariantId)
+        public async Task<ProductStaffDto?> GetProductWithVariantsAsync(Guid productVariantId)
         {
             var product = await _productRepository.GetProductWithVariantsAsync(productVariantId);
             if (product != null)
             {
-                return new ProductDto
+                return new ProductStaffDto
                 {
                     ProductId = product.ProductId,
                     ProductName = product.ProductName,
                     Brand = product.Brand,
                     CategoryId = product.CategoryId,
                     CategoryName = product.Category != null ? product.Category.Name : string.Empty,
-                    Sku = product.Sku,
-                    Color = product.Color,
-                    Cpu = product.Cpu,
-                    Ram = product.Ram,
-                    Storage = product.Storage,
-                    ScreenSize = product.ScreenSize,
-                    Price = product.Price,
-                    StockQuantity = product.StockQuantity,
                     ImageUrl = product.ImageUrl,
                     IsDeleted = product.IsDeleted,
                     CreatedAt = product.CreatedAt,
@@ -202,24 +162,16 @@ namespace BLL.Services
             return null;
         }
 
-        public async Task<List<ProductDto>> SearchByNameAsync(string keyword)
+        public async Task<List<ProductStaffDto>> SearchByNameAsync(string keyword)
         {
             var products = await _productRepository.SearchByNameAsync(keyword);
-            var productDtos = products.Select(p => new ProductDto
+            var productDtos = products.Select(p => new ProductStaffDto
             {
                 ProductId = p.ProductId,
                 ProductName = p.ProductName,
                 Brand = p.Brand,
                 CategoryId = p.CategoryId,
                 CategoryName = p.Category != null ? p.Category.Name : string.Empty,
-                Sku = p.Sku,
-                Color = p.Color,
-                Cpu = p.Cpu,
-                Ram = p.Ram,
-                Storage = p.Storage,
-                ScreenSize = p.ScreenSize,
-                Price = p.Price,
-                StockQuantity = p.StockQuantity,
                 ImageUrl = p.ImageUrl,
                 IsDeleted = p.IsDeleted,
                 CreatedAt = p.CreatedAt,

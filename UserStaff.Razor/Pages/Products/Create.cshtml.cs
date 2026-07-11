@@ -1,10 +1,12 @@
-using BLL.DTOs.Product;
+using BLL.DTOs.Product.Staff;
 using BLL.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace UserStaff.Razor.Pages.Products
+namespace Staff.Razor.Pages.Products
 {
+    [Authorize]
     public class CreateModel : PageModel
     {
         private readonly IProductService _productService;
@@ -14,7 +16,7 @@ namespace UserStaff.Razor.Pages.Products
             _productService = productService;
         }
         [BindProperty]
-        public ProductCreateDto ProductToCreate { get; set; } = new();
+        public ProductStaffCreateDto ProductToCreate { get; set; } = new();
         public void OnGet()
         {
 

@@ -1,36 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DAL.Utilities
 {
     public class SkuGenerator
     {
-        public static string Generate(string productCode, string color, string? cpu, string? ram, string? storage)
+        public static string Generate(int productId, string color, string? cpu, string? ram, string? storage, string? screenSize)
         {
-            if (string.IsNullOrWhiteSpace(productCode))
-                throw new ArgumentException("Mã sản phẩm (Product Code) không được để trống.");
+            if (productId <= 0)
+                throw new ArgumentException("Product ID must be a positive integer.", nameof(productId));
 
             if (string.IsNullOrWhiteSpace(color))
-                throw new ArgumentException("Màu sắc không được để trống.");
+                throw new ArgumentException("Color cannot be empty.", nameof(color));
 
             // 1. Chuẩn hóa mã sản phẩm và màu sắc (Xóa khoảng trắng, viết hoa)
-            string cleanCode = productCode.Replace(" ", "").ToUpper();
+            string cleanCode = productId.ToString().PadLeft(9, '0');
             string cleanColor = color.Replace(" ", "").ToUpper();
 
-            // Mẹo: Lấy 3 chữ cái đầu của màu để SKU ngắn gọn (Ví dụ: Silver -> SIL)
+            // Mẹo giữ nguyên của bạn: Lấy 3 chữ cái đầu của màu để SKU ngắn gọn (Ví dụ: SILVER -> SIL)
             if (cleanColor.Length > 3)
                 cleanColor = cleanColor.Substring(0, 3);
 
-            // 2. Kiểm tra các thuộc tính nullable, nếu có thì format thêm vào SKU
-            string cleanCpu = !string.IsNullOrWhiteSpace(cpu) ? $"-{cpu.Replace(" ", "").ToUpper()}" : "";
-            string cleanRam = !string.IsNullOrWhiteSpace(ram) ? $"-{ram.Replace(" ", "").ToUpper()}" : "";
-            string cleanStorage = !string.IsNullOrWhiteSpace(storage) ? $"-{storage.Replace(" ", "").ToUpper()}" : "";
+            // Khởi tạo danh sách các phân đoạn của SKU
+            var segments = new List<string> { cleanCode, cleanColor };
 
-            // Kết quả dạng: IP15PM-BLA-A17PRO-8GB-256GB
-            return $"{cleanCode}-{cleanColor}{cleanCpu}{cleanRam}{cleanStorage}";
+            // 2. Kiểm tra các thuộc tính nullable, nếu có thì xóa khoảng trắng, viết hoa và đưa vào danh sách
+            if (!string.IsNullOrWhiteSpace(cpu))
+                segments.Add(cpu.Replace(" ", "").ToUpper());
+
+            if (!string.IsNullOrWhiteSpace(ram))
+                segments.Add(ram.Replace(" ", "").ToUpper());
+
+            if (!string.IsNullOrWhiteSpace(storage))
+                segments.Add(storage.Replace(" ", "").ToUpper());
+
+            // 3. BỔ SUNG: Kiểm tra và chuẩn hóa kích thước màn hình (Ví dụ: "14 inch" -> "14INCH" hoặc "15.6" -> "15.6")
+            if (!string.IsNullOrWhiteSpace(screenSize))
+            {
+                // Xóa khoảng trắng và dấu nháy kép (nếu Admin quen tay gõ ví dụ 14")
+                string cleanScreen = screenSize.Replace(" ", "").Replace("\"", "").ToUpper();
+                segments.Add(cleanScreen);
+            }
+
+            // Nối các phần tử lại bằng dấu gạch ngang (-). 
+            // Kết quả dạng: IP15PP-BLA-ULTRA5-16GB-1TB-14INCH
+            return string.Join("-", segments);
         }
     }
 }

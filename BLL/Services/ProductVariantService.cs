@@ -1,4 +1,4 @@
-using BLL.DTOs.ProductVariant;
+using BLL.DTOs.ProductVariant.Staff;
 using BLL.Services.Interfaces;
 using DAL.Models;
 using DAL.Repositories.Interfaces;
@@ -14,14 +14,14 @@ namespace BLL.Services
             _productVariantRepository = productVariantRepository;
         }
 
-        public async Task<List<ProductVariantDto>> GetAllProductVariantsAsync()
+        public async Task<List<ProductVariantStaffDto>> GetAllProductVariantsAsync()
         {
             var productVariants = await _productVariantRepository.GetAllProductVariantsAsync();
-            return productVariants.Select(pv => new ProductVariantDto
+            return productVariants.Select(pv => new ProductVariantStaffDto
             {
                 ProductVariantId = pv.ProductVariantId,
                 Sku = pv.Sku,
-                ProductCode = pv.ProductCode,
+                //ProductCode = pv.ProductCode,s
                 Color = pv.Color,
                 Cpu = pv.Cpu,
                 Ram = pv.Ram,
@@ -31,22 +31,24 @@ namespace BLL.Services
                 StockQuantity = pv.StockQuantity,
                 ImageUrl = pv.ImageUrl,
                 ProductId = pv.ProductId,
+                PromotionId = pv.PromotionId,
+                Promotion = pv.Promotion,
                 IsDeleted = pv.IsDeleted,
                 CreatedAt = pv.CreatedAt,
                 UpdatedAt = pv.UpdatedAt
             }).ToList();
         }
 
-        public async Task<ProductVariantDto?> GetProductVariantByIdAsync(Guid productVariantId)
+        public async Task<ProductVariantStaffDto?> GetProductVariantByIdAsync(Guid productVariantId)
         {
             var productVariant = await _productVariantRepository.GetProductVariantByIdAsync(productVariantId);
             if (productVariant != null)
             {
-                return new ProductVariantDto
+                return new ProductVariantStaffDto
                 {
                     ProductVariantId = productVariant.ProductVariantId,
                     Sku = productVariant.Sku,
-                    ProductCode = productVariant.ProductCode,
+                    //ProductCode = productVariant.ProductCode,
                     Color = productVariant.Color,
                     Cpu = productVariant.Cpu,
                     Ram = productVariant.Ram,
@@ -56,6 +58,8 @@ namespace BLL.Services
                     StockQuantity = productVariant.StockQuantity,
                     ImageUrl = productVariant.ImageUrl,
                     ProductId = productVariant.ProductId,
+                    PromotionId = productVariant.PromotionId,
+                    Promotion = productVariant.Promotion,
                     IsDeleted = productVariant.IsDeleted,
                     CreatedAt = productVariant.CreatedAt,
                     UpdatedAt = productVariant.UpdatedAt
@@ -63,10 +67,10 @@ namespace BLL.Services
             }
             return null;
         }
-        public async Task<ProductVariantDto> CreateProductVariantAsync(ProductVariantCreateDto productVariant)
+        public async Task<ProductVariantStaffDto> CreateProductVariantAsync(ProductVariantStaffCreateDto productVariant)
         {
             var newVariant = ProductVariant.Create(
-                productVariant.ProductCode,
+                //productVariant.ProductCode,
                 productVariant.Color,
                 productVariant.Cpu,
                 productVariant.Ram,
@@ -75,11 +79,12 @@ namespace BLL.Services
                 productVariant.Price,
                 productVariant.StockQuantity,
                 productVariant.ImageUrl,
-                productVariant.ProductId
+                productVariant.ProductId,
+                productVariant.PromotionId
             );
             var createdVariant = await _productVariantRepository.CreateProductVariantAsync(newVariant);
 
-            return new ProductVariantDto
+            return new ProductVariantStaffDto
             {
                 ProductVariantId = createdVariant.ProductVariantId,
                 Sku = createdVariant.Sku,
@@ -92,13 +97,14 @@ namespace BLL.Services
                 StockQuantity = createdVariant.StockQuantity,
                 ImageUrl = createdVariant.ImageUrl,
                 ProductId = createdVariant.ProductId,
+                PromotionId = createdVariant.PromotionId,  
                 IsDeleted = createdVariant.IsDeleted,
                 CreatedAt = createdVariant.CreatedAt,
                 UpdatedAt = createdVariant.UpdatedAt
             };
         }
 
-        public async Task<bool> UpdateProductVariantAsync(ProductVariantUpdateDto productVariant)
+        public async Task<bool> UpdateProductVariantAsync(ProductVariantStaffUpdateDto productVariant)
         {
             var existingVariant = new ProductVariant
             {
@@ -106,7 +112,7 @@ namespace BLL.Services
             };
 
             existingVariant.Update(
-                productVariant.ProductCode,
+                //productVariant.ProductCode,
                 productVariant.Color,
                 productVariant.Cpu,
                 productVariant.Ram,
@@ -115,21 +121,22 @@ namespace BLL.Services
                 productVariant.Price,
                 productVariant.StockQuantity,
                 productVariant.ImageUrl,
-                productVariant.ProductId
+                productVariant.ProductId,
+                productVariant.PromotionId
             );
 
             return await _productVariantRepository.UpdateProductVariantAsync(existingVariant);
         }
 
-        public async Task<bool> DeleteProductVariantAsync(ProductVariantDeleteDto productVariant)
+        public async Task<bool> DeleteProductVariantAsync(ProductVariantStaffDeleteDto productVariant)
         {
             return await _productVariantRepository.DeleteProductVariantAsync(productVariant.ProductVariantId);
         }
 
-        public async Task<List<ProductVariantDto>> GetVariantsByProductIdAsync(int productId)
+        public async Task<List<ProductVariantStaffDto>> GetVariantsByProductIdAsync(int productId)
         {
             var variants = await _productVariantRepository.GetVariantsByProductIdAsync(productId);
-            return variants.Select(v => new ProductVariantDto
+            return variants.Select(v => new ProductVariantStaffDto
             {
                 ProductVariantId = v.ProductVariantId,
                 Sku = v.Sku,
@@ -142,6 +149,8 @@ namespace BLL.Services
                 StockQuantity = v.StockQuantity,
                 ImageUrl = v.ImageUrl,
                 ProductId = v.ProductId,
+                PromotionId = v.PromotionId,
+                Promotion = v.Promotion,
                 IsDeleted = v.IsDeleted,
                 CreatedAt = v.CreatedAt,
                 UpdatedAt = v.UpdatedAt

@@ -1,8 +1,14 @@
-@page "/categories"
+﻿@page "/categories"
 @rendermode InteractiveServer
 @using BLL.DTOs.Category
 @using BLL.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
 @inject ICategoryService CategoryService
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Manage Categories - ElectroNexus Admin</PageTitle>
 
@@ -11,9 +17,6 @@
         <div>
             <h2 class="fw-bold text-dark m-0">Manage Categories</h2>
             <p class="text-muted m-0">View, create, edit, and delete electronic device categories.</p>
-        </div>
-        <div class="badge bg-danger px-3 py-2 fs-7" style="border-radius: 6px;">
-            Role: Administrator
         </div>
     </div>
 
@@ -161,6 +164,8 @@
     private bool isLoading = true;
     private string successMessage = "";
     private string errorMessage = "";
+    private HubConnection? hubConnection;
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     // Form states
     [SupplyParameterFromForm]
@@ -176,9 +181,58 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadCategories();
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/adminHub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On("CategoryChanged", async () =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await LoadCategories();
+                StateHasChanged();
+            });
+        });
+
+        // await hubConnection.StartAsync(); // chuyển lên OnAfterRenderAsync để đảm bảo giao diện đã render hoàn toàn trước khi kết nối
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                if (hubConnection is not null && hubConnection.State == HubConnectionState.Disconnected)
+                {
+                    // Chỉ chạy khi giao diện đã render hoàn toàn trên Trình duyệt (Client)
+                    await hubConnection.StartAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Can't connect to Realtime Hub: {ex.Message}";
+                StateHasChanged();
+            }
+        }
     }
 
     private async Task LoadCategories()
+    {
+        await _semaphore.WaitAsync();
+        try
+        {
+            await LoadCategoriesInternal();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    private async Task LoadCategoriesInternal()
     {
         isLoading = true;
         try
@@ -230,6 +284,7 @@
             return;
         }
 
+        await _semaphore.WaitAsync();
         try
         {
             if (isEditing)
@@ -240,6 +295,10 @@
                 {
                     successMessage = $"Category '{formModel.Name}' updated successfully!";
                     CancelEdit();
+                    if (hubConnection is not null && hubConnection.State == HubConnectionState.Connected)
+                    {
+                        await hubConnection.SendAsync("BroadcastCategoryChanged");
+                    }
                 }
                 else
                 {
@@ -254,17 +313,25 @@
                 {
                     successMessage = $"New category '{created.Name}' created successfully!";
                     formModel = new CategoryFormModel();
+                    if (hubConnection is not null && hubConnection.State == HubConnectionState.Connected)
+                    {
+                        await hubConnection.SendAsync("BroadcastCategoryChanged");
+                    }
                 }
                 else
                 {
                     errorMessage = "Failed to create category.";
                 }
             }
-            await LoadCategories();
+            await LoadCategoriesInternal();
         }
         catch (Exception ex)
         {
             errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _semaphore.Release();
         }
     }
 
@@ -289,6 +356,7 @@
         var name = categoryToDeleteName;
         CloseDeleteConfirmation();
 
+        await _semaphore.WaitAsync();
         try
         {
             var deleteDto = new CategoryDeleteDto { Id = id };
@@ -300,7 +368,11 @@
                 {
                     CancelEdit();
                 }
-                await LoadCategories();
+                if (hubConnection is not null && hubConnection.State == HubConnectionState.Connected)
+                {
+                    await hubConnection.SendAsync("BroadcastCategoryChanged");
+                }
+                await LoadCategoriesInternal();
             }
             else
             {
@@ -311,12 +383,24 @@
         {
             errorMessage = $"An error occurred while deleting the category: {ex.Message}";
         }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     private void ClearMessages()
     {
         successMessage = "";
         errorMessage = "";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 
     // Form Model supporting Data Annotations

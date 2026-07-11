@@ -1,15 +1,40 @@
 using BLL;
+using BLL.DTOs.Staff;
+using BLL.Services.Interfaces;
 using BLL.Settings;
+using DAL.Enums;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");  
 
 // Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("StaffOnly", p => p.RequireRole(
+        (RoleEnum.Staff).ToString(),
+        (RoleEnum.Admin).ToString()));
+});
+
+builder.Services.AddRazorPages(options => { 
+    options.Conventions.AuthorizeFolder("/", "StaffOnly");
+    options.Conventions.AllowAnonymousToFolder("/Auth");
+});
 
 builder.Services.AddBusinessLogicLayer(connectionString!);
 builder.Services.Configure<VnpaySettings>(builder.Configuration.GetSection("VNPAY"));
+
+// Add authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.LoginPath = "/Auth/Login";
+        options.LogoutPath = "/Auth/Logout";
+        options.AccessDeniedPath = "/Auth/AccessDenied";
+    });
+builder.Services.AddAuthorization();
+builder.Services.AddSession();
 
 var app = builder.Build();
 
@@ -22,6 +47,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 
 var sharedUploadsFolder = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, "..", "shared-uploads"));
 if (!Directory.Exists(sharedUploadsFolder))
@@ -37,6 +63,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseRouting();
 
+app.UseSession();
 app.UseAuthorization();
 
 app.MapStaticAssets();

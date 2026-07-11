@@ -1,10 +1,36 @@
-using BLL;
+﻿using BLL;
+using BLL.DTOs.Customer;
+using BLL.Services.Interfaces;
 using BLL.Settings;
+using DAL.Enums;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+// Add services to the container. Add authorization policy to require authentication for all controllers by default
+builder.Services.AddControllersWithViews( options =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .RequireRole("Customer")
+        .Build();   
+    options.Filters.Add(new AuthorizeFilter(policy));
+});
+builder.Services.AddSession();
+
+// Cookie authentication for users
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Login";
+        options.LogoutPath = "/Auth/Logout";
+        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+        options.SlidingExpiration = true;
+    });
 
 // lấy connection string từ appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -39,14 +65,24 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseRouting();
 
+app.UseSession();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
+// Set the default culture to Vietnamese (Vietnam)
+var supportedCultures = new[] { new CultureInfo("vi-VN") };
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("vi-VN"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();

@@ -1,10 +1,11 @@
-using BLL.DTOs.Product;
+using BLL.DTOs.Product.Staff;
 using BLL.Services.Interfaces;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace UserStaff.Razor.Pages.Products
+namespace Staff.Razor.Pages.Products
 {
+    [Authorize]
     public class IndexModel : PageModel
     {
         private readonly IProductService _productService;
@@ -13,7 +14,7 @@ namespace UserStaff.Razor.Pages.Products
         {
             _productService = productService;
         }
-        public List<ProductDto> Products { get; set; } = new List<ProductDto>();
+        public List<ProductStaffDto> Products { get; set; } = new List<ProductStaffDto>();
         public async Task OnGetAsync()
         {
             Products = await _productService.GetAllProductsAsync();

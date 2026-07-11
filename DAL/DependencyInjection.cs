@@ -8,7 +8,7 @@ namespace DAL
 {
     public static class DependencyInjection
     {
-        public static IServiceProvider AddDataAccessLayer(this IServiceCollection services, string connectionString)
+        public static IServiceCollection AddDataAccessLayer(this IServiceCollection services, string connectionString)
         {
             // Register the DbContext with the connection string from configuration
             services.AddDbContext<AppDbContext>(options =>
@@ -19,8 +19,16 @@ namespace DAL
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 
-            return services.BuildServiceProvider();
+            services.AddScoped<ICartItemRepository, CartItemRepository>();
+            services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<IStaffRepository, StaffRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            return services;
         }
     }
 }
