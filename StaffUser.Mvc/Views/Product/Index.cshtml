@@ -1,5 +1,6 @@
 ﻿@using BLL.DTOs.Product.Customer
 @using BLL.DTOs.ProductReview
+@using BLL.DTOs.ProductVariant.Customer
 @model ProductCustomerDto
 
 @{
@@ -7,10 +8,25 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     // Lấy danh sách biến thể hợp lệ, sắp xếp theo giá tăng dần
-    var activeVariants = Model?.ProductVariants?.Where(v => !v.IsDeleted).OrderBy(v => v.Price).ToList() ?? new List<BLL.DTOs.ProductVariant.Customer.ProductVariantCustomerDto>();
-
-    // Chọn biến thể mặc định (Ưu tiên còn hàng)
+    var activeVariants = Model?.ProductVariants?.Where(v => !v.IsDeleted).OrderBy(v => v.Price).ToList()
+        ?? new List<ProductVariantCustomerDto>();
     var defaultVariant = activeVariants.FirstOrDefault(v => v.StockQuantity > 0) ?? activeVariants.FirstOrDefault();
+
+    // Thêm: chuẩn bị data có FinalPrice để gửi sang JS
+    var variantsForJs = activeVariants.Select(v => new
+    {
+        v.ProductVariantId,
+        v.Sku,
+        v.Cpu,
+        v.Ram,
+        v.Storage,
+        v.ScreenSize,
+        v.Color,
+        v.Price,
+        FinalPrice = v.GetPrice(),
+        v.StockQuantity,
+        v.ImageUrl
+    }).ToList();
 
     // Lấy danh sách duy nhất cho 5 nhóm (Bỏ qua giá trị Null/Trống)
     var uniqueCpus = activeVariants.Where(v => !string.IsNullOrEmpty(v.Cpu)).Select(v => v.Cpu!).Distinct().ToList();
@@ -150,8 +166,16 @@
                             <span>SKU: <strong id="variantSkuText" class="text-uppercase text-dark">@defaultVariant.Sku</strong></span>
                         </div>
 
-                        <div class="p-3 bg-light rounded-3 mb-4 d-flex align-items-baseline gap-1">
-                            <span id="variantPriceText" class="cps-price-large">@defaultVariant.Price.ToString("#,##0")</span>
+                        <div class="p-3 bg-light rounded-3 mb-4 d-flex align-items-baseline gap-2">
+                            @{
+                                var defaultFinalPrice = defaultVariant.GetPrice();
+                                var defaultIsOnSale = defaultFinalPrice < defaultVariant.Price;
+                            }
+                            <span id="variantOldPriceText"
+                                  class="text-muted text-decoration-line-through fs-6 @(defaultIsOnSale ? "" : "d-none")">
+                                @defaultVariant.Price.ToString("N0") ₫
+                            </span>
+                            <span id="variantPriceText" class="cps-price-large">@defaultFinalPrice.ToString("N0")</span>
                             <span class="text-danger fw-bold fs-5">₫</span>
                         </div>
 
@@ -460,7 +484,7 @@
 @section Scripts {
     <script>
         // Danh sách biến thể từ Server C#
-        const variants = @Html.Raw(Json.Serialize(activeVariants));
+        const variants = @Html.Raw(Json.Serialize(variantsForJs));
 
         // Biến toàn cục theo dõi số lượng tồn kho hiện tại của biến thể được chọn
         let maxAvailableStock = @(defaultVariant?.StockQuantity ?? 0);
@@ -618,7 +642,19 @@
 
             if (exactMatch) {
                 document.getElementById('selectedVariantId').setAttribute('data-variant-id', exactMatch.productVariantId);
-                priceEl.innerText = new Intl.NumberFormat('vi-VN').format(exactMatch.price);
+
+                const oldPriceEl = document.getElementById('variantOldPriceText');
+                const isOnSale = exactMatch.finalPrice < exactMatch.price;
+
+                priceEl.innerText = new Intl.NumberFormat('vi-VN').format(exactMatch.finalPrice);
+
+                if (isOnSale) {
+                    oldPriceEl.innerText = new Intl.NumberFormat('vi-VN').format(exactMatch.price) + ' ₫';
+                    oldPriceEl.classList.remove('d-none');
+                } else {
+                    oldPriceEl.classList.add('d-none');
+                }
+
                 skuEl.innerText = exactMatch.sku;
                 if (exactMatch.imageUrl) imgEl.src = exactMatch.imageUrl;
 

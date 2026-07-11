@@ -25,6 +25,7 @@ namespace DAL.Repositories
                 .AsNoTracking()
                 .Include(p => p.Category)
                 .Include(p => p.ProductVariants)
+                .ThenInclude(pv => pv.Promotion)
                 .FirstOrDefaultAsync(p => p.ProductId == productId);
         }
 

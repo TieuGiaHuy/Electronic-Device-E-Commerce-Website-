@@ -58,14 +58,19 @@ namespace DAL.Repositories
 
         public async Task<CartItem?> GetCartItemByIdAsync(int cartItemId)
         {
-            return await _context.CartItems.FirstOrDefaultAsync(ci => ci.CartItemId == cartItemId); ;
+            return await _context.CartItems
+                .Include(ci => ci.ProductVariant)
+                    .ThenInclude(pv => pv!.Promotion)
+                .FirstOrDefaultAsync(ci => ci.CartItemId == cartItemId); ;
         }
 
         public async Task<List<CartItem>> GetCartItemsByCustomerIdAsync(int customerId)
         {
             var cartItems = await _context.CartItems
                 .Include(ci => ci.ProductVariant)
-                .ThenInclude(pv => pv!.Product)
+                    .ThenInclude(pv => pv!.Promotion)
+                .Include(ci => ci.ProductVariant)
+                    .ThenInclude(pv => pv!.Product)
                 .Where(ci => ci.CustomerId == customerId)
                 .ToListAsync();
             return cartItems;

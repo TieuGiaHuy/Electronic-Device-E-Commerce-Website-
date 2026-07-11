@@ -14,5 +14,6 @@ namespace BLL.Services.Interfaces
         Task<bool> UpdateOrderStatusAsync(Guid orderId, string status);
         Task<bool> DeleteOrderAsync(Guid orderId);
         Task<List<OrderDto>> SearchOrdersAsync(int? customerId, string? status, DateTime? fromDate, DateTime? toDate);
+        Task<bool> CancelOrderAsync(Guid orderId);
     }
 }

@@ -1,9 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using StaffUser.Mvc.Models;
 using BLL.Services.Interfaces;
 using System.Diagnostics;
 using BLL.DTOs.Product.Staff;
 using Microsoft.AspNetCore.Authorization;
+using System.Runtime.ConstrainedExecution;
 
 namespace Customer.Mvc.Controllers
 {
@@ -67,8 +68,11 @@ namespace Customer.Mvc.Controllers
 
                 var features = new List<string>();
                 var bestVariant = pVariants.OrderBy(v => v.Price).FirstOrDefault();
+
+                decimal finalPrice = basePrice;
                 if (bestVariant != null)
                 {
+                    finalPrice = bestVariant.GetPrice(); // đã Include(Promotion) ở bước 1
                     if (!string.IsNullOrEmpty(bestVariant.Cpu)) features.Add(bestVariant.Cpu);
                     if (!string.IsNullOrEmpty(bestVariant.Ram)) features.Add(bestVariant.Ram + " RAM");
                     if (!string.IsNullOrEmpty(bestVariant.Storage)) features.Add(bestVariant.Storage);
@@ -83,6 +87,8 @@ namespace Customer.Mvc.Controllers
                     CategoryName = p.CategoryName,
                     ImageUrl = p.ImageUrl,
                     BasePrice = basePrice,
+                    FinalPrice = finalPrice,
+                    IsOnSale = finalPrice < basePrice,
                     Features = features
                 });
             }

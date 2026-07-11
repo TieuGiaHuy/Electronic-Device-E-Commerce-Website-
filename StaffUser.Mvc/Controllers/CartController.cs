@@ -1,4 +1,4 @@
-using BLL.DTOs.CartItem;
+﻿using BLL.DTOs.CartItem;
 using BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -60,6 +60,8 @@ namespace Customer.Mvc.Controllers
                     storage = v.Storage,
                     screenSize = v.ScreenSize,
                     price = v.Price,
+                    finalPrice = v.GetPrice(),
+                    isOnSale = v.GetPrice() < v.Price,
                     stockQuantity = v.StockQuantity,
                     imageUrl = v.ImageUrl
                 })
@@ -84,20 +86,21 @@ namespace Customer.Mvc.Controllers
                 var cartItems = await _cartItemService.GetCartItemsByCustomerIdAsync(CustomerId);
                 var totalCount = cartItems.Sum(i => i.Quantity);
 
-                return Json(new { success = true, message = "Product added to cart!", totalCount });
+                var addedVariant = cartItems.FirstOrDefault(i => i.ProductVariantId == variantId)?.ProductVariant;
+
+                bool promotionSoldOut = addedVariant != null
+                    && addedVariant.PromotionId.HasValue
+                    && (addedVariant.Promotion == null || !addedVariant.Promotion.IsActive());
+
+                string? warning = promotionSoldOut
+                    ? "Product promotion has ended or sold out."
+                    : null;
+
+                return Json(new { success = true, message = "Product added to cart!", totalCount, warning });
             }
-            catch (ArgumentException ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "An unexpected error occurred: " + ex.Message });
-            }
+            catch (ArgumentException ex) { return Json(new { success = false, message = ex.Message }); }
+            catch (InvalidOperationException ex) { return Json(new { success = false, message = ex.Message }); }
+            catch (Exception ex) { return Json(new { success = false, message = "An unexpected error occurred: " + ex.Message }); }
         }
 
         [HttpPost]
@@ -109,9 +112,18 @@ namespace Customer.Mvc.Controllers
                 var cartItems = await _cartItemService.GetCartItemsByCustomerIdAsync(CustomerId);
                 var updatedItem = cartItems.FirstOrDefault(i => i.CartItemId == cartItemId);
                 var totalCount = cartItems.Sum(i => i.Quantity);
-                var cartTotal = cartItems.Sum(i => i.Quantity * (i.ProductVariant?.Price ?? 0));
+                var cartTotal = cartItems.Sum(i => i.Quantity * (i.ProductVariant?.GetPrice() ?? 0));
+                var totalPrice = (updatedItem?.Quantity ?? 0) * (updatedItem?.ProductVariant?.GetPrice() ?? 0);
 
-                var totalPrice = (updatedItem?.Quantity ?? 0) * (updatedItem?.ProductVariant?.Price ?? 0);
+                var variant = updatedItem?.ProductVariant;
+
+                bool promotionSoldOut = variant != null
+                    && variant.PromotionId.HasValue
+                    && (variant.Promotion == null || !variant.Promotion.IsActive());
+
+                string? warning = promotionSoldOut
+                    ? "Sản phẩm đã hết số lượng ưu đãi, giá được tính theo giá gốc."
+                    : null;
 
                 return Json(new { success = true, totalCount, totalPrice, cartTotal });
             }

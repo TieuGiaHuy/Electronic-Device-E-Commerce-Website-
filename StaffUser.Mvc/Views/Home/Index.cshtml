@@ -1,4 +1,4 @@
-@using System.Globalization
+﻿@using System.Globalization
 @model StaffUser.Mvc.Models.HomeIndexViewModel
 @{
     ViewData["Title"] = "Premium Electronic Store";
@@ -104,10 +104,6 @@
                     <h5 class="fw-bold text-dark mb-1">@discountType</h5>
                     <p class="text-muted small mb-3">@promo.Name (Reserved stock limit applies)</p>
                     <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <span class="small text-muted d-block">Click code to copy:</span>
-                            <span class="voucher-code" onclick="copyVoucher('@promoCode')">@promoCode</span>
-                        </div>
                         @if (promo.EndAt.HasValue)
                         {
                             var remaining = promo.EndAt.Value - DateTime.Now;
@@ -204,7 +200,21 @@
 
                         <div class="product-price-box">
                             <div class="product-price-label">Price starting from</div>
-                            <div class="product-price">@prod.BasePrice.ToString("C0", new CultureInfo("vi-VN"))</div>
+                            @if (prod.IsOnSale)
+                            {
+                                <div>
+                                    <span class="text-muted text-decoration-line-through small">
+                                        @prod.BasePrice.ToString("N0") đ
+                                    </span>
+                                    <div class="product-price text-danger fw-bold">
+                                        @prod.FinalPrice.ToString("N0") đ
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="product-price">@prod.BasePrice.ToString("N0") đ </div>
+                            }
                         </div>
 
                         <div class="d-flex gap-2">
@@ -370,13 +380,18 @@
                             let isDisabled = v.stockQuantity <= 0 ? 'disabled' : '';
                             let badgeHtml = v.stockQuantity <= 0 ? '<span class="badge bg-secondary ms-2">Out of Stock</span>' : '';
 
+                            let priceHtml = v.isOnSale
+                                ? `<span class="text-muted text-decoration-line-through small me-1">${v.price.toLocaleString('vi-VN')} đ</span><span class="fw-bold text-danger">${v.finalPrice.toLocaleString('vi-VN')} đ</span>`
+                                : `<span class="fw-bold text-danger">${v.price.toLocaleString('vi-VN')} đ</span>`;
+
                             variantsHtml += `
-                                <div class="form-check border rounded p-3 mb-2 cursor-pointer variant-option-row ${isDisabled ? 'bg-light text-muted' : ''}" style="transition: border-color 0.2s;" onclick="selectVariantRow('${v.productVariantId}', ${v.price}, ${v.stockQuantity}, '${v.imageUrl}')">
+                                <div class="form-check border rounded p-3 mb-2 cursor-pointer variant-option-row ${isDisabled ? 'bg-light text-muted' : ''}"
+                                     onclick="selectVariantRow('${v.productVariantId}', ${v.finalPrice}, ${v.stockQuantity}, '${v.imageUrl}')">
                                     <input class="form-check-input ms-0 me-2 variant-radio" type="radio" name="variantRadio" id="var-${v.productVariantId}" value="${v.productVariantId}" ${isDisabled} />
                                     <label class="form-check-label fw-semibold cursor-pointer" for="var-${v.productVariantId}">
                                         ${specLabel} ${badgeHtml}
                                     </label>
-                                    <span class="float-end fw-bold text-danger">$${v.price.toFixed(2)}</span>
+                                    <span class="float-end">${priceHtml}</span>
                                 </div>
                             `;
                         });

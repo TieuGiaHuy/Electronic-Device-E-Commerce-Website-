@@ -1,4 +1,4 @@
-using BLL.DTOs.Category;
+﻿using BLL.DTOs.Category;
 using BLL.DTOs.Promotion;
 using System.Collections.Generic;
 
@@ -19,7 +19,9 @@ namespace StaffUser.Mvc.Models
         public int CategoryId { get; set; }
         public string CategoryName { get; set; } = string.Empty;
         public string? ImageUrl { get; set; }
-        public decimal BasePrice { get; set; } // Minimum variant price
+        public decimal BasePrice { get; set; }        // Giá gốc (min variant price)
+        public decimal FinalPrice { get; set; }        // Giá sau khi áp promotion
+        public bool IsOnSale { get; set; }              // FinalPrice < BasePrice
         public List<string> Features { get; set; } = new(); // e.g. "Intel i7", "16GB RAM"
     }
 }

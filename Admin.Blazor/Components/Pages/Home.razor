@@ -123,7 +123,7 @@
                                         <tr>
                                             <td class="small">@order.OrderId.ToString().Substring(0, 8)</td>
                                             <td>@order.CustomerName</td>
-                                            <td class="fw-semibold">@order.TotalAmount.ToString("C")</td>
+                                            <td class="fw-semibold">@order.TotalAmount.ToString("N0") đ</td>
                                             <td><span class="badge @GetStatusBadgeClass(order.Status)">@order.Status</span></td>
                                             <td class="small text-muted">@order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
                                         </tr>
