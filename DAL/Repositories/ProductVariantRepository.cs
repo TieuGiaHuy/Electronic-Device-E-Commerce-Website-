@@ -14,13 +14,17 @@ namespace DAL.Repositories
         }
         public async Task<List<ProductVariant>> GetAllProductVariantsAsync()
         {
-            var productVariants = await _context.ProductVariants.ToListAsync();
+            var productVariants = await _context.ProductVariants
+                .Include(pv => pv.Promotion)
+                .ToListAsync();
             return productVariants;  
         }
 
         public async Task<ProductVariant?> GetProductVariantByIdAsync(Guid productVariantId)
         {
-            var productVariant = await _context.ProductVariants.FindAsync(productVariantId);
+            var productVariant = await _context.ProductVariants
+                .Include(pv => pv.Promotion)
+                .FirstOrDefaultAsync(pv => pv.ProductVariantId == productVariantId);
             return productVariant;
         }
         public async Task<ProductVariant> CreateProductVariantAsync(ProductVariant productVariant)

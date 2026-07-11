@@ -69,46 +69,41 @@ namespace DAL.Data
                 var variants = new[]
                 {
                     // 0-1: XtremeBook 14
-                    ProductVariant.Create("Black", "Intel i5", "8GB", "256GB", "14\"", 999.99m, 30, null, prod1.ProductId),
-                    ProductVariant.Create("Silver", "Intel i7", "16GB", "512GB", "14\"", 1299.99m, 15, null, prod1.ProductId),
+                    ProductVariant.Create("Black", "Intel i5", "8GB", "256GB", "14\"", 10000000, 30, null, prod1.ProductId),
+                    ProductVariant.Create("Silver", "Intel i7", "16GB", "512GB", "14\"", 12999999, 15, null, prod1.ProductId),
 
                     // 2: XtremeBook 16
-                    ProductVariant.Create("Black", "Intel i9", "32GB", "1TB", "16\"", 1899.99m, 10, null, prod2.ProductId),
-
+                    ProductVariant.Create("Black", "Intel i9", "32GB", "1TB", "16\"", 18999999, 10, null, prod2.ProductId),
                     // 3-4: PocketPhone Z
-                    ProductVariant.Create("Silver", "ARM Octa", "6GB", "128GB", "6.1\"", 699.99m, 80, null, prod3.ProductId),
-                    ProductVariant.Create("Black", "ARM Octa", "8GB", "256GB", "6.1\"", 799.99m, 50, null, prod3.ProductId),
+                    ProductVariant.Create("Silver", "ARM Octa", "6GB", "128GB", "6.1\"", 6999999, 80, null, prod3.ProductId),
+                    ProductVariant.Create("Black", "ARM Octa", "8GB", "256GB", "6.1\"", 7999999, 50, null, prod3.ProductId),
 
                     // 5-6: PocketPhone Pro
-                    ProductVariant.Create("Black", "ARM Octa Pro", "8GB", "256GB", "6.7\"", 999.99m, 40, null, prod4.ProductId),
-                    ProductVariant.Create("Silver", "ARM Octa Pro", "12GB", "512GB", "6.7\"", 1199.99m, 25, null, prod4.ProductId),
-
+                    ProductVariant.Create("Black", "ARM Octa Pro", "8GB", "256GB", "6.7\"", 9999999, 40, null, prod4.ProductId),
+                    ProductVariant.Create("Silver", "ARM Octa Pro", "12GB", "512GB", "6.7\"", 11999999, 25, null, prod4.ProductId),
                     // 7-8: SoundBuds Pro
-                    ProductVariant.Create("Black", null, null, null, null, 149.99m, 100, null, prod5.ProductId),
-                    ProductVariant.Create("White", null, null, null, null, 149.99m, 80, null, prod5.ProductId),
-
+                    ProductVariant.Create("Black", null, null, null, null, 1499999, 100, null, prod5.ProductId),
+                    ProductVariant.Create("White", null, null, null, null, 1499999, 80, null, prod5.ProductId),
                     // 9: PowerBank 20000
-                    ProductVariant.Create("Black", null, null, null, null, 59.99m, 200, null, prod6.ProductId),
+                    ProductVariant.Create("Black", null, null, null, null, 599999, 200, null, prod6.ProductId),
 
                     // 10: TabPro 11
-                    ProductVariant.Create("Silver", "ARM Pro", "8GB", "128GB", "11\"", 499.99m, 30, null, prod7.ProductId),
+                    ProductVariant.Create("Silver", "ARM Pro", "8GB", "128GB", "11\"", 499999, 30, null, prod7.ProductId),
 
                     // 11-12: UltraBook Air 13
-                    ProductVariant.Create("Silver", "Intel i5", "8GB", "256GB", "13\"", 1099.99m, 20, null, prod8.ProductId),
-                    ProductVariant.Create("Space Gray", "Intel i7", "16GB", "512GB", "13\"", 1399.99m, 12, null, prod8.ProductId),
-
+                    ProductVariant.Create("Silver", "Intel i5", "8GB", "256GB", "13\"", 1099999, 20, null, prod8.ProductId),
+                    ProductVariant.Create("Space Gray", "Intel i7", "16GB", "512GB", "13\"", 1399999, 12, null, prod8.ProductId),
                     // 13-14: GamerBook X15
-                    ProductVariant.Create("Black", "Intel i7", "16GB", "512GB", "15\"", 1599.99m, 8, null, prod9.ProductId),
-                    ProductVariant.Create("Black", "Intel i9", "32GB", "1TB", "15\"", 1999.99m, 5, null, prod9.ProductId),
+                    ProductVariant.Create("Black", "Intel i7", "16GB", "512GB", "15\"", 15999999, 8, null, prod9.ProductId),
+                    ProductVariant.Create("Black", "Intel i9", "32GB", "1TB", "15\"", 19999999, 5, null, prod9.ProductId),
 
                     // 15: PocketPhone Mini
-                    ProductVariant.Create("White", "ARM Hexa", "6GB", "128GB", "5.4\"", 599.99m, 35, null, prod10.ProductId),
-
+                    ProductVariant.Create("White", "ARM Hexa", "6GB", "128GB", "5.4\"", 5999999, 35, null, prod10.ProductId),
                     // 16: WirelessCharger Pad
-                    ProductVariant.Create("White", null, null, null, null, 39.99m, 150, null, prod11.ProductId),
+                    ProductVariant.Create("White", null, null, null, null, 39999, 150, null, prod11.ProductId),
 
                     // 17: TabLite 8
-                    ProductVariant.Create("Gray", "ARM Lite", "4GB", "64GB", "8\"", 299.99m, 45, null, prod12.ProductId),
+                    ProductVariant.Create("Gray", "ARM Lite", "4GB", "64GB", "8\"", 299999, 45, null, prod12.ProductId),
                 };
 
                 context.ProductVariants.AddRange(variants);

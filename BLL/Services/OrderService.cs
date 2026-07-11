@@ -1,4 +1,4 @@
-using BLL.DTOs.Order;
+﻿using BLL.DTOs.Order;
 using BLL.DTOs.OrderItem;
 using BLL.Services.Interfaces;
 using DAL.Data;
@@ -124,6 +124,8 @@ namespace BLL.Services
                 throw new InvalidOperationException("One or more selected cart items are invalid or no longer available.");
             }
 
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
             decimal subtotal = 0m;
             decimal discount = 0m;
             decimal shipping = 0m;
@@ -157,19 +159,22 @@ namespace BLL.Services
                     throw new InvalidOperationException($"Only {variant.StockQuantity} units are available for variant {variant.ProductVariantId}.");
                 }
 
-                var unitPrice = variant.Price;
+                var originalPrice = variant.Price;
+                var unitPrice = variant.GetPrice(); // giá sau khuyến mãi (nếu Promotion active)
+
                 if (unitPrice < 0)
                 {
                     throw new InvalidOperationException($"Price for variant {variant.ProductVariantId} is invalid.");
                 }
 
-                subtotal += unitPrice * cartItem.Quantity;
+                subtotal += originalPrice * cartItem.Quantity;
+                discount += (originalPrice - unitPrice) * cartItem.Quantity;
 
                 orderItems.Add(OrderItem.Create(
                     Guid.Empty,
                     variant.ProductVariantId,
                     cartItem.Quantity,
-                    unitPrice));
+                    unitPrice)); // lưu giá THỰC KHÁCH TRẢ (đã giảm) vào PriceAtPurchase
             }
 
             var total = subtotal - discount + shipping;
@@ -178,7 +183,6 @@ namespace BLL.Services
                 total = 0;
             }
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
@@ -192,8 +196,34 @@ namespace BLL.Services
                         orderItem.Quantity,
                         orderItem.PriceAtPurchase);
 
+                    orderItemWithOrderId.ProductVariant = selectedCartItems
+                        .First(ci => ci.ProductVariant!.ProductVariantId == orderItem.ProductVariantId)
+                        .ProductVariant;
+
                     order.AddOrderItem(orderItemWithOrderId);
                 }
+
+                // === Trừ kho + trừ promotion (mới thêm) ===
+                foreach (var cartItem in selectedCartItems)
+                {
+                    var variant = cartItem.ProductVariant!;
+
+                    variant.StockQuantity -= cartItem.Quantity;
+                    if (variant.StockQuantity < 0)
+                        variant.StockQuantity = 0;
+
+                    if (variant.Promotion != null
+                        && variant.Promotion.IsActive()
+                        && variant.Promotion.IsReservedStock
+                        && variant.Promotion.MaxReservedStock.HasValue)
+                    {
+                        variant.Promotion.MaxReservedStock -= 1; // giảm số lượng reserved stock còn lại
+                        if (variant.Promotion.MaxReservedStock < 0)
+                            variant.Promotion.MaxReservedStock = 0;
+                    }
+                }
+                await _context.SaveChangesAsync();
+                // === Hết đoạn thêm ===
 
                 var createdOrder = await _orderRepository.CreateOrderAsync(order);
                 await _cartItemRepository.DeleteCartItemsAsync(uniqueSelectedIds);
@@ -238,6 +268,9 @@ namespace BLL.Services
             if (order == null)
                 return false;
 
+            if (order.Status != "Cancelled" && status == "Cancelled")
+                await CancelOrderAsync(orderId); // Cancel order if status is being changed to "Cancelled"
+
             order.UpdateStatus(status);
             return await _orderRepository.UpdateOrderAsync(order);
         }
@@ -257,6 +290,40 @@ namespace BLL.Services
         {
             var orders = await _orderRepository.SearchOrdersAsync(customerId, status, fromDate, toDate);
             return MapOrdersToDto(orders);
+        }
+
+        // OrderService
+        public async Task<bool> CancelOrderAsync(Guid orderId)
+        {
+            var order = await _orderRepository.GetOrderWithItemsByIdAsync(orderId);
+            if (order == null) return false;
+            if (order.Status is "Completed" or "Cancelled")
+                throw new InvalidOperationException($"Cannot cancel an order with status '{order.Status}'.");
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                foreach (var item in order.OrderItems)
+                {
+                    var variant = await _productVariantRepository.GetProductVariantByIdAsync(item.ProductVariantId);
+                    if (variant == null) continue;
+
+                    variant.StockQuantity += item.Quantity; // hoàn kho
+
+                    if (variant.Promotion != null && item.PriceAtPurchase < variant.Price
+                        && variant.Promotion.IsReservedStock && variant.Promotion.MaxReservedStock.HasValue)
+                    {
+                        variant.Promotion.MaxReservedStock += 1; // hoàn 1 slot promotion (đoán đã dùng dựa vào giá)
+                    }
+                }
+                await _context.SaveChangesAsync();
+
+                order.UpdateStatus("Cancelled");
+                await _orderRepository.UpdateOrderAsync(order);
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch { await transaction.RollbackAsync(); throw; }
         }
 
         #region Mapping Helpers

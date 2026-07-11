@@ -98,13 +98,13 @@ namespace BLL.Services
         {
             var cartItem = await _cartItemRepository.GetCartItemByIdAsync(cartItemId);
             if (cartItem == null)
-            {
                 throw new ArgumentException($"Cart item with ID {cartItemId} does not exist.");
-            }
 
-            if (cartItem.ProductVariant != null && quantity > cartItem.ProductVariant.StockQuantity)
+            if (cartItem.ProductVariant != null)
             {
-                throw new InvalidOperationException($"Cannot update cart item quantity to {quantity}. Only {cartItem.ProductVariant.StockQuantity} items are available in stock.");
+                var stockQuantity = cartItem.ProductVariant.StockQuantity;
+                if (quantity > stockQuantity)
+                    throw new InvalidOperationException($"Cannot update cart item quantity to {quantity}. Only {stockQuantity} items are available in stock.");
             }
 
             return await _cartItemRepository.UpdateCartItemQuantityAsync(cartItemId, quantity);
@@ -118,8 +118,12 @@ namespace BLL.Services
             if (cartItem.CustomerId != customerId)
                 throw new UnauthorizedAccessException("You do not have any permission to perform this action.");
 
-            if (cartItem.ProductVariant != null && quantity > cartItem.ProductVariant.StockQuantity)
-                throw new InvalidOperationException($"Cannot update cart item quantity to {quantity}. Only {cartItem.ProductVariant.StockQuantity} items are available in stock.");
+            if (cartItem.ProductVariant != null)
+            {
+                var stockQuantity = cartItem.ProductVariant.StockQuantity;
+                if (quantity > stockQuantity)
+                    throw new InvalidOperationException($"Cannot update cart item quantity to {quantity}. Only {stockQuantity} items are available in stock.");
+            }
 
             return await _cartItemRepository.UpdateCartItemQuantityAsync(cartItemId, quantity);
         }

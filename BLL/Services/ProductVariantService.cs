@@ -31,6 +31,8 @@ namespace BLL.Services
                 StockQuantity = pv.StockQuantity,
                 ImageUrl = pv.ImageUrl,
                 ProductId = pv.ProductId,
+                PromotionId = pv.PromotionId,
+                Promotion = pv.Promotion,
                 IsDeleted = pv.IsDeleted,
                 CreatedAt = pv.CreatedAt,
                 UpdatedAt = pv.UpdatedAt
@@ -56,6 +58,8 @@ namespace BLL.Services
                     StockQuantity = productVariant.StockQuantity,
                     ImageUrl = productVariant.ImageUrl,
                     ProductId = productVariant.ProductId,
+                    PromotionId = productVariant.PromotionId,
+                    Promotion = productVariant.Promotion,
                     IsDeleted = productVariant.IsDeleted,
                     CreatedAt = productVariant.CreatedAt,
                     UpdatedAt = productVariant.UpdatedAt

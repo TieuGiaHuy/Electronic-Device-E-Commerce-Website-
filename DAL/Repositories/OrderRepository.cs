@@ -18,7 +18,8 @@ namespace DAL.Repositories
         {
             return await _context.Orders
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.ProductVariant)
+                    .ThenInclude(oi => oi.ProductVariant)
+                        .ThenInclude(pv => pv!.Product)
                 .Include(o => o.Customer)
                 .AsNoTracking()
                 .ToListAsync();
@@ -28,6 +29,8 @@ namespace DAL.Repositories
         {
             return await _context.Orders
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.ProductVariant)
+                        .ThenInclude(pv => pv!.Product)
                 .Include(o => o.Customer)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
         }
@@ -36,6 +39,8 @@ namespace DAL.Repositories
         {
             return await _context.Orders
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.ProductVariant)
+                        .ThenInclude(pv => pv!.Product)
                 .Where(o => o.CustomerId == customerId)
                 .AsNoTracking()
                 .ToListAsync();
@@ -45,6 +50,8 @@ namespace DAL.Repositories
         {
             return await _context.Orders
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.ProductVariant)
+                        .ThenInclude(pv => pv!.Product)
                 .Where(o => o.Status == status)
                 .AsNoTracking()
                 .ToListAsync();
@@ -54,8 +61,8 @@ namespace DAL.Repositories
         {
             return await _context.Orders
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.ProductVariant)
-                .ThenInclude(pv => pv.Product)
+                    .ThenInclude(oi => oi.ProductVariant)
+                        .ThenInclude(pv => pv!.Product)
                 .Include(o => o.Customer)
                 .AsNoTracking()
                 .ToListAsync();
@@ -65,8 +72,8 @@ namespace DAL.Repositories
         {
             return await _context.Orders
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.ProductVariant)
-                .ThenInclude(pv => pv.Product)
+                    .ThenInclude(oi => oi.ProductVariant)
+                        .ThenInclude(pv => pv!.Product)
                 .Include(o => o.Customer)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
         }

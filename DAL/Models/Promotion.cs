@@ -76,24 +76,27 @@ namespace DAL.Models
 
         public bool IsActive()
         {
-            var now = DateTime.UtcNow;
-            if (IsLimitedTime)
+            if (IsDeleted || IsDisabled)
             {
-                return StartAt.HasValue && EndAt.HasValue && now >= StartAt.Value && now <= EndAt.Value;
-            }
-            if (IsDisabled)
-            {
-                return false; // If disabled, it's not active
-            }
-            if (IsDeleted)
-            {
-                return false; // If deleted, it's not active
+                return false;
             }
             if (IsReservedStock && MaxReservedStock.HasValue && MaxReservedStock.Value <= 0)
             {
-                return false; // If reserved stock is limited and exhausted, it's not active
+                return false;
             }
-            return true; // If not limited time, it's always active
+            if (IsLimitedTime)
+            {
+                var now = DateTime.UtcNow;
+                return StartAt.HasValue && EndAt.HasValue && now >= StartAt.Value && now <= EndAt.Value;
+            }
+            return true;
+        }
+
+        public bool HasUsesLeft()
+        {
+            if (!IsActive()) return false;
+            if (!IsReservedStock) return true;
+            return MaxReservedStock.HasValue && MaxReservedStock.Value > 0;
         }
     }
 }
