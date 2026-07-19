@@ -124,7 +124,7 @@ namespace BLL.Services
 
         public async Task<CustomerDashBoardDto> GetCustomersAsync(CustomerDashBoardRequestDto requestDto)
         {
-            var query = _unitOfWork.Repository<Customer>().Query().IgnoreQueryFilters();
+            var query = _unitOfWork.Repository<Customer>().Query().IgnoreQueryFilters().AsNoTracking();
 
             if (!string.IsNullOrEmpty(requestDto.SearchTerm))
                 query = query.Where(c => c.FullName.ToLower().Contains(requestDto.SearchTerm.ToLower()));
@@ -132,8 +132,8 @@ namespace BLL.Services
             if (!requestDto.IncludeDelete)
                 query = query.Where(c => !c.IsDeleted);
 
-            //if (!requestDto.IncludeDisable)
-            //    query = query.Where(c => c.IsActive);
+            if (!requestDto.IncludeDisable)
+                query = query.Where(c => c.IsActive);
 
             var totalCount = await query.CountAsync();
             var activeCount = await query.CountAsync(c => c.IsActive && !c.IsDeleted);
@@ -158,6 +158,8 @@ namespace BLL.Services
                 ActiveCount = activeCount,     
                 Pagination = page
             };
+
+            
         }
 
         public async Task UpdateCustomerAsync(int customerId, CustomerUpdateDto customerUpdateDto)

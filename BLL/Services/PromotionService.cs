@@ -77,7 +77,7 @@ namespace BLL.Services
         public async Task<PromotionListResponeDto> GetPromotionsListAsync(PromotionListRequest request)
         {
             // Query
-            var promotionsQuery = _unitOfWork.Repository<Promotion>().Query().IgnoreQueryFilters();
+            var promotionsQuery = _unitOfWork.Repository<Promotion>().Query().OrderByDescending(p => p.CreatedAt).IgnoreQueryFilters().AsNoTracking();
 
             if (request.StartAt.HasValue) promotionsQuery = promotionsQuery.Where(p => p.StartAt >= request.StartAt);
             if (request.EndAt.HasValue) promotionsQuery = promotionsQuery.Where(p => p.EndAt <= request.EndAt);
@@ -143,6 +143,7 @@ namespace BLL.Services
                     PageSize = request.Pagination.PageSize
                 }
             };
+
         }
 
         public async Task UpdatePromotionAsync(Guid id, PromotionUpdateDto promotionUpdateDto)

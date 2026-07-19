@@ -6,9 +6,11 @@
 @using DAL.Enums
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.AspNetCore.SignalR.Client
 @rendermode InteractiveServer
-@inject IStaffService StaffService
+@* @inject IStaffService StaffService *@
 @inject NavigationManager NavigationManager
+@inject IServiceScopeFactory ScopeFactory
 
 @attribute [Authorize(Roles = "Admin")]
 
@@ -338,8 +340,6 @@
 
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-
-                <!-- Copy phần form trong HTML vào đây -->
                 <CreateStaff OnCreated="OnSaved" OnCancel="ClosePanels" />
             </div>
         </div>
@@ -353,8 +353,6 @@
 
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-
-                <!-- Copy phần form trong HTML vào đây -->
                 <UpdateStaff staffDto="selectedStaff" OnEdited="OnSaved" OnCancel="ClosePanels" />
             </div>
         </div>
@@ -368,8 +366,6 @@
 
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-
-                <!-- Copy phần form trong HTML vào đây -->
                 <DeleteStaff staffId="selectedStaff.StaffId" OnDeleted="OnSaved" OnCancel="ClosePanels" />
             </div>
         </div>
@@ -389,11 +385,44 @@
     private bool showFilterPopup = false;
     private bool includeDeleted = false;
     private bool includeDisabled = false;
+    private HubConnection? _hubConnection;
 
 
     protected override async Task OnInitializedAsync()
     {
         await LoadStaffs();
+
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/adminHub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On("StaffChanged", async () =>
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadStaffs();
+            StateHasChanged();
+        });
+    });
+
+        try
+        {
+            await _hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.StopAsync();
+            await _hubConnection.DisposeAsync();
+        }
     }
 
     private async Task LoadStaffs()
@@ -409,7 +438,12 @@
                 PageSize = pageSize
             }
         };
-        staffs = await StaffService.GetStaffsListAsync(requestDto);
+        // staffs = await StaffService.GetStaffsListAsync(requestDto);
+        await using var scope = ScopeFactory.CreateAsyncScope();
+
+        var staffService = scope.ServiceProvider.GetRequiredService<IStaffService>();
+
+        staffs = await staffService.GetStaffsListAsync(requestDto);
     }
 
     private async Task OnPageSizeChanged(ChangeEventArgs e)

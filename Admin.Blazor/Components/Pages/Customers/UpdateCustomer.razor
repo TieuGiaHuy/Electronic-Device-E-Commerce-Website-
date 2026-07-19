@@ -1,13 +1,17 @@
 ﻿@page "/customers/update"
+@using Admin.Blazor.Hubs
 @using BLL.DTOs.Customer
 @using BLL.Services.Interfaces
 @using DAL.Enums
 @using FluentValidation
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.SignalR
+@using Microsoft.AspNetCore.SignalR.Client
 @inject IValidator<CustomerUpdateDto> Validator
 @rendermode InteractiveServer
 @inject ICustomerService CustomerService
 @inject NavigationManager NavigationManager
+@inject IHubContext<AdminHub> HubContext
 
 @attribute [Authorize(Roles = "Admin")]
 
@@ -106,6 +110,34 @@
     [Parameter] public CustomerDto customerDto { get; set; } = new CustomerDto();
     private CustomerUpdateDto customerUpdateDto = new CustomerUpdateDto();
 
+    private HubConnection? _hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // SignalER
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/adminHub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On<int>("CustomerDeleted", async (deletedId) =>
+        {
+            if (deletedId == customerDto.CustomerId)
+            {
+                await InvokeAsync(() => NavigationManager.NavigateTo("/customers"));
+            }
+        });
+
+        try
+        {
+            await _hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error connecting to hub: {ex.Message}";
+        }
+    }
+
     protected override void OnParametersSet()
     {
         if (customerDto != null)
@@ -145,6 +177,7 @@
             }
 
             await CustomerService.UpdateCustomerAsync(customerDto.CustomerId, customerUpdateDto);
+            await HubContext.Clients.All.SendAsync("CustomerChanged");
             await OnEdited.InvokeAsync();
         }
         catch (FluentValidation.ValidationException vex)

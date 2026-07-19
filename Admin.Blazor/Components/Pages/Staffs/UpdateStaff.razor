@@ -1,14 +1,17 @@
 ﻿@page "/staff_management/update"
+@using Admin.Blazor.Hubs
 @using BLL.DTOs.Staff
 @using BLL.Services.Interfaces
 @using DAL.Enums
 @using FluentValidation
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.SignalR
+@using Microsoft.AspNetCore.SignalR.Client
 @inject IValidator<StaffUpdateDto> Validator
 @rendermode InteractiveServer
 @inject IStaffService StaffService
 @inject NavigationManager NavigationManager
-
+@inject IHubContext<AdminHub> HubContext
 @attribute [Authorize(Roles = "Admin")]
 
 <div class="modal-header">
@@ -108,6 +111,33 @@
     [Parameter] public StaffDto staffDto { get; set; } = new StaffDto();
     private StaffUpdateDto staffUpdateDto = new StaffUpdateDto();
     private Dictionary<string, List<string>> validationErrors = new();
+    private HubConnection? _hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // SignalER
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/adminHub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On<int>("StaffDeleted", async (deletedId) =>
+        {
+            if (deletedId == staffDto.StaffId)
+            {
+                await InvokeAsync(() => NavigationManager.NavigateTo("/staff_management"));
+            }
+        });
+
+        try
+        {
+            await _hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error connecting to hub: {ex.Message}";
+        }
+    }
 
     protected override void OnParametersSet()
     {
@@ -147,6 +177,7 @@
 
             await StaffService.UpdateStaffAsync(staffDto.StaffId, staffUpdateDto);
             await OnEdited.InvokeAsync();
+            await HubContext.Clients.All.SendAsync("StaffChanged");
         }
         catch (FluentValidation.ValidationException vex)
         {
