@@ -7,9 +7,11 @@
 @using DAL.Enums
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.AspNetCore.SignalR.Client
 @rendermode InteractiveServer
-@inject IPromotionService PromotionService
+@* @inject IPromotionService PromotionService *@
 @inject NavigationManager NavigationManager
+@inject IServiceScopeFactory ScopeFactory
 
 @attribute [Authorize(Roles = "Admin")]
 
@@ -336,7 +338,7 @@
                     <span class="text-secondary">
                         Showing @promotions.Pagination.StartIndex to @promotions.Pagination.EndIndex of @promotions.Pagination.TotalCount entries
                     </span>
-
+                    <!-- Page Size -->
                     <select class="form-select form-select-sm w-auto" @onchange="OnPageSizeChanged">
                         <option value="10" selected="@(pageSize == 10)">10</option>
                         <option value="25" selected="@(pageSize == 25)">25</option>
@@ -414,14 +416,13 @@
 </div>
 @if (showCreateModal)
 {
+    <!-- Show Create -->
     <div class="modal fade show d-block"
          tabindex="-1"
          style="background:rgba(0,0,0,.4);backdrop-filter:blur(4px);">
 
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-
-                <!-- Copy phần form trong HTML vào đây -->
                 <CreatePromotion OnCreated="OnSaved" OnCancel="ClosePanels" />
             </div>
         </div>
@@ -429,14 +430,14 @@
 }
 @if (showEditModal && selectedPromotion != null)
 {
+
+    <!-- Show Edit -->
     <div class="modal fade show d-block"
          tabindex="-1"
          style="background:rgba(0,0,0,.4);backdrop-filter:blur(4px);">
 
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-
-                <!-- Copy phần form trong HTML vào đây -->
                 <UpdatePromotion PromotionDto="selectedPromotion" OnEdited="OnSaved" OnCancel="ClosePanels" />
             </div>
         </div>
@@ -444,19 +445,19 @@
 }
 @if (showDeleteModal && selectedPromotion != null)
 {
+    <!-- Show Delete -->
     <div class="modal fade show d-block"
          tabindex="-1"
          style="background:rgba(0,0,0,.4);backdrop-filter:blur(4px);">
 
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-
-                <!-- Copy phần form trong HTML vào đây -->
                 <DeletePromotion promotionId="selectedPromotion.PromotionId" OnDeleted="OnSaved" OnCancel="ClosePanels" />
             </div>
         </div>
     </div>
 }
+
 
 @code {
     private PromotionListResponeDto? promotions;
@@ -473,29 +474,82 @@
     private bool showFilterPopup = false;
     private bool includeDeleted = false;
     private bool includeDisabled = false;
+    private HubConnection? _hubConnection;
+    private SemaphoreSlim _loadLock = new(1, 1);
 
+    // private bool _disposed;
 
     protected override async Task OnInitializedAsync()
     {
+
         await LoadPromotions();
+
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/adminHub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On("PromotionChanged", async () =>
+    {
+
+        await InvokeAsync(async () =>
+        {
+            await LoadPromotions();
+            StateHasChanged();
+        });
+    });
+
+        try
+        {
+            await _hubConnection.StartAsync();
+        }
+        catch
+        {
+
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            _hubConnection.Remove("PromotionChanged");
+            await _hubConnection.StopAsync();
+            await _hubConnection.DisposeAsync();
+        }
     }
 
     private async Task LoadPromotions()
     {
-        var request = new PromotionListRequest
+        await _loadLock.WaitAsync();
+        try
         {
-            SearchTerm = searchName,
-            IncludeDeleted = includeDeleted,
-            StartAt = startAt,
-            EndAt = endAt,
-            IncludeDisable = includeDisabled,
-            Pagination = new PaginationRequest
+            var request = new PromotionListRequest
             {
-                Page = currentPage,
-                PageSize = pageSize
-            }
-        };
-        promotions = await PromotionService.GetPromotionsListAsync(request);
+                SearchTerm = searchName,
+                IncludeDeleted = includeDeleted,
+                StartAt = startAt,
+                EndAt = endAt,
+                IncludeDisable = includeDisabled,
+                Pagination = new PaginationRequest
+                {
+                    Page = currentPage,
+                    PageSize = pageSize
+                }
+            };
+
+            await using var scope = ScopeFactory.CreateAsyncScope();
+
+            var promotionService = scope.ServiceProvider.GetRequiredService<IPromotionService>();
+
+            promotions = await promotionService.GetPromotionsListAsync(request);
+            // promotions = await PromotionService.GetPromotionsListAsync(request);
+            
+        }
+        finally
+        {
+            _loadLock.Release();
+        }
     }
 
     private async Task OnPageSizeChanged(ChangeEventArgs e)

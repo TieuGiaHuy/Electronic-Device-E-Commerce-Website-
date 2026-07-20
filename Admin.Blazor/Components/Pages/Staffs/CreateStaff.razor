@@ -1,13 +1,16 @@
 ﻿@page "/staff_management/create"
+@using Admin.Blazor.Hubs
 @using BLL.DTOs.Staff
 @using BLL.Services.Interfaces
 @using DAL.Enums
 @using FluentValidation
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.SignalR
 @inject IValidator<StaffCreateDto> Validator
 @rendermode InteractiveServer
 @inject IStaffService StaffService
 @inject NavigationManager NavigationManager
+@inject IHubContext<AdminHub> HubContext
 
 @attribute [Authorize(Roles = "Admin")]
 
@@ -140,6 +143,7 @@
             }
 
             await StaffService.CreateAsync(staffCreateDto);
+            await HubContext.Clients.All.SendAsync("StaffChanged");
             await OnCreated.InvokeAsync();
         }
         catch (FluentValidation.ValidationException vex)

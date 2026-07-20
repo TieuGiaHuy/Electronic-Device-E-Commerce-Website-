@@ -13,7 +13,7 @@ namespace DAL
             // Register the DbContext with the connection string from configuration
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString)
-                .UseSnakeCaseNamingConvention()); // Sử dụng SnakeCaseNamingConvention để tự động chuyển đổi tên bảng và cột sang snake_case
+                .UseSnakeCaseNamingConvention(), ServiceLifetime.Scoped); // Sử dụng SnakeCaseNamingConvention để tự động chuyển đổi tên bảng và cột sang snake_case
             
             // Đăng ký các repository của bạn ở đây
             services.AddScoped<IProductRepository, ProductRepository>();
@@ -27,6 +27,7 @@ namespace DAL
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IStaffRepository, StaffRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
             return services;
         }

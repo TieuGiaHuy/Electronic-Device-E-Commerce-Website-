@@ -1,14 +1,17 @@
 ﻿@page "/promotions/create"
+@using Admin.Blazor.Hubs
 @using BLL.DTOs.Promotion
 @using BLL.DTOs.Validators
 @using BLL.Services.Interfaces
 @using DAL.Enums
 @using Microsoft.AspNetCore.Authorization
 @using FluentValidation
+@using Microsoft.AspNetCore.SignalR
 @rendermode InteractiveServer
 @inject IPromotionService PromotionService
 @inject NavigationManager NavigationManager
 @inject IValidator<PromotionCreateDto> Validator
+@inject IHubContext<AdminHub> HubContext
 
 @attribute [Authorize(Roles = "Admin")]
 
@@ -289,6 +292,8 @@
 
             // Call service to create promotion
             await PromotionService.CreatePromotionAsync(promotionCreateDto);
+
+            await HubContext.Clients.All.SendAsync("PromotionChanged");
 
             // Success - notify parent
             await OnCreated.InvokeAsync();

@@ -1,10 +1,14 @@
 ﻿@page "/staff_management/delete"
+@using Admin.Blazor.Hubs
 @using BLL.Services.Interfaces
 @using DAL.Enums
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.SignalR
+@using Microsoft.AspNetCore.SignalR.Client
 @rendermode InteractiveServer
 @inject IStaffService StaffService
 @inject NavigationManager NavigationManager
+@inject IHubContext<AdminHub> HubContext
 
 @attribute [Authorize(Roles = "Admin")]
 
@@ -51,12 +55,50 @@
     public EventCallback OnCancel { get; set; }
     private string errorMessage = string.Empty;
     [Parameter] public int staffId { get; set; }
+    private HubConnection? _hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // SignalER
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/adminHub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On<int>("StaffDeleted", async (deletedId) =>
+        {
+            if (deletedId == staffId)
+            {
+                await InvokeAsync(() => NavigationManager.NavigateTo("/staff_management"));
+            }
+        });
+
+        try
+        {
+            await _hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error connecting to hub: {ex.Message}";
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.StopAsync();
+            await _hubConnection.DisposeAsync();
+        }
+    }
 
     private async Task Delete()
     {
         try
         {
             await StaffService.DeleteStaffAsync(staffId);
+            await HubContext.Clients.All.SendAsync("StaffDeleted", staffId);
+            await HubContext.Clients.All.SendAsync("StaffChanged");
             await OnDeleted.InvokeAsync();
         }
         catch (Exception ex)

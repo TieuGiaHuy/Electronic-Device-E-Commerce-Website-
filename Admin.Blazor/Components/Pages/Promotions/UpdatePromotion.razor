@@ -1,14 +1,18 @@
 ﻿@page "/promotions/update"
+@using Admin.Blazor.Hubs
 @using BLL.DTOs.Promotion
 @using BLL.DTOs.Validators.PromotionValidator
 @using BLL.Services.Interfaces
 @using DAL.Enums
 @using Microsoft.AspNetCore.Authorization
 @using FluentValidation
+@using Microsoft.AspNetCore.SignalR
+@using Microsoft.AspNetCore.SignalR.Client
 @rendermode InteractiveServer
 @inject IPromotionService PromotionService
 @inject NavigationManager NavigationManager
 @inject IValidator<PromotionUpdateDto> Validator
+@inject IHubContext<AdminHub> HubContext
 
 @attribute [Authorize(Roles = "Admin")]
 
@@ -255,6 +259,34 @@
     private bool isSubmitting = false;
     private Dictionary<string, List<string>> validationErrors = new();
     private PromotionUpdateDto? promotionUpdateDto = new PromotionUpdateDto();
+    private HubConnection? _hubConnection;
+    private AdminHub? _adminHub;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // SignalER
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/adminHub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On<Guid>("PromotionDeleted", async (deletedId) =>
+        {
+            if (deletedId == PromotionDto!.PromotionId)
+            {
+                await InvokeAsync(() => NavigationManager.NavigateTo("/promotions"));
+            }
+        });
+
+        try
+        {
+            await _hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error connecting to hub: {ex.Message}";
+        }
+    }
 
     protected override void OnParametersSet()
     {
@@ -275,7 +307,6 @@
                 IsDisable = PromotionDto.IsDisabled
             };
 
-            // Clear errors when loading new data
             ClearAllErrors();
         }
     }
@@ -288,7 +319,7 @@
             errorMessage = string.Empty;
             validationErrors.Clear();
 
-            // Validate using FluentValidation
+            // Validate
             var validationResult = await Validator.ValidateAsync(promotionUpdateDto!);
 
             if (!validationResult.IsValid)
@@ -310,15 +341,16 @@
                 return;
             }
 
-            // Call service to update promotion
+            // Update
             await PromotionService.UpdatePromotionAsync(PromotionDto!.PromotionId, promotionUpdateDto!);
 
-            // Success - notify parent
             await OnEdited.InvokeAsync();
+            //SignalR
+            await _hubConnection!.InvokeAsync("BroadcastPromotionChanged");
         }
         catch (ValidationException ex)
         {
-            // Handle validation exception from service
+            // Handle validation exception
             foreach (var error in ex.Errors)
             {
                 if (!validationErrors.ContainsKey(error.PropertyName))
