@@ -1,4 +1,5 @@
 ﻿@page "/customers"
+@using Admin.Blazor.Hubs
 @using AutoMapper
 @using BLL.DTOs.Customer
 @using BLL.DTOs.Pagination
@@ -6,9 +7,12 @@
 @using DAL.Enums
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.AspNetCore.SignalR
+@using Microsoft.AspNetCore.SignalR.Client
 @rendermode InteractiveServer
-@inject ICustomerService CustomerService
+@* @inject ICustomerService CustomerService *@
 @inject NavigationManager NavigationManager
+@inject IServiceScopeFactory ScopeFactory
 
 @attribute [Authorize(Roles = "Admin")]
 
@@ -219,7 +223,21 @@
                                 <td>@customer.PhoneNumber</td>
                                 <td>@customer.Role</td>
                                 <td>
-                                    @GetStatus(customer)
+                                    @switch (GetStatus(customer))
+                                    {
+                                        case "Active":
+                                            <span class="badge bg-success">Active</span>
+                                            break;
+                                        case "Inactive":
+                                            <span class="badge bg-warning text-dark">Inactive</span>
+                                            break;
+                                        case "Deleted":
+                                            <span class="badge bg-danger">Deleted</span>
+                                            break;
+                                        case "Unknown":
+                                            <span class="badge bg-secondary">Unknown</span>
+                                            break;
+                                    }
                                 </td>
                                 <td class="text-center">
                                     @if (!GetStatus(customer).Equals("Deleted"))
@@ -327,8 +345,6 @@
 
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-
-                <!-- Copy phần form trong HTML vào đây -->
                 <CreateCustomer OnCreated="OnSaved" OnCancel="ClosePanels" />
             </div>
         </div>
@@ -342,8 +358,6 @@
 
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-
-                <!-- Copy phần form trong HTML vào đây -->
                 <UpdateCustomer customerDto="selectedCustomer" OnEdited="OnSaved" OnCancel="ClosePanels" />
             </div>
         </div>
@@ -357,9 +371,7 @@
 
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-
-                <!-- Copy phần form trong HTML vào đây -->
-                <DeleteCustomer staffId="selectedCustomer.CustomerId" OnDeleted="OnSaved" OnCancel="ClosePanels" />
+                <DeleteCustomer customerId="selectedCustomer.CustomerId" OnDeleted="OnSaved" OnCancel="ClosePanels" />
             </div>
         </div>
     </div>
@@ -378,11 +390,44 @@
     private bool showFilterPopup = false;
     private bool includeDeleted = false;
     private bool includeDisabled = false;
+    private HubConnection? _hubConnection;
 
 
     protected override async Task OnInitializedAsync()
     {
         await LoadCustomers();
+
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/adminHub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On("CustomerChanged", async () =>
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadCustomers();
+            StateHasChanged();
+        });
+    });
+
+        try
+        {
+            await _hubConnection.StartAsync();
+        }
+        catch
+        {
+
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.StopAsync();
+            await _hubConnection.DisposeAsync();
+        }
     }
 
     private async Task LoadCustomers()
@@ -398,7 +443,12 @@
                 PageSize = pageSize
             }
         };
-        customers = await CustomerService.GetCustomersAsync(requestDto);
+        // customers = await CustomerService.GetCustomersAsync(requestDto);
+        await using var scope = ScopeFactory.CreateAsyncScope();
+
+        var customerService = scope.ServiceProvider.GetRequiredService<ICustomerService>();
+
+        customers = await customerService.GetCustomersAsync(requestDto);
     }
 
     private async Task OnPageSizeChanged(ChangeEventArgs e)

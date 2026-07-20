@@ -1,13 +1,16 @@
 ﻿@page "/customers/create"
+@using Admin.Blazor.Hubs
 @using BLL.DTOs.Customer
 @using BLL.Services.Interfaces
 @using DAL.Enums
 @using FluentValidation
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.SignalR
 @inject IValidator<CustomerCreateDto> Validator
 @rendermode InteractiveServer
 @inject ICustomerService CustomerService
 @inject NavigationManager NavigationManager
+@inject IHubContext<AdminHub> HubContext
 
 @attribute [Authorize(Roles = "Admin")]
 
@@ -126,6 +129,7 @@
             validationErrors.Clear();
 
             customerCreateDto.Role = RoleEnum.Customer;
+            // Validate
             var result = await Validator.ValidateAsync(customerCreateDto);
             if (!result.IsValid)
             {
@@ -140,8 +144,11 @@
                 if (first != null) errorMessage = $"Validation failed: {first.ErrorMessage}";
                 return;
             }
-
+            // Create
             await CustomerService.CreateAsync(customerCreateDto);
+            // SignalR
+            await HubContext.Clients.All.SendAsync("CustomerChanged");
+            // Close modal
             await OnCreated.InvokeAsync();
         }
         catch (FluentValidation.ValidationException vex)

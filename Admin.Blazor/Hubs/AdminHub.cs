@@ -14,5 +14,10 @@ namespace Admin.Blazor.Hubs
         {
             await Clients.Others.SendAsync("ProductChanged");
         }
+
+        public async Task BroadcastPromotionChanged()
+        {
+            await Clients.Others.SendAsync("PromotionChanged");
+        }
     }
 }

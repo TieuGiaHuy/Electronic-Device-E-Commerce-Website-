@@ -121,7 +121,7 @@ namespace BLL.Services
             if (!string.IsNullOrEmpty(requestDto.SearchTerm))
                 staffQuery = staffQuery.Where(s => s.FullName.ToLower().Contains(requestDto.SearchTerm!.ToLower()));
 
-            //if (!requestDto.IncludeDisable) staffQuery = staffQuery.Where(s => s.IsActive);
+            if (!requestDto.IncludeDisable) staffQuery = staffQuery.Where(s => s.IsActive);
             if (!requestDto.IncludeDelete) staffQuery = staffQuery.Where(s => !s.IsDeleted);
 
             var totalCount = await staffQuery.CountAsync();
