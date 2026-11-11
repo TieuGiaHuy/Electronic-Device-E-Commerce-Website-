@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using StaffUser.Mvc.Models;
 using BLL.Services.Interfaces;
 using System.Diagnostics;
@@ -73,9 +73,22 @@ namespace Customer.Mvc.Controllers
                 if (bestVariant != null)
                 {
                     finalPrice = bestVariant.GetPrice(); // đã Include(Promotion) ở bước 1
-                    if (!string.IsNullOrEmpty(bestVariant.Cpu)) features.Add(bestVariant.Cpu);
-                    if (!string.IsNullOrEmpty(bestVariant.Ram)) features.Add(bestVariant.Ram + " RAM");
-                    if (!string.IsNullOrEmpty(bestVariant.Storage)) features.Add(bestVariant.Storage);
+
+                    // Highlight up to 3 key specifications on the product card
+                    var preferredSpecs = new[] { "Bộ máy", "Đường kính mặt", "Chống nước", "Kích thước màn hình", "Dung lượng pin", "Hệ điều hành" };
+                    var picked = preferredSpecs
+                        .Select(name => bestVariant.GetAttribute(name))
+                        .Where(value => !string.IsNullOrEmpty(value))
+                        .Select(value => value!)
+                        .ToList();
+                    if (picked.Count == 0)
+                    {
+                        picked = bestVariant.Attributes
+                            .Where(a => !string.IsNullOrEmpty(a.Value))
+                            .Select(a => a.Value!)
+                            .ToList();
+                    }
+                    features.AddRange(picked.Take(3));
                 }
 
                 productViewModels.Add(new HomeProductViewModel

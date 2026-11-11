@@ -1,4 +1,4 @@
-﻿@page "/promotions/update"
+@page "/promotions/update"
 @using Admin.Blazor.Hubs
 @using BLL.DTOs.Promotion
 @using BLL.DTOs.Validators.PromotionValidator
@@ -236,7 +236,7 @@
     <button class="btn btn-secondary" @onclick="OnCancel">
         Cancel
     </button>
-    <button class="btn btn-danger" @onclick="Update" disabled="@isSubmitting">
+    <button class="btn btn-primary" @onclick="Update" disabled="@isSubmitting">
         @if (isSubmitting)
         {
             <span class="spinner-border spinner-border-sm me-2" role="status"></span>

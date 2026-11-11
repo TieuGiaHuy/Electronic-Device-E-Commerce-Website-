@@ -65,6 +65,8 @@ namespace Staff.Razor.Pages.Profile
             {
                 Input.Email = staff.Email;
                 Input.IsActive = staff.IsActive;
+                Input.CreatedAt = staff.CreatedAt;
+                Input.UpdatedAt = staff.UpdatedAt;
                 return Page();
             }
 

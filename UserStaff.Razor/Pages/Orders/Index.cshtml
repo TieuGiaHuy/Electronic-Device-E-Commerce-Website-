@@ -6,7 +6,7 @@
 
 <style>
     .ds-heading-accent {
-        border-left: 4px solid #E24B4A;
+        border-left: 4px solid var(--vx-accent);
         padding-left: 12px;
     }
 
@@ -29,15 +29,15 @@
 
     .btn-ds-secondary {
         background-color: #FFFFFF;
-        border: 1px solid #E24B4A;
-        color: #A32D2D;
+        border: 1px solid var(--vx-accent);
+        color: var(--vx-accent-hover);
         border-radius: 8px;
         font-size: 13px;
     }
 
         .btn-ds-secondary:hover {
-            background-color: #FCEBEB;
-            color: #A32D2D;
+            background-color: var(--vx-accent-soft);
+            color: var(--vx-accent-hover);
         }
 
     .status-pill {
@@ -79,7 +79,7 @@
                     <div class="text-muted small text-uppercase fw-semibold">Total Orders</div>
                     <div class="fs-3 fw-semibold">@Model.TotalOrders</div>
                 </div>
-                <i class="bi bi-bag-check-fill fs-2 text-danger"></i>
+                <i class="bi bi-bag-check-fill fs-2 vx-text-accent"></i>
             </div>
         </div>
     </div>

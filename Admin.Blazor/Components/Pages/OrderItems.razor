@@ -11,7 +11,7 @@
 
 @attribute [Authorize(Roles = "Admin")]
 
-<PageTitle>Order Items - ElectroNexus Admin</PageTitle>
+<PageTitle>Order Items - TimeZone Admin</PageTitle>
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -43,7 +43,7 @@
     @if (isLoading)
     {
         <div class="text-center py-5">
-            <div class="spinner-border text-danger" role="status">
+            <div class="spinner-border vx-text-accent" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
             <p class="text-muted mt-2">Loading order details...</p>
@@ -75,8 +75,8 @@
                             <span class="badge @GetStatusBadgeClass(currentOrder.Status)">@currentOrder.Status</span>
                         </div>
                         <div class="col-md-3">
-                            <p class="text-muted mb-1" style="font-size: 0.85rem;">Customer ID:</p>
-                            <p class="fw-bold text-dark">@currentOrder.CustomerId</p>
+                            <p class="text-muted mb-1" style="font-size: 0.85rem;">Customer:</p>
+                            <p class="fw-bold text-dark">@(string.IsNullOrWhiteSpace(currentOrder.CustomerName) ? $"Customer #{currentOrder.CustomerId}" : currentOrder.CustomerName)</p>
                         </div>
                         <div class="col-md-3">
                             <p class="text-muted mb-1" style="font-size: 0.85rem;">Total Amount:</p>
@@ -93,7 +93,7 @@
                 <div class="admin-card p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="fw-bold text-secondary m-0">Order Items (@currentOrder.OrderItems.Count)</h5>
-                        <button class="btn btn-cps d-flex align-items-center gap-2 py-1.5 px-3 fw-semibold shadow-sm text-white border-0" @onclick="OpenAddItemModal" style="background-color: #d70018;">
+                        <button class="btn btn-cps d-flex align-items-center gap-2 py-1.5 px-3 fw-semibold shadow-sm text-white border-0" @onclick="OpenAddItemModal" style="background-color: var(--vx-accent);">
                             <span>+</span> Add Item
                         </button>
                     </div>
@@ -198,7 +198,7 @@
                     </div>
                     <div class="modal-footer border-0 p-3 justify-content-end bg-light" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
                         <button type="button" class="btn btn-secondary px-4 py-2 border" @onclick="CloseItemModal">Cancel</button>
-                        <button type="submit" class="btn btn-danger px-4 py-2 text-white border-0" style="background-color: #d70018;">
+                        <button type="submit" class="btn btn-primary px-4 py-2 text-white border-0" style="background-color: var(--vx-accent);">
                             @(isEditingItem ? "Update Item" : "Add Item")
                         </button>
                     </div>

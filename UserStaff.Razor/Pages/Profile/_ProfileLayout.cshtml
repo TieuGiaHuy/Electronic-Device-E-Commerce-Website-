@@ -1,0 +1,58 @@
+@{
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+
+    var displayName = User.Identity?.Name ?? "Staff";
+    var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? string.Empty;
+    var seed = displayName.Contains('@') ? displayName.Split('@')[0] : displayName;
+    var initials = string.Concat(seed.Split(new[] { ' ', '.', '_', '-' }, StringSplitOptions.RemoveEmptyEntries)
+        .Take(2).Select(w => char.ToUpperInvariant(w[0])));
+    if (string.IsNullOrEmpty(initials)) { initials = "S"; }
+    var tab = ViewData["ProfileTab"] as string ?? "profile";
+    var isActive = ViewData["IsActive"] as bool?;
+}
+
+<div class="vx-prof">
+    <header class="vx-prof-head">
+        <div class="vx-prof-cover"></div>
+        <div class="vx-prof-id">
+            <div class="vx-avatar" aria-hidden="true">@initials</div>
+            <div class="vx-prof-who">
+                <h1 class="vx-prof-name">@displayName</h1>
+                @if (!string.IsNullOrEmpty(email))
+                {
+                    <p class="vx-prof-email">@email</p>
+                }
+            </div>
+            <div class="vx-prof-chips">
+                <span class="vx-chip"><i class="bi bi-person-badge"></i> Staff</span>
+                @if (isActive.HasValue)
+                {
+                    <span class="vx-chip @(isActive.Value ? "ok" : "off")"><i class="bi bi-circle-fill" style="font-size:.5rem;"></i> @(isActive.Value ? "Active" : "Inactive")</span>
+                }
+            </div>
+        </div>
+    </header>
+
+    <div class="vx-prof-layout">
+        <nav class="vx-prof-nav" aria-label="Account">
+            <span class="vx-prof-nav-label">Account</span>
+            <a class="vx-prof-link @(tab == "profile" ? "active" : "")" asp-page="/Profile/Index"><i class="bi bi-person"></i> Profile</a>
+            <a class="vx-prof-link @(tab == "security" ? "active" : "")" asp-page="/Profile/ChangePassword"><i class="bi bi-shield-lock"></i> Security</a>
+
+            <span class="vx-prof-nav-label">Workspace</span>
+            <a class="vx-prof-link" asp-page="/Index"><i class="bi bi-house-door"></i> Dashboard</a>
+            <a class="vx-prof-link" asp-page="/Orders/Index"><i class="bi bi-receipt"></i> Order processing</a>
+
+            <div class="vx-prof-sep"></div>
+            <a class="vx-prof-link danger" asp-page="/Auth/Logout"><i class="bi bi-box-arrow-right"></i> Log out</a>
+        </nav>
+
+        <div class="vx-prof-main">
+            @RenderBody()
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await RenderSectionAsync("Scripts", required: false)
+}

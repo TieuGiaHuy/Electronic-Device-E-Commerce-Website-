@@ -1,31 +1,43 @@
 @page
 @model Staff.Razor.Pages.Auth.LoginModel
 @{
-    ViewData["Title"] = "Staff Login";
+    ViewData["Title"] = "Staff sign in";
     Layout = "~/Pages/Shared/_AuthLayout.cshtml";
 }
 
-<div class="auth-card-header">
-    <h4>Staff Sign In</h4>
-    <p>Sign in to manage products, orders and reviews</p>
+<div class="vx-auth-title">
+    <h1>Staff sign in</h1>
+    <p>Sign in to manage products, orders and reviews.</p>
 </div>
 
-<form method="post">
-    <div asp-validation-summary="All" class="text-danger small mb-3"></div>
-    <div class="mb-3">
-        <label asp-for="Input.Email" class="form-label small fw-semibold"></label>
-        <input asp-for="Input.Email" class="form-control" placeholder="you@company.com" />
+<form method="post" novalidate>
+    <div asp-validation-summary="All" class="vx-flash err mb-3"></div>
+
+    <div class="vx-field">
+        <label asp-for="Input.Email">Email</label>
+        <div class="vx-input">
+            <i class="bi bi-envelope lead"></i>
+            <input asp-for="Input.Email" class="form-control" placeholder="you@company.com" autocomplete="email" />
+        </div>
         <span asp-validation-for="Input.Email" class="text-danger small"></span>
     </div>
-    <div class="mb-3">
-        <label asp-for="Input.Password" class="form-label small fw-semibold"></label>
-        <input asp-for="Input.Password" class="form-control" type="password" placeholder="Enter your password" />
+
+    <div class="vx-field">
+        <label asp-for="Input.Password">Password</label>
+        <div class="vx-input">
+            <i class="bi bi-lock lead"></i>
+            <input asp-for="Input.Password" class="form-control" type="password" placeholder="Enter your password" autocomplete="current-password" />
+            <button type="button" class="vx-pw-toggle" data-target="Input_Password" aria-label="Show password"><i class="bi bi-eye"></i></button>
+        </div>
         <span asp-validation-for="Input.Password" class="text-danger small"></span>
     </div>
-    <button type="submit" class="btn btn-auth-primary w-100 py-2">Sign In</button>
-    <div class="text-center mt-3">
+
+    <div class="vx-auth-row">
+        <span></span>
         <a asp-page="/Auth/ForgotPassword" class="auth-link">Forgot password?</a>
     </div>
+
+    <button type="submit" class="btn btn-primary">Sign in</button>
 </form>
 
 @section Scripts {

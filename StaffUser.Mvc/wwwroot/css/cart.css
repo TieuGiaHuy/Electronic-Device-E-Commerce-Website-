@@ -72,7 +72,7 @@
     transition: color 0.2s;
 }
 .remove-btn:hover {
-    color: #d70018;
+    color: var(--vx-accent);
 }
 .summary-card {
     background-color: #ffffff;

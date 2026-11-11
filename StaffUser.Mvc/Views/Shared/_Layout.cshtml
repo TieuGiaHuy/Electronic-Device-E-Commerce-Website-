@@ -4,10 +4,11 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ECommerse</title>
+    <title>@ViewData["Title"] - TimeZone</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/techzone.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/StaffUser.Mvc.styles.css" asp-append-version="true" />
@@ -20,10 +21,10 @@
             <div class="container-fluid px-4">
                 <div class="d-flex align-items-center gap-4 flex-wrap">
                     <a class="customer-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                        <i class="bi bi-phone-vibrate"></i> ECommerse
+                        <span class="vx-brand-mark"><i class="bi bi-watch"></i></span> Time<span class="vx-brand-zone">Zone</span>
                     </a>
 
-                    <button class="navbar-toggler border-0 text-white d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    <button class="navbar-toggler border-0 d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                             aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
@@ -31,7 +32,7 @@
                     <div class="navbar-collapse collapse d-lg-flex flex-grow-1 align-items-center gap-3">
                         <!-- Search -->
                         <form class="d-flex flex-grow-1" style="max-width: 520px;" action="@Url.Action("Index", "Home")" method="get">
-                            <input name="q" value="@Context.Request.Query["q"]" class="form-control customer-search" type="search" placeholder="Search for phones, laptops, accessories..." aria-label="Search" />
+                            <input name="q" value="@Context.Request.Query["q"]" class="form-control customer-search" type="search" placeholder="Search watches, straps, accessories" aria-label="Search" />
                             <button class="customer-search-btn" type="submit">
                                 <i class="bi bi-search"></i>
                             </button>
@@ -44,16 +45,16 @@
                             @if (User?.Identity?.IsAuthenticated ?? false)
                             {
                                 <a class="customer-icon-link" asp-area="" asp-controller="Profile" asp-action="Index">
-                                    <i class="bi bi-person-fill"></i> @User.Identity?.Name
+                                    <i class="bi bi-person-circle"></i> @User.Identity?.Name
                                 </a>
                                 <a class="customer-icon-link" asp-area="" asp-controller="Orders" asp-action="Index">
-                                    <i class="bi bi-bag-check-fill"></i> My Orders
+                                    <i class="bi bi-bag-check"></i> Orders
                                 </a>
                             }
                             else
                             {
                                 <a class="customer-icon-link" asp-area="" asp-controller="Auth" asp-action="Login">
-                                    <i class="bi bi-person-fill"></i> Account
+                                    <i class="bi bi-person-circle"></i> Account
                                 </a>
                             }
 
@@ -89,17 +90,19 @@
             <div class="container-fluid px-4">
                 <div class="d-flex overflow-auto">
                     <a class="customer-subnav-link" href="@Url.Action("Index", "Home")">
-                        <i class="bi bi-grid-fill me-1"></i> All Products
+                        <i class="bi bi-grid me-1"></i> All products
                     </a>
                     @foreach (var cat in await CategoryService.GetAllCategoriesAsync())
                     {
-                        var icon = cat.Name.ToLower() switch
+                        var icon = cat.Name.ToLowerInvariant() switch
                         {
-                            "smartphones" or "phones" => "bi-phone",
-                            "laptops" => "bi-laptop",
-                            "tablets" => "bi-tablet",
-                            "accessories" => "bi-plug",
-                            _ => "bi-tag"
+                            var n when n.Contains("automatic") || n.Contains("đồng hồ cơ") => "bi-gear-wide-connected",
+                            var n when n.Contains("quartz") => "bi-clock",
+                            var n when n.Contains("điện tử") => "bi-stopwatch",
+                            var n when n.Contains("smartwatch") => "bi-smartwatch",
+                            var n when n.Contains("dây") => "bi-link-45deg",
+                            var n when n.Contains("phụ kiện") => "bi-box-seam",
+                            _ => "bi-watch"
                         };
                         <a class="customer-subnav-link" href="@Url.Action("Index", "Home", new { categoryId = cat.Id })">
                             <i class="bi @icon me-1"></i> @cat.Name
@@ -117,8 +120,11 @@
     </div>
 
     <footer class="customer-footer">
-        <div class="container d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
-            <span>&copy; 2026 - <strong style="color: var(--color-primary-hover);">ECommerse</strong> - Electronics Store</span>
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <a class="vx-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                <span class="vx-brand-mark"><i class="bi bi-watch"></i></span> Time<span class="vx-brand-zone">Zone</span>
+            </a>
+            <span>&copy; @DateTime.Now.Year TimeZone. Every moment, worn well.</span>
             <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
         </div>
     </footer>

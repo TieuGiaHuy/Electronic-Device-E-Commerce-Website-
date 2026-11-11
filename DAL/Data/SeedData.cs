@@ -1,4 +1,4 @@
-﻿using DAL.Models;
+using DAL.Models;
 using DAL.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,39 +11,43 @@ namespace DAL.Data
             // apply any pending migrations (safe for development/test)
             context.Database.Migrate();
 
-            // ==================== Categories (4) ====================
+            // ==================== Categories (6) ====================
             if (!context.Categories.Any())
             {
-                var laptops = Category.Create("Laptops");
-                var smartphones = Category.Create("Smartphones");
-                var accessories = Category.Create("Accessories");
-                var tablets = Category.Create("Tablets");
-                context.Categories.AddRange(laptops, smartphones, accessories, tablets);
+                context.Categories.AddRange(
+                    Category.Create("Đồng hồ cơ (Automatic)"),
+                    Category.Create("Đồng hồ Quartz"),
+                    Category.Create("Đồng hồ điện tử"),
+                    Category.Create("Smartwatch"),
+                    Category.Create("Dây đồng hồ"),
+                    Category.Create("Phụ kiện đồng hồ"));
                 context.SaveChanges();
             }
 
             // ==================== Products (12) ====================
             if (!context.Products.Any())
             {
-                var catLaptop = context.Categories.First(c => c.Name == "Laptops");
-                var catPhone = context.Categories.First(c => c.Name == "Smartphones");
-                var catAccessory = context.Categories.First(c => c.Name == "Accessories");
-                var catTablet = context.Categories.First(c => c.Name == "Tablets");
+                var catAutomatic = context.Categories.First(c => c.Name == "Đồng hồ cơ (Automatic)");
+                var catQuartz = context.Categories.First(c => c.Name == "Đồng hồ Quartz");
+                var catDigital = context.Categories.First(c => c.Name == "Đồng hồ điện tử");
+                var catSmart = context.Categories.First(c => c.Name == "Smartwatch");
+                var catStrap = context.Categories.First(c => c.Name == "Dây đồng hồ");
+                var catAccessory = context.Categories.First(c => c.Name == "Phụ kiện đồng hồ");
 
                 var products = new[]
                 {
-                    Product.Create("XtremeBook 14", "ElectroNexus", catLaptop.Id, null),
-                    Product.Create("XtremeBook 16", "ElectroNexus", catLaptop.Id, null),
-                    Product.Create("UltraBook Air 13", "ElectroNexus", catLaptop.Id, null),
-                    Product.Create("GamerBook X15", "ProTech", catLaptop.Id, null),
-                    Product.Create("PocketPhone Z", "ElectroNexus", catPhone.Id, null),
-                    Product.Create("PocketPhone Pro", "ElectroNexus", catPhone.Id, null),
-                    Product.Create("PocketPhone Mini", "ElectroNexus", catPhone.Id, null),
-                    Product.Create("SoundBuds Pro", "AudioTech", catAccessory.Id, null),
-                    Product.Create("PowerBank 20000", "ChargeMaster", catAccessory.Id, null),
-                    Product.Create("WirelessCharger Pad", "ChargeMaster", catAccessory.Id, null),
-                    Product.Create("TabPro 11", "ElectroNexus", catTablet.Id, null),
-                    Product.Create("TabLite 8", "ViewMax", catTablet.Id, null),
+                    Product.Create("Heritage 40 Automatic", "Aurelia", catAutomatic.Id, null),
+                    Product.Create("Skeleton 42 Automatic", "Aurelia", catAutomatic.Id, null),
+                    Product.Create("Classic 38 Quartz", "Meridian", catQuartz.Id, null),
+                    Product.Create("Dress Slim 36", "Meridian", catQuartz.Id, null),
+                    Product.Create("Digital Sport DS-1", "Pulse", catDigital.Id, null),
+                    Product.Create("Retro LCD R-90", "Pulse", catDigital.Id, null),
+                    Product.Create("Nova Watch S1", "Nova", catSmart.Id, null),
+                    Product.Create("Nova Watch Pro", "Nova", catSmart.Id, null),
+                    Product.Create("Dây da bò Classic", "Aurelia", catStrap.Id, null),
+                    Product.Create("Dây Milanese Mesh", "Meridian", catStrap.Id, null),
+                    Product.Create("Hộp xoay đồng hồ Winder", "Aurelia", catAccessory.Id, null),
+                    Product.Create("Nova Fit Lite", "Nova", catSmart.Id, null),
                 };
 
                 context.Products.AddRange(products);
@@ -53,57 +57,102 @@ namespace DAL.Data
             // ==================== ProductVariants (18) ====================
             if (!context.ProductVariants.Any())
             {
-                var prod1 = context.Products.First(p => p.ProductName == "XtremeBook 14");
-                var prod2 = context.Products.First(p => p.ProductName == "XtremeBook 16");
-                var prod3 = context.Products.First(p => p.ProductName == "PocketPhone Z");
-                var prod4 = context.Products.First(p => p.ProductName == "PocketPhone Pro");
-                var prod5 = context.Products.First(p => p.ProductName == "SoundBuds Pro");
-                var prod6 = context.Products.First(p => p.ProductName == "PowerBank 20000");
-                var prod7 = context.Products.First(p => p.ProductName == "TabPro 11");
-                var prod8 = context.Products.First(p => p.ProductName == "UltraBook Air 13");
-                var prod9 = context.Products.First(p => p.ProductName == "GamerBook X15");
-                var prod10 = context.Products.First(p => p.ProductName == "PocketPhone Mini");
-                var prod11 = context.Products.First(p => p.ProductName == "WirelessCharger Pad");
-                var prod12 = context.Products.First(p => p.ProductName == "TabLite 8");
+                int Id(string name) => context.Products.First(p => p.ProductName == name).ProductId;
+
+                // Thông số đồng hồ cơ / quartz: Bộ máy, Chất liệu mặt kính, Chất liệu dây, Đường kính mặt, Chống nước
+                KeyValuePair<string, string>[] Traditional(string movement, string crystal, string strap, string diameter, string water) => new[]
+                {
+                    new KeyValuePair<string, string>("Bộ máy", movement),
+                    new KeyValuePair<string, string>("Chất liệu mặt kính", crystal),
+                    new KeyValuePair<string, string>("Chất liệu dây", strap),
+                    new KeyValuePair<string, string>("Đường kính mặt", diameter),
+                    new KeyValuePair<string, string>("Chống nước", water),
+                };
+
+                // Thông số smartwatch: Kích thước màn hình, Loại màn hình, Dung lượng pin, Hệ điều hành, Kết nối, Tương thích thiết bị
+                KeyValuePair<string, string>[] Smart(string screen, string battery, string connectivity, string compat) => new[]
+                {
+                    new KeyValuePair<string, string>("Kích thước màn hình", screen),
+                    new KeyValuePair<string, string>("Loại màn hình", "AMOLED"),
+                    new KeyValuePair<string, string>("Dung lượng pin", battery),
+                    new KeyValuePair<string, string>("Hệ điều hành", "NovaOS"),
+                    new KeyValuePair<string, string>("Kết nối", connectivity),
+                    new KeyValuePair<string, string>("Tương thích thiết bị", compat),
+                };
+
+                KeyValuePair<string, string>[] Strap(string material, string width, string buckle) => new[]
+                {
+                    new KeyValuePair<string, string>("Chất liệu", material),
+                    new KeyValuePair<string, string>("Độ rộng dây", width),
+                    new KeyValuePair<string, string>("Loại khóa", buckle),
+                };
 
                 var variants = new[]
                 {
-                    // 0-1: XtremeBook 14
-                    ProductVariant.Create("Black", "Intel i5", "8GB", "256GB", "14\"", 10000000, 30, null, prod1.ProductId),
-                    ProductVariant.Create("Silver", "Intel i7", "16GB", "512GB", "14\"", 12999999, 15, null, prod1.ProductId),
+                    // 0-1: Heritage 40 Automatic
+                    ProductVariant.Create("Đen", Traditional("Automatic (cơ tự lên dây)", "Sapphire", "Da bê", "40mm", "5ATM"), 8900000, 30, null, Id("Heritage 40 Automatic")),
+                    ProductVariant.Create("Xanh navy", Traditional("Automatic (cơ tự lên dây)", "Sapphire", "Thép không gỉ", "40mm", "5ATM"), 9900000, 15, null, Id("Heritage 40 Automatic")),
 
-                    // 2: XtremeBook 16
-                    ProductVariant.Create("Black", "Intel i9", "32GB", "1TB", "16\"", 18999999, 10, null, prod2.ProductId),
-                    // 3-4: PocketPhone Z
-                    ProductVariant.Create("Silver", "ARM Octa", "6GB", "128GB", "6.1\"", 6999999, 80, null, prod3.ProductId),
-                    ProductVariant.Create("Black", "ARM Octa", "8GB", "256GB", "6.1\"", 7999999, 50, null, prod3.ProductId),
+                    // 2: Skeleton 42 Automatic
+                    ProductVariant.Create("Bạc", Traditional("Automatic lộ cơ", "Sapphire", "Thép không gỉ", "42mm", "5ATM"), 14500000, 10, null, Id("Skeleton 42 Automatic")),
 
-                    // 5-6: PocketPhone Pro
-                    ProductVariant.Create("Black", "ARM Octa Pro", "8GB", "256GB", "6.7\"", 9999999, 40, null, prod4.ProductId),
-                    ProductVariant.Create("Silver", "ARM Octa Pro", "12GB", "512GB", "6.7\"", 11999999, 25, null, prod4.ProductId),
-                    // 7-8: SoundBuds Pro
-                    ProductVariant.Create("Black", null, null, null, null, 1499999, 100, null, prod5.ProductId),
-                    ProductVariant.Create("White", null, null, null, null, 1499999, 80, null, prod5.ProductId),
-                    // 9: PowerBank 20000
-                    ProductVariant.Create("Black", null, null, null, null, 599999, 200, null, prod6.ProductId),
+                    // 3-4: Classic 38 Quartz
+                    ProductVariant.Create("Trắng", Traditional("Quartz Nhật Bản", "Kính khoáng", "Da bò", "38mm", "3ATM"), 2490000, 80, null, Id("Classic 38 Quartz")),
+                    ProductVariant.Create("Đen", Traditional("Quartz Nhật Bản", "Kính khoáng", "Thép lưới Milanese", "38mm", "3ATM"), 2890000, 50, null, Id("Classic 38 Quartz")),
 
-                    // 10: TabPro 11
-                    ProductVariant.Create("Silver", "ARM Pro", "8GB", "128GB", "11\"", 499999, 30, null, prod7.ProductId),
+                    // 5-6: Dress Slim 36
+                    ProductVariant.Create("Vàng hồng", Traditional("Quartz Nhật Bản", "Kính khoáng", "Thép không gỉ", "36mm", "3ATM"), 3290000, 40, null, Id("Dress Slim 36")),
+                    ProductVariant.Create("Bạc", Traditional("Quartz Nhật Bản", "Kính khoáng", "Thép không gỉ", "36mm", "3ATM"), 3090000, 25, null, Id("Dress Slim 36")),
 
-                    // 11-12: UltraBook Air 13
-                    ProductVariant.Create("Silver", "Intel i5", "8GB", "256GB", "13\"", 1099999, 20, null, prod8.ProductId),
-                    ProductVariant.Create("Space Gray", "Intel i7", "16GB", "512GB", "13\"", 1399999, 12, null, prod8.ProductId),
-                    // 13-14: GamerBook X15
-                    ProductVariant.Create("Black", "Intel i7", "16GB", "512GB", "15\"", 15999999, 8, null, prod9.ProductId),
-                    ProductVariant.Create("Black", "Intel i9", "32GB", "1TB", "15\"", 19999999, 5, null, prod9.ProductId),
+                    // 7-8: Digital Sport DS-1
+                    ProductVariant.Create("Đen", new[]
+                    {
+                        new KeyValuePair<string, string>("Loại hiển thị", "LCD"),
+                        new KeyValuePair<string, string>("Chất liệu vỏ", "Nhựa resin"),
+                        new KeyValuePair<string, string>("Chống nước", "10ATM"),
+                        new KeyValuePair<string, string>("Chức năng", "Bấm giờ, báo thức, đèn nền"),
+                    }, 890000, 100, null, Id("Digital Sport DS-1")),
+                    ProductVariant.Create("Xanh quân đội", new[]
+                    {
+                        new KeyValuePair<string, string>("Loại hiển thị", "LCD"),
+                        new KeyValuePair<string, string>("Chất liệu vỏ", "Nhựa resin"),
+                        new KeyValuePair<string, string>("Chống nước", "10ATM"),
+                        new KeyValuePair<string, string>("Chức năng", "Bấm giờ, báo thức, đèn nền"),
+                    }, 890000, 80, null, Id("Digital Sport DS-1")),
 
-                    // 15: PocketPhone Mini
-                    ProductVariant.Create("White", "ARM Hexa", "6GB", "128GB", "5.4\"", 5999999, 35, null, prod10.ProductId),
-                    // 16: WirelessCharger Pad
-                    ProductVariant.Create("White", null, null, null, null, 39999, 150, null, prod11.ProductId),
+                    // 9: Retro LCD R-90
+                    ProductVariant.Create("Bạc", new[]
+                    {
+                        new KeyValuePair<string, string>("Loại hiển thị", "LCD"),
+                        new KeyValuePair<string, string>("Chất liệu vỏ", "Thép không gỉ"),
+                        new KeyValuePair<string, string>("Chống nước", "3ATM"),
+                        new KeyValuePair<string, string>("Chức năng", "Bấm giờ, báo thức, lịch ngày"),
+                    }, 1290000, 200, null, Id("Retro LCD R-90")),
 
-                    // 17: TabLite 8
-                    ProductVariant.Create("Gray", "ARM Lite", "4GB", "64GB", "8\"", 299999, 45, null, prod12.ProductId),
+                    // 10: Nova Watch S1
+                    ProductVariant.Create("Đen", Smart("1.43 inch", "300mAh", "Bluetooth 5.3, GPS", "Android & iOS"), 4990000, 30, null, Id("Nova Watch S1")),
+
+                    // 11-12: Nova Watch Pro
+                    ProductVariant.Create("Bạc", Smart("1.45 inch", "450mAh", "Bluetooth 5.3, GPS, eSIM", "Android & iOS"), 8990000, 20, null, Id("Nova Watch Pro")),
+                    ProductVariant.Create("Đen titanium", Smart("1.45 inch", "450mAh", "Bluetooth 5.3, GPS, eSIM", "Android & iOS"), 9990000, 12, null, Id("Nova Watch Pro")),
+
+                    // 13-14: Dây da bò Classic
+                    ProductVariant.Create("Nâu", Strap("Da bò thật", "20mm", "Khóa gài thép"), 590000, 150, null, Id("Dây da bò Classic")),
+                    ProductVariant.Create("Đen", Strap("Da bò thật", "22mm", "Khóa gài thép"), 650000, 120, null, Id("Dây da bò Classic")),
+
+                    // 15: Dây Milanese Mesh
+                    ProductVariant.Create("Bạc", Strap("Thép không gỉ dạng lưới", "20mm", "Khóa từ"), 450000, 90, null, Id("Dây Milanese Mesh")),
+
+                    // 16: Hộp xoay đồng hồ Winder
+                    ProductVariant.Create("Đen", new[]
+                    {
+                        new KeyValuePair<string, string>("Sức chứa", "2 đồng hồ"),
+                        new KeyValuePair<string, string>("Chất liệu", "Da PU"),
+                        new KeyValuePair<string, string>("Nguồn", "Pin hoặc cáp USB"),
+                    }, 1490000, 60, null, Id("Hộp xoay đồng hồ Winder")),
+
+                    // 17: Nova Fit Lite
+                    ProductVariant.Create("Xám", Smart("1.3 inch", "250mAh", "Bluetooth 5.2", "Android & iOS"), 2490000, 45, null, Id("Nova Fit Lite")),
                 };
 
                 context.ProductVariants.AddRange(variants);
@@ -262,16 +311,16 @@ namespace DAL.Data
 
                 var staffs = new[]
                 {
-                    new Staff { FullName = "Nguyễn Văn An",    Email = "an.nguyen@electronexus.com",    PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
-                    new Staff { FullName = "Trần Thị Bình",    Email = "binh.tran@electronexus.com",    PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
-                    new Staff { FullName = "Lê Hoàng Cường",   Email = "cuong.le@electronexus.com",     PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
-                    new Staff { FullName = "Phạm Thị Dung",    Email = "dung.pham@electronexus.com",    PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
-                    new Staff { FullName = "Hoàng Văn Em",     Email = "em.hoang@electronexus.com",     PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = false, IsDeleted = false, CreatedAt = now },
-                    new Staff { FullName = "Vũ Thị Giang",     Email = "giang.vu@electronexus.com",     PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
-                    new Staff { FullName = "Đặng Văn Hùng",    Email = "hung.dang@electronexus.com",    PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
-                    new Staff { FullName = "Bùi Thị Kim",      Email = "kim.bui@electronexus.com",      PasswordHash = staffPassword, Role = RoleEnum.Admin, IsActive = true,  IsDeleted = false, CreatedAt = now },
-                    new Staff { FullName = "Ngô Văn Long",     Email = "long.ngo@electronexus.com",     PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
-                    new Staff { FullName = "Đỗ Thị Mai",       Email = "mai.do@electronexus.com",       PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
+                    new Staff { FullName = "Nguyễn Văn An",    Email = "an.nguyen@timezone.vn",    PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
+                    new Staff { FullName = "Trần Thị Bình",    Email = "binh.tran@timezone.vn",    PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
+                    new Staff { FullName = "Lê Hoàng Cường",   Email = "cuong.le@timezone.vn",     PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
+                    new Staff { FullName = "Phạm Thị Dung",    Email = "dung.pham@timezone.vn",    PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
+                    new Staff { FullName = "Hoàng Văn Em",     Email = "em.hoang@timezone.vn",     PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = false, IsDeleted = false, CreatedAt = now },
+                    new Staff { FullName = "Vũ Thị Giang",     Email = "giang.vu@timezone.vn",     PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
+                    new Staff { FullName = "Đặng Văn Hùng",    Email = "hung.dang@timezone.vn",    PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
+                    new Staff { FullName = "Bùi Thị Kim",      Email = "kim.bui@timezone.vn",      PasswordHash = staffPassword, Role = RoleEnum.Admin, IsActive = true,  IsDeleted = false, CreatedAt = now },
+                    new Staff { FullName = "Ngô Văn Long",     Email = "long.ngo@timezone.vn",     PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
+                    new Staff { FullName = "Đỗ Thị Mai",       Email = "mai.do@timezone.vn",       PasswordHash = staffPassword, Role = RoleEnum.Staff, IsActive = true,  IsDeleted = false, CreatedAt = now },
                 };
 
                 context.Staffs.AddRange(staffs);
@@ -369,16 +418,16 @@ namespace DAL.Data
 
                 var reviews = new[]
                 {
-                    ProductReview.Create(customers[0].CustomerId, products[0].ProductId, 5, "Máy chạy mượt, pin trâu, rất hài lòng!"),
-                    ProductReview.Create(customers[1].CustomerId, products[4].ProductId, 4, "Camera đẹp nhưng hơi nóng máy khi chơi game."),
-                    ProductReview.Create(customers[2].CustomerId, products[7].ProductId, 5, "Tai nghe âm thanh tốt, chống ồn khá ổn."),
-                    ProductReview.Create(customers[3].CustomerId, products[1].ProductId, 3, "Cấu hình mạnh nhưng giá hơi cao."),
-                    ProductReview.Create(customers[4].CustomerId, products[10].ProductId, 4, "Máy tính bảng dùng học tập rất tiện."),
-                    ProductReview.Create(customers[5].CustomerId, products[5].ProductId, 5, "Điện thoại đáng tiền, giao hàng nhanh."),
-                    ProductReview.Create(customers[6].CustomerId, products[8].ProductId, 2, "Sạc dự phòng sạc chậm hơn mong đợi."),
-                    ProductReview.Create(customers[7].CustomerId, products[2].ProductId, 5, "Laptop mỏng nhẹ, màn hình đẹp, rất đáng mua."),
-                    ProductReview.Create(customers[8].CustomerId, products[6].ProductId, 4, "Điện thoại nhỏ gọn, phù hợp nữ dùng."),
-                    ProductReview.Create(customers[9].CustomerId, products[11].ProductId, 3, "Tablet ổn trong tầm giá, RAM hơi thấp."),
+                    ProductReview.Create(customers[0].CustomerId, products[0].ProductId, 5, "Bộ máy chạy chuẩn, mặt kính sapphire rất đẹp, đeo thoải mái cả ngày."),
+                    ProductReview.Create(customers[1].CustomerId, products[4].ProductId, 4, "Đồng hồ bền, chống nước tốt nhưng đèn nền hơi yếu."),
+                    ProductReview.Create(customers[2].CustomerId, products[7].ProductId, 5, "Pin dùng được cả tuần, theo dõi GPS chính xác."),
+                    ProductReview.Create(customers[3].CustomerId, products[1].ProductId, 3, "Lộ cơ rất ấn tượng nhưng giá hơi cao."),
+                    ProductReview.Create(customers[4].CustomerId, products[10].ProductId, 4, "Hộp xoay chạy êm, đủ cho hai chiếc đồng hồ."),
+                    ProductReview.Create(customers[5].CustomerId, products[5].ProductId, 5, "Kiểu dáng retro đẹp, giao hàng nhanh."),
+                    ProductReview.Create(customers[6].CustomerId, products[8].ProductId, 2, "Dây da hơi cứng lúc mới đeo, cần vài ngày để mềm."),
+                    ProductReview.Create(customers[7].CustomerId, products[2].ProductId, 5, "Mặt số 38mm gọn gàng, hợp cổ tay nhỏ, rất đáng mua."),
+                    ProductReview.Create(customers[8].CustomerId, products[6].ProductId, 4, "Smartwatch nhỏ gọn, thông báo về điện thoại ổn định."),
+                    ProductReview.Create(customers[9].CustomerId, products[11].ProductId, 3, "Ổn trong tầm giá, pin nhỉnh hơn mong đợi nhưng ít chế độ thể thao."),
                 };
 
                 context.ProductReviews.AddRange(reviews);

@@ -1,4 +1,5 @@
-﻿using DAL.Enums;
+using BLL.DTOs.ProductVariant;
+using DAL.Enums;
 
 namespace BLL.DTOs.CartItem
 {
@@ -19,10 +20,11 @@ namespace BLL.DTOs.CartItem
         public Guid ProductVariantId { get; set; }
         public string Sku { get; set; } = string.Empty;
         public string Color { get; set; } = string.Empty;
-        public string? Cpu { get; set; }
-        public string? Ram { get; set; }
-        public string? Storage { get; set; }
-        public string? ScreenSize { get; set; }
+        /// <summary>Các thông số kỹ thuật (Tên - Giá trị), theo thứ tự hiển thị.</summary>
+        public List<VariantAttributeDto> Attributes { get; set; } = new();
+
+        public string? GetAttribute(string name) =>
+            Attributes.FirstOrDefault(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase))?.Value;
         public decimal Price { get; set; }
         public Guid? PromotionId { get; set; }
         public DAL.Models.Promotion? Promotion { get; set; }

@@ -36,28 +36,31 @@ namespace DAL.Repositories
 
         public async Task<bool> UpdateProductVariantAsync(ProductVariant productVariant)
         {
-            var existingProductVariant = await _context.ProductVariants.FindAsync(productVariant.ProductVariantId);
-            if (existingProductVariant != null)
-            {
-                //var productCode = productVariant.ProductCode;
-                var color = productVariant.Color;
-                var cpu = productVariant.Cpu;
-                var ram = productVariant.Ram;
-                var storage = productVariant.Storage;
-                var screenSize = productVariant.ScreenSize;
-                var price = productVariant.Price;
-                var stockQuantity = productVariant.StockQuantity;
-                var imageUrl = productVariant.ImageUrl;
-                var productId = productVariant.ProductId;
-                var promotionId = productVariant.PromotionId;
+            // Nạp kèm thông số hiện có để SetAttributes thay thế đúng (xóa dòng cũ, thêm dòng mới)
+            var existingProductVariant = await _context.ProductVariants
+                .Include(pv => pv.Attributes)
+                .FirstOrDefaultAsync(pv => pv.ProductVariantId == productVariant.ProductVariantId);
 
-                existingProductVariant.Update(color, cpu, ram, storage, screenSize, price, stockQuantity, imageUrl, productId, promotionId);
-                _context.ProductVariants.Update(existingProductVariant);
-                _context.SaveChanges();
+            if (existingProductVariant == null)
+                return false;
 
-                return true;
-            }
-            return false;
+            var newAttributes = productVariant.Attributes
+                .OrderBy(a => a.DisplayOrder)
+                .Select(a => new KeyValuePair<string, string>(a.Name, a.Value))
+                .ToList();
+
+            existingProductVariant.Update(
+                productVariant.Color,
+                newAttributes,
+                productVariant.Price,
+                productVariant.StockQuantity,
+                productVariant.ImageUrl,
+                productVariant.ProductId,
+                productVariant.PromotionId);
+
+            // existingProductVariant đang được theo dõi nên không cần gọi Update() trên cả đồ thị
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> DeleteProductVariantAsync(Guid productVariantId)

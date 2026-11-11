@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model Staff.Razor.Pages.ProductVariants.CreateVariantsModel
 
 @{
@@ -11,7 +11,7 @@
             <a asp-page="./Index" asp-route-productId="@Model.ProductId" class="ds-back-btn shadow-sm" title="Back">
                 <i class="bi bi-arrow-left fs-5 lh-1"></i>
             </a>
-            <h5 class="mb-0"><i class="bi bi-cpu-fill me-2"></i> Auto-Generate Variants Matrix</h5>
+            <h5 class="mb-0"><i class="bi bi-watch me-2"></i> Auto-Generate Variants Matrix</h5>
         </div>
         <div class="card-body">
             <form method="post" id="variantsForm">
@@ -20,32 +20,30 @@
                 <div class="row">
                     <div class="col-md-4 border-end">
                         <h6 class="text-secondary fw-bold text-uppercase mb-3">1. Enter Attributes</h6>
-                        <p class="small text-muted">Separate multiple values with commas (e.g., Red, Blue, Gold)</p>
+                        <p class="small text-muted">Separate multiple values with commas (e.g., Black, Silver, Gold). Every attribute with several values multiplies the number of variants; an attribute with one value is applied to all variants.</p>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Colors</label>
+                            <label class="form-label fw-bold">Colors <span class="text-danger">*</span></label>
                             <input type="text" id="inputColors" class="form-control attr-input" placeholder="e.g., Black, White, Silver" />
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Processor (CPU)</label>
-                            <input type="text" id="inputCpus" class="form-control attr-input" placeholder="e.g., Ultra 5, Ultra 7" />
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-preset="traditional">Mechanical / Quartz template</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-preset="smart">Smartwatch template</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-preset="strap">Strap template</button>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Memory (RAM)</label>
-                            <input type="text" id="inputRams" class="form-control attr-input" placeholder="e.g., 16GB, 32GB" />
-                        </div>
+                        <datalist id="attrNameSuggestions">
+                            @foreach (var name in DAL.Utilities.WatchAttributeNames.All)
+                            {
+                                <option value="@name"></option>
+                            }
+                        </datalist>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Storage Capacity</label>
-                            <input type="text" id="inputStorages" class="form-control attr-input" placeholder="e.g., 512GB, 1TB" />
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Display Size</label>
-                            <input type="text" id="inputScreens" class="form-control attr-input" placeholder="e.g., 14 inch, 16 inch" />
-                        </div>
+                        <div id="dimensionRows" class="mb-2"></div>
+                        <button type="button" class="btn btn-sm btn-outline-primary mb-4" id="btnAddDimension">
+                            <i class="bi bi-plus-lg me-1"></i> Add attribute
+                        </button>
 
                         <div class="p-3 bg-light rounded border border-secondary border-opacity-25 mb-4">
                             <h6 class="text-dark fw-bold small text-uppercase mb-3"><i class="bi bi-lightning-charge-fill text-warning me-1"></i> Quick Fill Default Values</h6>
@@ -79,19 +77,15 @@
                         <div class="table-responsive style-scroll" style="max-height: 550px;">
                             <table class="table table-bordered align-middle text-center" id="matrixTable">
                                 <thead class="table-light sticky-top">
-                                    <tr>
+                                    <tr id="matrixHeadRow">
                                         <th>Color</th>
-                                        <th>CPU</th>
-                                        <th>RAM</th>
-                                        <th>Storage</th>
-                                        <th>Screen</th>
                                         <th style="width: 150px;">Price (₫) <span class="text-danger">*</span></th>
                                         <th style="width: 100px;">Stock <span class="text-danger">*</span></th>
                                     </tr>
                                 </thead>
                                 <tbody id="matrixBody">
                                     <tr>
-                                        <td colspan="8" class="text-muted py-4">Enter attribute values on the left to generate the matrix.</td>
+                                        <td colspan="3" class="text-muted py-4">Enter colors and attribute values on the left to generate the matrix.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -131,115 +125,159 @@
 
 @section Scripts {
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const inputs = document.querySelectorAll('.attr-input');
-            inputs.forEach(input => input.addEventListener('input', generateMatrix));
+        const PRESETS = {
+            traditional: [
+                ['Bộ máy', ''], ['Chất liệu mặt kính', ''], ['Chất liệu dây', ''],
+                ['Đường kính mặt', ''], ['Chống nước', '']
+            ],
+            smart: [
+                ['Kích thước màn hình', ''], ['Loại màn hình', ''], ['Dung lượng pin', ''],
+                ['Hệ điều hành', ''], ['Kết nối', ''], ['Tương thích thiết bị', '']
+            ],
+            strap: [
+                ['Chất liệu', ''], ['Độ rộng dây', ''], ['Loại khóa', '']
+            ]
+        };
+        const MAX_VARIANTS = 300;
+
+        function escapeHtml(text) {
+            return String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        function splitValues(raw) {
+            const seen = new Set();
+            const result = [];
+            raw.split(',').map(s => s.trim()).filter(s => s.length > 0).forEach(v => {
+                const key = v.toLowerCase();
+                if (!seen.has(key)) { seen.add(key); result.push(v); }
+            });
+            return result;
+        }
+
+        function addDimensionRow(name, values) {
+            const wrap = document.getElementById('dimensionRows');
+            const row = document.createElement('div');
+            row.className = 'border rounded p-2 mb-2 dimension-row';
+            row.innerHTML = `
+                <div class="d-flex gap-2 mb-1">
+                    <input type="text" class="form-control form-control-sm dim-name" list="attrNameSuggestions" placeholder="Attribute name (e.g., Bộ máy)" value="${escapeHtml(name || '')}" />
+                    <button type="button" class="btn btn-sm btn-outline-danger dim-remove" title="Remove"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <input type="text" class="form-control form-control-sm dim-values" placeholder="Values, separated by commas" value="${escapeHtml(values || '')}" />`;
+            row.querySelector('.dim-name').addEventListener('input', generateMatrix);
+            row.querySelector('.dim-values').addEventListener('input', generateMatrix);
+            row.querySelector('.dim-remove').addEventListener('click', () => { row.remove(); generateMatrix(); });
+            wrap.appendChild(row);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById('inputColors').addEventListener('input', generateMatrix);
+            document.getElementById('btnAddDimension').addEventListener('click', () => addDimensionRow('', ''));
+            document.querySelectorAll('[data-preset]').forEach(btn => btn.addEventListener('click', () => {
+                document.getElementById('dimensionRows').innerHTML = '';
+                PRESETS[btn.dataset.preset].forEach(p => addDimensionRow(p[0], p[1]));
+                generateMatrix();
+            }));
 
             // Lắng nghe sự kiện gõ trên các ô điền nhanh (Quick Fill) để đồng bộ xuống dưới bảng
             document.getElementById('quickPrice').addEventListener('input', syncQuickFill);
             document.getElementById('quickStock').addEventListener('input', syncQuickFill);
 
-            document.getElementById('btnClearAll').addEventListener('click', function() {
-                inputs.forEach(i => i.value = '');
+            document.getElementById('btnClearAll').addEventListener('click', function () {
+                document.getElementById('inputColors').value = '';
+                document.getElementById('dimensionRows').innerHTML = '';
                 document.getElementById('quickPrice').value = '';
                 document.getElementById('quickStock').value = '';
                 generateMatrix();
             });
+
+            addDimensionRow('', '');
         });
 
         function generateMatrix() {
-            // CẢI TIẾN THUẬT TOÁN: Khử trùng lặp chuỗi gõ nhầm bằng Set và chuyển chữ HOA đồng bộ
-            const parseInput = (id) => {
-                const val = document.getElementById(id).value.trim();
-                if (!val) return [null];
+            const colors = splitValues(document.getElementById('inputColors').value);
 
-                const rawArray = val.split(',').map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
-                const uniqueArray = [...new Set(rawArray)]; // Loại bỏ hoàn toàn phần tử trùng lặp
+            // Mỗi dòng thuộc tính có Tên và ít nhất một Giá trị sẽ trở thành một "chiều" của ma trận
+            const dims = [];
+            document.querySelectorAll('.dimension-row').forEach(row => {
+                const name = row.querySelector('.dim-name').value.trim();
+                const values = splitValues(row.querySelector('.dim-values').value);
+                if (name && values.length > 0) dims.push({ name, values });
+            });
 
-                return uniqueArray.length > 0 ? uniqueArray : [null];
-            };
-
-            const colors = parseInput('inputColors');
-            const cpus = parseInput('inputCpus');
-            const rams = parseInput('inputRams');
-            const storages = parseInput('inputStorages');
-            const screens = parseInput('inputScreens');
-
-            const hasData = [colors, cpus, rams, storages, screens].some(arr => arr.length > 1 || (arr[0] !== null));
-
-            if (!hasData) {
+            if (colors.length === 0) {
                 resetTable();
                 return;
             }
 
-            const cartesian = (...arrays) => arrays.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
-            const combinations = cartesian(colors, cpus, rams, storages, screens);
+            // Tích Descartes của màu sắc và từng thuộc tính
+            let combos = colors.map(c => ({ color: c, values: [] }));
+            dims.forEach(d => {
+                const next = [];
+                combos.forEach(c => d.values.forEach(v => next.push({ color: c.color, values: [...c.values, v] })));
+                combos = next;
+            });
+
+            const lblTotal = document.getElementById('lblTotalVariants');
+            if (combos.length > MAX_VARIANTS) {
+                resetTable();
+                lblTotal.innerText = `Too many variants (${combos.length}). Maximum ${MAX_VARIANTS}.`;
+                lblTotal.className = "badge bg-danger fs-6";
+                return;
+            }
+
+            // Cập nhật tiêu đề bảng theo các thuộc tính hiện có
+            const head = document.getElementById('matrixHeadRow');
+            head.innerHTML = '<th>Color</th>' + dims.map(d => `<th>${escapeHtml(d.name)}</th>`).join('') +
+                '<th style="width: 150px;">Price (₫) <span class="text-danger">*</span></th>' +
+                '<th style="width: 100px;">Stock <span class="text-danger">*</span></th>';
 
             const matrixBody = document.getElementById('matrixBody');
             const btnSave = document.getElementById('btnSaveMatrix');
-            const lblTotal = document.getElementById('lblTotalVariants');
-
-            // Lấy giá trị hiện tại ở các ô Quick Fill để đưa vào lúc sinh dòng mới
             const defaultPrice = document.getElementById('quickPrice').value;
             const defaultStock = document.getElementById('quickStock').value;
 
             matrixBody.innerHTML = '';
-            let validIndex = 0;
-
-            combinations.forEach((combo) => {
-                const rowData = {
-                    color: combo[0] || "",
-                    cpu: combo[1] || "",
-                    ram: combo[2] || "",
-                    storage: combo[3] || "",
-                    screen: combo[4] || ""
-                };
-
-                if (!rowData.color && !rowData.cpu && !rowData.ram && !rowData.storage && !rowData.screen) return;
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><input type="hidden" name="Variants[${validIndex}].Color" value="${rowData.color}" />${rowData.color || '<span class="text-muted">N/A</span>'}</td>
-                    <td><input type="hidden" name="Variants[${validIndex}].Cpu" value="${rowData.cpu}" />${rowData.cpu || '<span class="text-muted">N/A</span>'}</td>
-                    <td><input type="hidden" name="Variants[${validIndex}].Ram" value="${rowData.ram}" />${rowData.ram || '<span class="text-muted">N/A</span>'}</td>
-                    <td><input type="hidden" name="Variants[${validIndex}].Storage" value="${rowData.storage}" />${rowData.storage || '<span class="text-muted">N/A</span>'}</td>
-                    <td><input type="hidden" name="Variants[${validIndex}].ScreenSize" value="${rowData.screen}" />${rowData.screen || '<span class="text-muted">N/A</span>'}</td>
+            combos.forEach((combo, i) => {
+                let cells = `<td><input type="hidden" name="Variants[${i}].Color" value="${escapeHtml(combo.color)}" />${escapeHtml(combo.color)}</td>`;
+                dims.forEach((d, j) => {
+                    cells += `<td>
+                        <input type="hidden" name="Variants[${i}].Attributes[${j}].Name" value="${escapeHtml(d.name)}" />
+                        <input type="hidden" name="Variants[${i}].Attributes[${j}].Value" value="${escapeHtml(combo.values[j])}" />
+                        ${escapeHtml(combo.values[j])}</td>`;
+                });
+                cells += `
                     <td>
                         <div class="input-group input-group-sm">
-                            <input type="number" name="Variants[${validIndex}].Price" class="form-control text-end matrix-price" value="${defaultPrice}" placeholder="0" min="0" required />
+                            <input type="number" name="Variants[${i}].Price" class="form-control text-end matrix-price" value="${defaultPrice}" placeholder="0" min="0" required />
                             <span class="input-group-text">₫</span>
                         </div>
                     </td>
                     <td>
-                        <input type="number" name="Variants[${validIndex}].StockQuantity" class="form-control form-control-sm text-center matrix-stock" value="${defaultStock}" placeholder="0" min="0" required />
-                    </td>
-                `;
-                matrixBody.appendChild(row);
-                validIndex++;
+                        <input type="number" name="Variants[${i}].StockQuantity" class="form-control form-control-sm text-center matrix-stock" value="${defaultStock}" placeholder="0" min="0" required />
+                    </td>`;
+                const tr = document.createElement('tr');
+                tr.innerHTML = cells;
+                matrixBody.appendChild(tr);
             });
 
-            lblTotal.innerText = `Total: ${validIndex} variants`;
-
-            if (validIndex > 0) {
-                btnSave.disabled = false;
-                lblTotal.className = "badge bg-success fs-6";
-            } else {
-                resetTable();
-            }
+            lblTotal.innerText = `Total: ${combos.length} variants`;
+            lblTotal.className = "badge bg-success fs-6";
+            btnSave.disabled = combos.length === 0;
         }
 
-        // CẢI TIẾN: Hàm tự động đồng bộ hóa dữ liệu từ Quick Fill xuống ma trận khi đang gõ
+        // Đồng bộ dữ liệu từ Quick Fill xuống toàn bộ ma trận khi đang gõ
         function syncQuickFill() {
             const defaultPrice = document.getElementById('quickPrice').value;
             const defaultStock = document.getElementById('quickStock').value;
-
-            // Đẩy giá trị vào toàn bộ các class tương ứng dưới bảng
             document.querySelectorAll('.matrix-price').forEach(input => { input.value = defaultPrice; });
             document.querySelectorAll('.matrix-stock').forEach(input => { input.value = defaultStock; });
         }
 
         function resetTable() {
-            document.getElementById('matrixBody').innerHTML = `<tr><td colspan="8" class="text-muted py-4">Enter attribute values on the left to generate the matrix.</td></tr>`;
+            document.getElementById('matrixHeadRow').innerHTML =
+                '<th>Color</th><th style="width: 150px;">Price (₫) <span class="text-danger">*</span></th><th style="width: 100px;">Stock <span class="text-danger">*</span></th>';
+            document.getElementById('matrixBody').innerHTML = `<tr><td colspan="3" class="text-muted py-4">Enter colors and attribute values on the left to generate the matrix.</td></tr>`;
             document.getElementById('btnSaveMatrix').disabled = true;
             const lblTotal = document.getElementById('lblTotalVariants');
             lblTotal.innerText = 'Total: 0 variants';

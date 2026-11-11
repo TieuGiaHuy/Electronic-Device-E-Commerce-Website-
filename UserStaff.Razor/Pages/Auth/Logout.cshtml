@@ -1,16 +1,18 @@
 @page
 @model Staff.Razor.Pages.Auth.LogoutModel
 @{
-    ViewData["Title"] = "Logout";
+    ViewData["Title"] = "Log out";
     Layout = "~/Pages/Shared/_AuthLayout.cshtml";
 }
 
-<div class="auth-card-header">
-    <h4>Log Out</h4>
-    <p>Are you sure you want to end your session?</p>
+<div class="vx-auth-icon"><i class="bi bi-box-arrow-right"></i></div>
+
+<div class="vx-auth-title">
+    <h1>Log out of the staff portal?</h1>
+    <p>You'll need to sign in again to manage products and orders.</p>
 </div>
 
 <form method="post" class="d-grid gap-2">
-    <button type="submit" class="btn btn-auth-primary py-2">Yes, Log Out</button>
-    <a asp-page="/Index" class="btn btn-outline-secondary py-2">Cancel</a>
+    <button type="submit" class="btn btn-primary">Yes, log me out</button>
+    <a asp-page="/Index" class="btn btn-outline-secondary">Stay signed in</a>
 </form>

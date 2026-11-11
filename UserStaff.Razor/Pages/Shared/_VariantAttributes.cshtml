@@ -1,0 +1,115 @@
+@* Trình nhập thông số (Tên - Giá trị) cho một biến thể. Model: List<VariantAttributeDto>. ViewData["Prefix"]: tiền tố tên field. *@
+@using BLL.DTOs.ProductVariant
+@model List<VariantAttributeDto>
+@{
+    var prefix = ViewData["Prefix"] as string ?? "ProductVariant.Attributes";
+    var rows = (Model != null && Model.Count > 0) ? Model : new List<VariantAttributeDto> { new() };
+}
+
+<datalist id="attrNameSuggestions">
+    @foreach (var name in DAL.Utilities.WatchAttributeNames.All)
+    {
+        <option value="@name"></option>
+    }
+</datalist>
+
+<div class="col-12 mb-2 d-flex flex-wrap gap-2">
+    <button type="button" class="btn btn-sm btn-outline-secondary" data-attr-preset="traditional">Mechanical / Quartz template</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" data-attr-preset="smart">Smartwatch template</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" data-attr-preset="strap">Strap template</button>
+</div>
+
+<div class="col-12" id="attrRows" data-prefix="@prefix">
+    @for (var i = 0; i < rows.Count; i++)
+    {
+        <div class="row g-2 mb-2 attr-row">
+            <div class="col-md-5">
+                <input name="@(prefix + "[" + i + "].Name")" value="@rows[i].Name" list="attrNameSuggestions" class="form-control attr-name" placeholder="Attribute (e.g., Bộ máy)" />
+            </div>
+            <div class="col-md-6">
+                <input name="@(prefix + "[" + i + "].Value")" value="@rows[i].Value" class="form-control attr-value" placeholder="Value (e.g., Automatic, 40mm...)" />
+            </div>
+            <div class="col-md-1 d-grid">
+                <button type="button" class="btn btn-outline-danger btn-sm attr-remove" title="Remove"><i class="bi bi-x-lg"></i></button>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="col-12 mb-3">
+    <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddAttr"><i class="bi bi-plus-lg me-1"></i> Add attribute</button>
+    <span class="small text-muted ms-2">Rows missing a name or a value are ignored.</span>
+</div>
+
+<script>
+    (function () {
+        var wrap = document.getElementById('attrRows');
+        var prefix = wrap.dataset.prefix;
+        var presets = {
+            traditional: ['Bộ máy', 'Chất liệu mặt kính', 'Chất liệu dây', 'Đường kính mặt', 'Chống nước'],
+            smart: ['Kích thước màn hình', 'Loại màn hình', 'Dung lượng pin', 'Hệ điều hành', 'Kết nối', 'Tương thích thiết bị'],
+            strap: ['Chất liệu', 'Độ rộng dây', 'Loại khóa']
+        };
+
+        function esc(t) {
+            return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+        }
+
+        function addRow(name, value) {
+            var div = document.createElement('div');
+            div.className = 'row g-2 mb-2 attr-row';
+            div.innerHTML =
+                '<div class="col-md-5"><input list="attrNameSuggestions" class="form-control attr-name" placeholder="Attribute (e.g., Bộ máy)" value="' + esc(name || '') + '" /></div>' +
+                '<div class="col-md-6"><input class="form-control attr-value" placeholder="Value (e.g., Automatic, 40mm...)" value="' + esc(value || '') + '" /></div>' +
+                '<div class="col-md-1 d-grid"><button type="button" class="btn btn-outline-danger btn-sm attr-remove" title="Remove"><i class="bi bi-x-lg"></i></button></div>';
+            wrap.appendChild(div);
+            reindex();
+        }
+
+        // Đánh lại chỉ số liên tục để model binding nhận đủ danh sách
+        function reindex() {
+            wrap.querySelectorAll('.attr-row').forEach(function (row, i) {
+                row.querySelector('.attr-name').name = prefix + '[' + i + '].Name';
+                row.querySelector('.attr-value').name = prefix + '[' + i + '].Value';
+            });
+        }
+
+        wrap.addEventListener('click', function (e) {
+            var btn = e.target.closest('.attr-remove');
+            if (!btn) return;
+            btn.closest('.attr-row').remove();
+            if (wrap.querySelectorAll('.attr-row').length === 0) addRow('', '');
+            reindex();
+        });
+
+        document.getElementById('btnAddAttr').addEventListener('click', function () { addRow('', ''); });
+
+        document.querySelectorAll('[data-attr-preset]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                // Giữ các giá trị đã nhập nếu tên thông số trùng với mẫu, thêm các dòng còn thiếu
+                var existing = {};
+                wrap.querySelectorAll('.attr-row').forEach(function (row) {
+                    var n = row.querySelector('.attr-name').value.trim();
+                    if (n) existing[n.toLowerCase()] = true;
+                });
+                // Bỏ các dòng hoàn toàn trống trước khi thêm
+                wrap.querySelectorAll('.attr-row').forEach(function (row) {
+                    if (!row.querySelector('.attr-name').value.trim() && !row.querySelector('.attr-value').value.trim()) row.remove();
+                });
+                presets[btn.dataset.attrPreset].forEach(function (n) {
+                    if (!existing[n.toLowerCase()]) addRow(n, '');
+                });
+                reindex();
+            });
+        });
+
+        var form = wrap.closest('form');
+        if (form) form.addEventListener('submit', function () {
+            // Bỏ dòng trống hoàn toàn rồi đánh lại chỉ số
+            wrap.querySelectorAll('.attr-row').forEach(function (row) {
+                if (!row.querySelector('.attr-name').value.trim() && !row.querySelector('.attr-value').value.trim()) row.remove();
+            });
+            reindex();
+        });
+    })();
+</script>

@@ -1,4 +1,4 @@
-﻿@page "{id:guid}"
+@page "{id:guid}"
 @model Staff.Razor.Pages.ProductVariants.UpdateModel
 @{
     ViewData["Title"] = "Update Product Variant";
@@ -6,7 +6,7 @@
 
 <style>
     .ds-heading-accent {
-        border-left: 4px solid #E24B4A;
+        border-left: 4px solid var(--vx-accent);
         padding-left: 12px;
     }
 
@@ -25,7 +25,7 @@
 
         .ds-back-btn:hover {
             background-color: var(--color-background-secondary, #F5F5F5);
-            color: #A32D2D;
+            color: var(--vx-accent-hover);
         }
 
     .ds-card {
@@ -58,12 +58,12 @@
     }
 
         .form-control:focus {
-            border-color: #E24B4A;
+            border-color: var(--vx-accent);
             box-shadow: 0 0 0 0.2rem rgba(226, 75, 74, 0.15);
         }
 
     .btn-ds-primary {
-        background-color: #E24B4A;
+        background-color: var(--vx-accent);
         border: none;
         color: #FFFFFF;
         border-radius: 8px;
@@ -73,7 +73,7 @@
 
         .btn-ds-primary:hover,
         .btn-ds-primary:focus {
-            background-color: #A32D2D;
+            background-color: var(--vx-accent-hover);
             color: #FFFFFF;
         }
 
@@ -92,8 +92,8 @@
         }
 
     .alert-ds-danger {
-        background-color: #FCEBEB;
-        color: #791F1F;
+        background-color: var(--vx-accent-soft);
+        color: var(--vx-accent-active);
         border: none;
         border-radius: 12px;
     }
@@ -124,29 +124,15 @@
                     </div>
                 </div>
 
-                <h5 class="ds-section-title mb-3"><i class="bi bi-cpu me-2"></i>Specifications</h5>
+                <h5 class="ds-section-title mb-3"><i class="bi bi-watch me-2"></i>Specifications</h5>
                 <div class="row ds-section-block p-3 mb-4 mx-0">
-                    <div class="col-md-3 form-group mb-3">
+                    <div class="col-md-6 form-group mb-3">
                         <label class="ds-label">Color <span class="text-danger">*</span></label>
-                        <input asp-for="ProductVariant.Color" class="form-control" placeholder="Matte black, Titanium..." />
+                        <input asp-for="ProductVariant.Color" class="form-control" placeholder="Black, Silver, Rose gold..." />
                         <span asp-validation-for="ProductVariant.Color" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-3 form-group mb-3">
-                        <label class="ds-label">Storage</label>
-                        <input asp-for="ProductVariant.Storage" class="form-control" placeholder="128GB, 256GB..." />
-                    </div>
-                    <div class="col-md-3 form-group mb-3">
-                        <label class="ds-label">RAM</label>
-                        <input asp-for="ProductVariant.Ram" class="form-control" placeholder="8GB, 16GB..." />
-                    </div>
-                    <div class="col-md-3 form-group mb-3">
-                        <label class="ds-label">Screen Size</label>
-                        <input asp-for="ProductVariant.ScreenSize" class="form-control" placeholder="6.1 inch, 6.7 inch..." />
-                    </div>
-                    <div class="col-md-12 form-group mb-3">
-                        <label class="ds-label">CPU</label>
-                        <input asp-for="ProductVariant.Cpu" class="form-control" placeholder="Apple A17 Pro, Snapdragon 8 Gen 3..." />
-                    </div>
+                    <div class="col-12"><hr class="my-2" /></div>
+                    <partial name="_VariantAttributes" model="Model.ProductVariant.Attributes" />
                 </div>
 
                 <h5 class="ds-section-title mb-3"><i class="bi bi-tag me-2"></i>Pricing &amp; Inventory</h5>
@@ -209,7 +195,7 @@
 else
 {
     <div class="alert-ds-danger d-flex align-items-center shadow-sm p-3 my-3" role="alert">
-        <i class="bi bi-exclamation-triangle-fill fs-3 me-3" style="color: #791F1F;"></i>
+        <i class="bi bi-exclamation-triangle-fill fs-3 me-3" style="color: var(--vx-accent-active);"></i>
         <div>
             <h6 class="fw-medium mb-1">No data found!</h6>
             <div class="small" style="color: var(--color-text-secondary, #555555);">This product does not exist or has been removed from the system.</div>

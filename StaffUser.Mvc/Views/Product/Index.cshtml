@@ -1,4 +1,5 @@
-﻿@using BLL.DTOs.Product.Customer
+@using System.Globalization
+@using BLL.DTOs.Product.Customer
 @using BLL.DTOs.ProductReview
 @using BLL.DTOs.ProductVariant.Customer
 @model ProductCustomerDto
@@ -6,541 +7,422 @@
 @{
     ViewData["Title"] = Model?.ProductName ?? "Product Details";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var inv = CultureInfo.InvariantCulture;
 
-    // Lấy danh sách biến thể hợp lệ, sắp xếp theo giá tăng dần
+    // Valid variants, cheapest first
     var activeVariants = Model?.ProductVariants?.Where(v => !v.IsDeleted).OrderBy(v => v.Price).ToList()
         ?? new List<ProductVariantCustomerDto>();
     var defaultVariant = activeVariants.FirstOrDefault(v => v.StockQuantity > 0) ?? activeVariants.FirstOrDefault();
 
-    // Thêm: chuẩn bị data có FinalPrice để gửi sang JS
+    // Data sent to the client-side variant picker.
+    // Attrs = specifications of the variant as a list of { name, value }.
     var variantsForJs = activeVariants.Select(v => new
     {
         v.ProductVariantId,
         v.Sku,
-        v.Cpu,
-        v.Ram,
-        v.Storage,
-        v.ScreenSize,
         v.Color,
+        Attrs = v.Attributes
+            .Where(a => !string.IsNullOrWhiteSpace(a.Name))
+            .Select(a => new { Name = a.Name!.Trim(), Value = (a.Value ?? string.Empty).Trim() })
+            .ToList(),
         v.Price,
         FinalPrice = v.GetPrice(),
         v.StockQuantity,
         v.ImageUrl
     }).ToList();
 
-    // Lấy danh sách duy nhất cho 5 nhóm (Bỏ qua giá trị Null/Trống)
-    var uniqueCpus = activeVariants.Where(v => !string.IsNullOrEmpty(v.Cpu)).Select(v => v.Cpu!).Distinct().ToList();
-    var uniqueRams = activeVariants.Where(v => !string.IsNullOrEmpty(v.Ram)).Select(v => v.Ram!).Distinct().ToList();
-    var uniqueStorages = activeVariants.Where(v => !string.IsNullOrEmpty(v.Storage)).Select(v => v.Storage!).Distinct().ToList();
-    var uniqueScreens = activeVariants.Where(v => !string.IsNullOrEmpty(v.ScreenSize)).Select(v => v.ScreenSize!).Distinct().ToList();
+    // All specification names, in display order (first variant that has them decides the order)
+    var attributeNames = activeVariants
+        .SelectMany(v => v.Attributes)
+        .Where(a => !string.IsNullOrWhiteSpace(a.Name))
+        .Select(a => a.Name!.Trim())
+        .Distinct()
+        .ToList();
+
+    // Values per specification: a specification with more than one value becomes a selectable option group
+    var attributeValues = attributeNames.ToDictionary(
+        n => n,
+        n => activeVariants
+            .Select(v => v.Attributes.FirstOrDefault(a => string.Equals(a.Name?.Trim(), n, StringComparison.Ordinal))?.Value?.Trim())
+            .Where(x => !string.IsNullOrEmpty(x))
+            .Select(x => x!)
+            .Distinct()
+            .ToList());
+    var optionAttributeNames = attributeNames.Where(n => attributeValues[n].Count > 1).ToList();
+
     var uniqueColors = activeVariants.Where(v => !string.IsNullOrEmpty(v.Color)).Select(v => v.Color!).Distinct().ToList();
+
+    // Dimensions the customer can pick: color first, then every attribute that differs between variants
+    const string ColorKey = "__color";
+    var dimensionKeys = new List<string>();
+    if (uniqueColors.Any()) dimensionKeys.Add(ColorKey);
+    dimensionKeys.AddRange(optionAttributeNames);
+
+    // CSS color for swatches (Vietnamese and English names)
+    var swatchMap = new Dictionary<string, string>
+    {
+        ["đen"] = "#111111", ["trắng"] = "#f5f5f5", ["bạc"] = "#c0c0c0", ["vàng"] = "#d4af37",
+        ["vàng hồng"] = "#e0a899", ["hồng"] = "#f4a6b7", ["đỏ"] = "#c62828", ["nâu"] = "#6d4c41",
+        ["xám"] = "#808080", ["xanh navy"] = "#1f2a56", ["xanh dương"] = "#2f6fdb", ["xanh lá"] = "#2e7d32",
+        ["xanh quân đội"] = "#4b5320", ["đen titanium"] = "#2b2b2b", ["titanium"] = "#8a8d8f"
+    };
+
+    string SpecIcon(string name)
+    {
+        var n = name.ToLowerInvariant();
+        if (n.Contains("bộ máy")) return "bi-gear-wide-connected";
+        if (n.Contains("kính")) return "bi-gem";
+        if (n.Contains("chống nước")) return "bi-droplet";
+        if (n.Contains("đường kính")) return "bi-circle";
+        if (n.Contains("dây") || n.Contains("khóa")) return "bi-link-45deg";
+        if (n.Contains("màn hình") || n.Contains("hiển thị")) return "bi-smartwatch";
+        if (n.Contains("pin")) return "bi-battery-full";
+        if (n.Contains("hệ điều hành")) return "bi-cpu";
+        if (n.Contains("kết nối")) return "bi-bluetooth";
+        if (n.Contains("tương thích")) return "bi-phone";
+        if (n.Contains("chất liệu")) return "bi-gem";
+        return "bi-info-circle";
+    }
+
     var reviews = ViewBag.Reviews as List<ProductReviewDto> ?? new List<ProductReviewDto>();
     var currentUserEmail = ViewBag.CurrentUserEmail as string;
+    var myReview = ViewBag.MyReview as ProductReviewDto;
+
+    var avgRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0.0;
+
+    var defaultFinalPrice = defaultVariant?.GetPrice() ?? 0m;
+    var defaultIsOnSale = defaultVariant != null && defaultVariant.Price > 0 && defaultFinalPrice < defaultVariant.Price;
+    var defaultDiscount = defaultIsOnSale ? (int)Math.Round((1 - defaultFinalPrice / defaultVariant!.Price) * 100) : 0;
+    var heroImage = defaultVariant?.ImageUrl ?? (string.IsNullOrEmpty(Model?.ImageUrl) ? "/images/default-product.png" : Model!.ImageUrl);
 }
 
-<style>
-    .product-detail-container {
-        background-color: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        padding: 25px;
-    }
+@section Styles {
+    <link rel="stylesheet" href="~/css/product.css" asp-append-version="true" />
+}
 
-    /* Định dạng nút bấm tiêu chuẩn */
-    .cps-spec-box {
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 8px 14px;
-        cursor: pointer;
-        text-align: center;
-        background-color: #ffffff;
-        min-width: 100px;
-        transition: all 0.15s ease-in-out;
-        user-select: none;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
+@if (Model == null)
+{
+    <div class="alert alert-danger">Product not found or has been deleted.</div>
+}
+else
+{
+    <!-- ============ HERO ============ -->
+    <section class="tz-hero">
+        <div class="container tz-hero-inner">
+            <div class="tz-hero-copy">
+                <nav class="tz-crumbs" aria-label="Breadcrumb">
+                    <a href="@Url.Action("Index", "Home")">Home</a>
+                    <span class="sep">/</span>
+                    <a href="@Url.Action("Index", "Home", new { categoryId = Model.CategoryId })">@Model.CategoryName</a>
+                    <span class="sep">/</span>
+                    <span class="current">@Model.ProductName</span>
+                </nav>
 
-        .cps-spec-box:hover {
-            border-color: var(--color-primary);
-        }
+                <span class="tz-eyebrow"><i class="bi bi-patch-check-fill"></i> @Model.Brand</span>
+                <h1 class="tz-title">@Model.ProductName</h1>
 
-        /* Trạng thái đang được chọn (Active) */
-        .cps-spec-box.active {
-            border-color: var(--color-primary);
-            background-color: var(--color-banner-bg);
-            color: var(--color-primary);
-            font-weight: 600;
-        }
+                <div class="tz-meta">
+                    <a href="#reviews" class="d-inline-flex align-items-center gap-2">
+                        <span class="tz-stars" style="--rating:@avgRating.ToString("0.0", inv)"></span>
+                        <span>@(reviews.Any() ? avgRating.ToString("0.0", inv) : "No ratings yet") @(reviews.Any() ? $"({reviews.Count})" : "")</span>
+                    </a>
+                    <span class="dot"></span>
+                    <span>@Model.CategoryName</span>
+                    @if (defaultVariant != null)
+                    {
+                        <span class="dot"></span>
+                        <span>SKU <strong id="variantSkuText" class="text-uppercase">@defaultVariant.Sku</strong></span>
+                    }
+                </div>
 
-            .cps-spec-box.active::after {
-                content: "\F2AC";
-                font-family: "bootstrap-icons";
-                position: absolute;
-                top: -2px;
-                right: 2px;
-                font-size: 10px;
-                color: var(--color-primary);
-            }
+                @if (defaultVariant != null)
+                {
+                    <div class="tz-price-row">
+                        <span class="tz-price"><span id="variantPriceText">@defaultFinalPrice.ToString("N0")</span><small id="variantCurrency">₫</small></span>
+                        <span id="variantOldPriceText" class="tz-price-old @(defaultIsOnSale ? "" : "d-none")">@defaultVariant.Price.ToString("N0") ₫</span>
+                        <span id="variantSaveText" class="tz-save @(defaultIsOnSale ? "" : "d-none")">Save @(defaultIsOnSale ? (defaultVariant.Price - defaultFinalPrice).ToString("N0") : "0") ₫</span>
+                    </div>
 
-    /* Nhãn báo hết hàng nhỏ nằm bên dưới chữ cấu hình */
-    .variant-oos-tag {
-        font-size: 0.65rem;
-        color: #dc3545;
-        font-weight: normal;
-        margin-top: 2px;
-    }
+                    <a href="#configure" class="tz-hero-cta">Choose your configuration <i class="bi bi-arrow-down"></i></a>
+                }
+            </div>
 
-    /* Thêm hiệu ứng mờ nhẹ cho nút nếu biến thể cụ thể đó hết hàng nhưng VẪN CLICK ĐƯỢC */
-    .cps-spec-box.is-oos {
-        opacity: 0.7;
-        background-color: #fafafa;
-    }
+            <div class="tz-hero-stage">
+                <div class="tz-ring r1"></div>
+                <div class="tz-ring r2"></div>
+                @if (defaultVariant != null)
+                {
+                    <span id="variantDiscountBadge" class="tz-sale-badge @(defaultIsOnSale ? "" : "d-none")">-@defaultDiscount%</span>
+                }
+                <img id="variantMainImage" src="@heroImage" alt="@Model.ProductName" />
+            </div>
+        </div>
+    </section>
 
-    .cps-price-large {
-        color: var(--color-primary);
-        font-size: 2rem;
-        font-weight: 700;
-    }
-
-    .btn-cps-buy {
-        background-color: var(--color-primary);
-        color: #ffffff;
-        border: none;
-        padding: 14px;
-        border-radius: 8px;
-        font-weight: bold;
-        font-size: 1.1rem;
-        width: 100%;
-        transition: background-color 0.2s;
-    }
-
-        .btn-cps-buy:hover:not(:disabled) {
-            background-color: var(--color-primary-hover);
-        }
-
-        .btn-cps-buy:disabled {
-            background-color: #dcdcdc;
-            color: #777777;
-            cursor: not-allowed;
-            opacity: 0.6; /* Làm mờ nút khi bị khóa */
-        }
-
-    /* Giao diện bộ tăng giảm số lượng mua */
-    .quantity-wrapper {
-        max-width: 130px;
-    }
-
-        .quantity-wrapper input {
-            text-align: center;
-            font-weight: 600;
-        }
-</style>
-
-<div class="container mt-4">
-    @if (Model == null)
+    @if (defaultVariant != null)
     {
-        <div class="alert alert-danger">Product not found or has been deleted.</div>
+        <!-- ============ CONFIGURATOR ============ -->
+        <section id="configure" class="tz-configurator">
+            <div class="tz-config-options">
+                <h2 class="tz-config-head">Build your configuration</h2>
+
+                @if (uniqueColors.Any())
+                {
+                    <div class="tz-opt-group">
+                        <span class="tz-opt-label">Color</span>
+                        <div class="tz-opt-row" id="colorGroup">
+                            @foreach (var color in uniqueColors)
+                            {
+                                var key = color.Trim().ToLowerInvariant();
+                                var swatch = swatchMap.TryGetValue(key, out var css) ? css : key.Replace(" ", "");
+                                <div class="tz-opt spec-filter" data-type="@ColorKey" data-value="@color"><span><i class="swatch" style="background:@swatch"></i>@color</span></div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @foreach (var attrName in optionAttributeNames)
+                {
+                    <div class="tz-opt-group">
+                        <span class="tz-opt-label">@attrName</span>
+                        <div class="tz-opt-row">
+                            @foreach (var value in attributeValues[attrName])
+                            {
+                                <div class="tz-opt spec-filter" data-type="@attrName" data-value="@value"><span>@value</span></div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="tz-config-buy">
+                <div class="tz-stock">
+                    <span>Availability: <strong id="txtStockStatus" class="text-success">In Stock</strong></span>
+                </div>
+
+                <div id="selectedVariantId" data-variant-id="@defaultVariant.ProductVariantId"></div>
+
+                <div class="tz-buy">
+                    <div class="tz-qty">
+                        <button type="button" id="btnMinus" aria-label="Decrease quantity"><i class="bi bi-dash-lg"></i></button>
+                        <input type="number" id="inputQuantity" value="1" min="1" autocomplete="off" aria-label="Quantity" />
+                        <button type="button" id="btnPlus" aria-label="Increase quantity"><i class="bi bi-plus-lg"></i></button>
+                    </div>
+                    <button type="button" id="btnActionSubmit" class="tz-add" onclick="submitAddToCart()">
+                        <i class="bi bi-cart-plus-fill me-2"></i> Add to cart
+                    </button>
+                </div>
+
+                <div id="lblQuantityWarning" class="tz-warn d-none">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Not enough items available in stock.
+                </div>
+
+                <div class="tz-note"><i class="bi bi-shield-check"></i> Secure checkout after you review your cart</div>
+            </div>
+        </section>
+
+        <!-- ============ AT A GLANCE ============ -->
+        <section class="tz-glance">
+            <h2 class="tz-section-title">At a glance</h2>
+            <dl class="tz-tiles m-0">
+                @foreach (var attrName in attributeNames)
+                {
+                    <div class="tz-tile"><div class="ico"><i class="bi @SpecIcon(attrName)"></i></div><dt>@attrName</dt><dd data-spec="@attrName">@defaultVariant.GetAttribute(attrName)</dd></div>
+                }
+                @if (uniqueColors.Any())
+                {
+                    <div class="tz-tile"><div class="ico"><i class="bi bi-palette"></i></div><dt>Color</dt><dd data-spec="@ColorKey">@defaultVariant.Color</dd></div>
+                }
+                <div class="tz-tile"><div class="ico"><i class="bi bi-patch-check"></i></div><dt>Brand</dt><dd>@Model.Brand</dd></div>
+            </dl>
+        </section>
     }
     else
     {
-        <div class="product-detail-container my-4">
-            @if (defaultVariant != null)
+        <div class="tz-empty mt-4">
+            <i class="bi bi-exclamation-triangle"></i>
+            <p class="mb-0">No configuration options available for this product.</p>
+        </div>
+    }
+}
+
+<!-- ============ REVIEWS ============ -->
+<section id="reviews" class="tz-reviews">
+    <h2 class="tz-section-title">Customer reviews</h2>
+
+    <div class="tz-rev-top">
+        <div class="tz-score-card">
+            <div class="tz-score-num">@avgRating.ToString("0.0", inv) <small>/ 5</small></div>
+            <div class="mt-2"><span class="tz-stars lg" style="--rating:@avgRating.ToString("0.0", inv)"></span></div>
+            <p>Based on @reviews.Count @(reviews.Count == 1 ? "review" : "reviews")</p>
+        </div>
+
+        <div class="tz-dist-card">
+            @for (int star = 5; star >= 1; star--)
             {
-                <div class="row">
-                    <div class="col-md-5 text-center d-flex align-items-center justify-content-center border-end mb-4 mb-md-0">
-                        <img id="variantMainImage" src="@(defaultVariant.ImageUrl ?? (string.IsNullOrEmpty(Model.ImageUrl) ? "/images/default-product.png" : Model.ImageUrl))"
-                             class="img-fluid rounded" style="max-height: 380px; object-fit: contain;" alt="@Model.ProductName" />
-                    </div>
-
-                    <div class="col-md-7 ps-md-4">
-                        <span class="badge bg-secondary mb-2">@Model.Brand</span>
-                        <h2 class="fw-bold text-dark mb-1">@Model.ProductName</h2>
-
-                        <div class="d-flex align-items-center gap-3 mb-3 small text-muted">
-                            <span>Category: <strong>@Model.CategoryName</strong></span>
-                            <span>|</span>
-                            <span>SKU: <strong id="variantSkuText" class="text-uppercase text-dark">@defaultVariant.Sku</strong></span>
-                        </div>
-
-                        <div class="p-3 bg-light rounded-3 mb-4 d-flex align-items-baseline gap-2">
-                            @{
-                                var defaultFinalPrice = defaultVariant.GetPrice();
-                                var defaultIsOnSale = defaultFinalPrice < defaultVariant.Price;
-                            }
-                            <span id="variantOldPriceText"
-                                  class="text-muted text-decoration-line-through fs-6 @(defaultIsOnSale ? "" : "d-none")">
-                                @defaultVariant.Price.ToString("N0") ₫
-                            </span>
-                            <span id="variantPriceText" class="cps-price-large">@defaultFinalPrice.ToString("N0")</span>
-                            <span class="text-danger fw-bold fs-5">₫</span>
-                        </div>
-
-                        @if (uniqueCpus.Any())
-                        {
-                            <div class="mb-3">
-                                <span class="fw-bold text-secondary d-block small mb-1 text-uppercase">Processor (CPU):</span>
-                                <div class="d-flex gap-2 flex-wrap" id="cpuGroup">
-                                    @foreach (var cpu in uniqueCpus)
-                                    {
-                                        <div class="cps-spec-box spec-filter" data-type="cpu" data-value="@cpu">
-                                            <span>@cpu</span>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        }
-
-                        @if (uniqueRams.Any())
-                        {
-                            <div class="mb-3">
-                                <span class="fw-bold text-secondary d-block small mb-1 text-uppercase">Memory (RAM):</span>
-                                <div class="d-flex gap-2 flex-wrap" id="ramGroup">
-                                    @foreach (var ram in uniqueRams)
-                                    {
-                                        <div class="cps-spec-box spec-filter" data-type="ram" data-value="@ram">
-                                            <span>@ram</span>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        }
-
-                        @if (uniqueStorages.Any())
-                        {
-                            <div class="mb-3">
-                                <span class="fw-bold text-secondary d-block small mb-1 text-uppercase">Storage Capacity:</span>
-                                <div class="d-flex gap-2 flex-wrap" id="storageGroup">
-                                    @foreach (var storage in uniqueStorages)
-                                    {
-                                        <div class="cps-spec-box spec-filter" data-type="storage" data-value="@storage">
-                                            <span>@storage</span>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        }
-
-                        @if (uniqueScreens.Any())
-                        {
-                            <div class="mb-3">
-                                <span class="fw-bold text-secondary d-block small mb-1 text-uppercase">Display Size:</span>
-                                <div class="d-flex gap-2 flex-wrap" id="screenGroup">
-                                    @foreach (var screen in uniqueScreens)
-                                    {
-                                        <div class="cps-spec-box spec-filter" data-type="screenSize" data-value="@screen">
-                                            <span>@screen</span>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        }
-
-                        @if (uniqueColors.Any())
-                        {
-                            <div class="mb-4">
-                                <span class="fw-bold text-secondary d-block small mb-1 text-uppercase">Color:</span>
-                                <div class="d-flex gap-2 flex-wrap" id="colorGroup">
-                                    @foreach (var color in uniqueColors)
-                                    {
-                                        <div class="cps-spec-box spec-filter" data-type="color" data-value="@color">
-                                            <span>@color</span>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        }
-
-                        <div class="mb-4 small">
-                            Status: <strong id="txtStockStatus" class="text-success">In Stock</strong>
-                        </div>
-
-                        <div id="selectedVariantId" data-variant-id="@defaultVariant.ProductVariantId"></div>
-
-                        <div class="d-flex flex-column gap-2 mb-4">
-                            <span class="fw-bold text-secondary small text-uppercase">Quantity:</span>
-                            <div class="input-group quantity-wrapper">
-                                <button class="btn btn-outline-secondary" type="button" id="btnMinus">-</button>
-                                <input type="number" id="inputQuantity" class="form-control" value="1" min="1" autocomplete="off" />
-                                <button class="btn btn-outline-secondary" type="button" id="btnPlus">+</button>
-                            </div>
-                            <div id="lblQuantityWarning" class="text-danger small fw-bold d-none">
-                                ⚠️ Not enough items available in stock!
-                            </div>
-                        </div>
-
-                        <div>
-                            <button type="button" id="btnActionSubmit" class="btn-cps-buy" onclick="submitAddToCart()">
-                                <i class="bi bi-cart-plus-fill me-2"></i> Add To Cart
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            }
-            else
-            {
-                <div class="text-center py-5">
-                    <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
-                    <p class="mt-3 text-muted">No configuration options available for this product.</p>
+                var count = reviews.Count(r => r.Rating == star);
+                var percentage = reviews.Count > 0 ? (double)count / reviews.Count * 100 : 0;
+                <div class="tz-dist-row">
+                    <span class="lbl">@star <i class="bi bi-star-fill" style="color:#f59e0b;font-size:.75rem;"></i></span>
+                    <div class="tz-dist-bar"><span style="width:@percentage.ToString("0.#", inv)%"></span></div>
+                    <span class="cnt">@count</span>
                 </div>
             }
         </div>
+    </div>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="tz-write">
+            <h3>@(myReview == null ? "Write a review" : "Edit your review")</h3>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="reviewId" value="@(myReview?.Id ?? 0)" />
+            <input type="hidden" id="reviewProductId" value="@Model!.ProductId" />
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold d-block">Your rating <span class="text-danger">*</span></label>
+                <div class="tz-star-picker" id="starPicker" role="radiogroup" aria-label="Your rating">
+                    @for (int r = 1; r <= 5; r++)
+                    {
+                        <button type="button" class="@((myReview?.Rating ?? 0) >= r ? "on" : "")" data-value="@r" aria-label="@r star@(r == 1 ? "" : "s")"><i class="bi bi-star-fill"></i></button>
+                    }
+                </div>
+                <span id="ratingText" class="tz-rating-text"></span>
+
+                <select id="reviewRating" class="d-none" aria-hidden="true">
+                    <option value="">-- Select Rating --</option>
+                    @for (int r = 5; r >= 1; r--)
+                    {
+                        if (myReview?.Rating == r)
+                        {
+                            <option value="@r" selected>@r</option>
+                        }
+                        else
+                        {
+                            <option value="@r">@r</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="reviewComment" class="form-label fw-semibold">Your review <span class="text-danger">*</span></label>
+                <textarea id="reviewComment" class="form-control" rows="4" maxlength="1000"
+                          placeholder="Share your experience with this product (at least 10 characters)">@myReview?.Comment</textarea>
+                <div class="tz-counter"><span id="commentCount">0</span> / 1000</div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button type="button" id="btnSubmitReview" class="btn btn-primary px-4">
+                    <i class="bi bi-send me-1"></i> @(myReview == null ? "Submit review" : "Update review")
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="tz-login-note">
+            <a href="@Url.Action("Login", "Auth")?returnUrl=@Url.Action("Index", "Product", new { id = Model?.ProductId })">Log in</a> to write a review.
+        </div>
     }
 
-    <!-- Reviews Section (gộp từ Reviews/ProductReviews) -->
-    <div id="reviews" class="mt-5">
-        <h4 class="fw-bold text-dark mb-4">Customer Reviews</h4>
-
-        @{
-            var myReview = ViewBag.MyReview as ProductReviewDto;
-        }
-
-        @if (User.Identity?.IsAuthenticated == true)
+    <div class="tz-rev-grid">
+        @if (reviews.Count == 0)
         {
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold text-dark mb-3">@(myReview == null ? "Write a Review" : "Edit Your Review")</h6>
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" id="reviewId" value="@(myReview?.Id ?? 0)" />
-                    <input type="hidden" id="reviewProductId" value="@Model!.ProductId" />
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold mb-2">Your Rating <span class="text-danger">*</span></label>
-                        <select id="reviewRating" class="form-select" style="max-width: 220px;">
-                            <option value="">-- Select Rating --</option>
-                            @for (int r = 5; r >= 1; r--)
-                            {
-                                if (myReview?.Rating == r)
-                                {
-                                    <option value="@r" selected>@GetStars(r)</option>
-                                }
-                                else
-                                {
-                                    <option value="@r">@GetStars(r)</option>
-                                }
-                            }
-                            @{
-                                string GetStars(int r) => r switch
-                                {
-                                    5 => "⭐⭐⭐⭐⭐ - Excellent (5)",
-                                    4 => "⭐⭐⭐⭐ - Good (4)",
-                                    3 => "⭐⭐⭐ - Average (3)",
-                                    2 => "⭐⭐ - Poor (2)",
-                                    _ => "⭐ - Terrible (1)"
-                                };
-                            }
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold mb-2">Your Review <span class="text-danger">*</span></label>
-                        <textarea id="reviewComment" class="form-control" rows="4"
-                              placeholder="Share your detailed experience... (min 10 characters)">@myReview?.Comment</textarea>
-                        <div class="form-text">Minimum 10 characters, maximum 1000 characters.</div>
-                    </div>
-
-                    <div class="d-flex justify-content-end">
-                        <button type="button" id="btnSubmitReview" class="btn btn-danger px-4" style="background-color:#d70018;border-color:#d70018;">
-                            <i class="bi bi-send me-1"></i> @(myReview == null ? "Submit Review" : "Update Review")
-                        </button>
-                    </div>
-                </div>
+            <div class="tz-empty">
+                <i class="bi bi-chat-square-text"></i>
+                <p class="mb-0">No reviews yet. Be the first to review!</p>
             </div>
         }
         else
         {
-            <div class="alert alert-light border text-center mb-4">
-                <a href="@Url.Action("Login", "Auth")?returnUrl=@Url.Action("Index", "Product", new { id = Model!.ProductId })">Log in</a> to write a review.
-            </div>
-        }
-
-        <!-- Review Stats -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-3 bg-white d-flex flex-row align-items-center justify-content-between" style="border-radius: 12px; border-left: 4px solid #d70018 !important;">
-                    <div>
-                        <h6 class="text-muted text-uppercase mb-1 fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Reviews</h6>
-                        <h3 class="fw-bold text-dark m-0">@reviews.Count</h3>
-                    </div>
-                    <div class="bg-danger-subtle text-danger rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #ffe3e3;">
-                        <i class="fs-4">💬</i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-3 bg-white d-flex flex-row align-items-center justify-content-between" style="border-radius: 12px; border-left: 4px solid #ff922b !important;">
-                    <div>
-                        <h6 class="text-muted text-uppercase mb-1 fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Average Rating</h6>
-                        <h3 class="fw-bold text-dark m-0">@(reviews.Any() ? reviews.Average(r => r.Rating).ToString("0.0") : "0.0")</h3>
-                    </div>
-                    <div class="bg-warning-subtle text-warning rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #fff5e6;">
-                        <i class="fs-4">⭐</i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-3 bg-white d-flex flex-row align-items-center justify-content-between" style="border-radius: 12px; border-left: 4px solid #2b8a3e !important;">
-                    <div>
-                        <h6 class="text-muted text-uppercase mb-1 fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">5-Star Reviews</h6>
-                        <h3 class="fw-bold text-dark m-0">@reviews.Count(r => r.Rating == 5)</h3>
-                    </div>
-                    <div class="bg-success-subtle text-success rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #e6fcf5;">
-                        <i class="fs-4">⭐</i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Rating Distribution -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body p-4">
-                <h6 class="fw-bold text-dark mb-3">Rating Distribution</h6>
-                @for (int star = 5; star >= 1; star--)
-                {
-                    var count = reviews.Count(r => r.Rating == star);
-                    var percentage = reviews.Count > 0 ? (double)count / reviews.Count * 100 : 0;
-                    <div class="d-flex align-items-center mb-2">
-                        <span class="text-warning me-2" style="width: 80px;">
-                            @for (int i = 1; i <= star; i++)
-                            {
-                                <i class="bi bi-star-fill"></i>
-                            }
-                            @for (int i = star + 1; i <= 5; i++)
-                            {
-                                <i class="bi bi-star"></i>
-                            }
-                        </span>
-                        <div class="flex-grow-1" style="max-width: 300px;">
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-warning" role="progressbar" style="width: @percentage%" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
+            foreach (var review in reviews)
+            {
+                <article class="tz-review">
+                    <div class="tz-review-head">
+                        <div class="tz-avatar">@(string.IsNullOrEmpty(review.CustomerName) ? "?" : review.CustomerName.Substring(0, 1).ToUpper())</div>
+                        <div>
+                            <strong>@review.CustomerName</strong>
+                            <time>@review.CreatedAt.ToString("MMM dd, yyyy", inv)</time>
                         </div>
-                        <span class="text-muted ms-2" style="width: 40px;">@count</span>
                     </div>
-                }
-            </div>
-        </div>
-
-        <!-- Reviews List -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-0">
-                @if (reviews.Count == 0)
-                {
-                    <div class="text-center py-5">
-                        <i class="bi bi-chat-square-text text-muted" style="font-size: 3rem;"></i>
-                        <p class="text-muted mt-3 mb-0">No reviews yet. Be the first to review!</p>
-                    </div>
-                }
-                else
-                {
-                    <div class="list-group list-group-flush">
-                        @foreach (var review in reviews)
-                        {
-                            <div class="list-group-item border-bottom px-4 py-4">
-                                <div class="d-flex flex-column flex-md-row gap-3">
-                                    <div class="flex-shrink-0">
-                                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                            <span class="fw-bold text-secondary">@review.CustomerName.Substring(0, 1).ToUpper()</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <h6 class="fw-bold text-dark mb-1">@review.CustomerName</h6>
-                                                <div class="text-warning mb-1">
-                                                    @for (int i = 1; i <= review.Rating; i++)
-                                                    {
-                                                        <i class="bi bi-star-fill"></i>
-                                                    }
-                                                    @for (int i = review.Rating + 1; i <= 5; i++)
-                                                    {
-                                                        <i class="bi bi-star"></i>
-                                                    }
-                                                </div>
-                                                <small class="text-muted">@review.CreatedAt.ToString("MMMM dd, yyyy")</small>
-                                            </div>
-                                        </div>
-                                        <p class="text-dark mt-2 mb-0">@review.Comment</p>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
-            </div>
-        </div>
+                    <span class="tz-stars" style="--rating:@review.Rating"></span>
+                    <p>@review.Comment</p>
+                </article>
+            }
+        }
     </div>
-</div>
+</section>
 
 @section Scripts {
     <script>
-        // Danh sách biến thể từ Server C#
+        // Variants coming from the server
         const variants = @Html.Raw(Json.Serialize(variantsForJs));
 
-        // Biến toàn cục theo dõi số lượng tồn kho hiện tại của biến thể được chọn
+        // Stock of the currently selected variant
         let maxAvailableStock = @(defaultVariant?.StockQuantity ?? 0);
 
-        // Đối tượng lưu vết lựa chọn hiện tại của khách hàng
-        
-        let currentSelection = {
-            cpu: @Html.Raw(Json.Serialize(defaultVariant?.Cpu ?? "")),
-            ram: @Html.Raw(Json.Serialize(defaultVariant?.Ram ?? "")),
-            storage: @Html.Raw(Json.Serialize(defaultVariant?.Storage ?? "")),
-            screenSize: @Html.Raw(Json.Serialize(defaultVariant?.ScreenSize ?? "")),
-            color: @Html.Raw(Json.Serialize(defaultVariant?.Color ?? ""))
-        };
+        // Selectable dimensions: "__color" plus every specification that differs between variants
+        const dims = @Html.Raw(Json.Serialize(dimensionKeys));
+        const COLOR_KEY = "__color";
 
-        document.addEventListener("DOMContentLoaded", function() {
-            initClickEvents();
-            initQuantityEvents();
-            syncUI();
+        // Value of one dimension for a variant
+        function getValue(v, type) {
+            if (type === COLOR_KEY) return v.color || "";
+            const found = (v.attrs || []).find(a => a.name === type);
+            return found ? found.value : "";
+        }
+
+        // What the customer has picked so far (starts from the default variant)
+        const defaultVariantId = @Html.Raw(Json.Serialize(defaultVariant?.ProductVariantId));
+        const defaultJsVariant = variants.find(v => v.productVariantId === defaultVariantId) || variants[0];
+        let currentSelection = {};
+        if (defaultJsVariant) dims.forEach(d => { currentSelection[d] = getValue(defaultJsVariant, d); });
+
+        const ADD_TO_CART_HTML = '<i class="bi bi-cart-plus-fill me-2"></i> Add to cart';
+        const fmtVnd = new Intl.NumberFormat('vi-VN');
+
+        document.addEventListener("DOMContentLoaded", function () {
+            if (document.getElementById('btnActionSubmit')) {
+                initClickEvents();
+                initQuantityEvents();
+                syncUI();
+            }
+            initReviewForm();
         });
 
         function initClickEvents() {
             document.querySelectorAll('.spec-filter').forEach(box => {
-                box.addEventListener('click', function() {
+                box.addEventListener('click', function () {
                     const type = this.getAttribute('data-type');
                     const value = this.getAttribute('data-value');
 
-                    // 1. Ghi nhận thuộc tính vừa click
+                    // 1. remember what was just clicked
                     currentSelection[type] = value;
 
-                    // 2. THUẬT TOÁN THÔNG MINH: Tìm các biến thể khớp với thuộc tính vừa chọn
-                    let matchedVariants = variants.filter(v => (v[type] || "") === value);
+                    // 2. find the closest matching variant for the rest of the selection
+                    let matchedVariants = variants.filter(v => getValue(v, type) === value);
 
                     if (matchedVariants.length > 0) {
                         let bestMatch = matchedVariants.find(v =>
-                            (type === 'color' || (v.color || "") === currentSelection.color) &&
-                            (type === 'storage' || (v.storage || "") === currentSelection.storage) &&
-                            (type === 'ram' || (v.ram || "") === currentSelection.ram) &&
-                            (type === 'cpu' || (v.cpu || "") === currentSelection.cpu) &&
-                            (type === 'screenSize' || (v.screenSize || "") === currentSelection.screenSize)
+                            dims.every(d => d === type || getValue(v, d) === (currentSelection[d] || ""))
                         ) || matchedVariants[0];
 
-                        // Cập nhật lại toàn bộ bộ lọc theo biến thể gợi ý thông minh
-                        currentSelection.cpu = bestMatch.cpu || "";
-                        currentSelection.ram = bestMatch.ram || "";
-                        currentSelection.storage = bestMatch.storage || "";
-                        currentSelection.screenSize = bestMatch.screenSize || "";
-                        currentSelection.color = bestMatch.color || "";
+                        dims.forEach(d => { currentSelection[d] = getValue(bestMatch, d); });
                     }
 
-                    // 3. Render làm mới giao diện công khai
+                    // 3. refresh the UI
                     syncUI();
                 });
             });
         }
 
-        // CẢI TIẾN: Thiết lập sự kiện lắng nghe bộ tăng giảm số lượng
         function initQuantityEvents() {
             const inputQty = document.getElementById('inputQuantity');
             const btnMinus = document.getElementById('btnMinus');
             const btnPlus = document.getElementById('btnPlus');
 
-            btnMinus.addEventListener('click', function() {
+            btnMinus.addEventListener('click', function () {
                 let currentVal = parseInt(inputQty.value) || 1;
                 if (currentVal > 1) {
                     inputQty.value = currentVal - 1;
@@ -548,13 +430,13 @@
                 }
             });
 
-            btnPlus.addEventListener('click', function() {
+            btnPlus.addEventListener('click', function () {
                 let currentVal = parseInt(inputQty.value) || 1;
                 inputQty.value = currentVal + 1;
                 validateQuantity();
             });
 
-            inputQty.addEventListener('input', function() {
+            inputQty.addEventListener('input', function () {
                 let currentVal = parseInt(this.value);
                 if (isNaN(currentVal) || currentVal < 1) {
                     this.value = 1;
@@ -563,7 +445,7 @@
             });
         }
 
-        // CẢI TIẾN: Hàm kiểm tra số lượng yêu cầu so với tồn kho thực tế
+        // Compare the requested quantity with the real stock
         function validateQuantity() {
             const inputQty = document.getElementById('inputQuantity');
             const btnSubmit = document.getElementById('btnActionSubmit');
@@ -571,14 +453,11 @@
 
             let requestedQty = parseInt(inputQty.value) || 1;
 
-            // Nếu kho bằng 0 (Hết hàng), logic syncUI đã xử lý tắt nút sẵn nên ta bỏ qua kiểm tra chéo
             if (maxAvailableStock > 0) {
                 if (requestedQty > maxAvailableStock) {
-                    // Nếu nhập quá lượng trong kho: Khóa và làm mờ nút, hiển thị cảnh báo đỏ
                     btnSubmit.disabled = true;
                     warningEl.classList.remove('d-none');
                 } else {
-                    // Đủ hàng: Mở khóa nút và ẩn cảnh báo lỗi
                     btnSubmit.disabled = false;
                     warningEl.classList.add('d-none');
                 }
@@ -588,7 +467,7 @@
         }
 
         function syncUI() {
-            // BƯỚC 1: Cập nhật nhãn và trạng thái sáng/tối của từng nút
+            // STEP 1: option buttons (active + out-of-stock tag)
             document.querySelectorAll('.spec-filter').forEach(box => {
                 const type = box.getAttribute('data-type');
                 const value = box.getAttribute('data-value');
@@ -597,7 +476,7 @@
                 if (oldTag) oldTag.remove();
                 box.classList.remove('is-oos');
 
-                const relatedVariants = variants.filter(v => (v[type] || "") === value);
+                const relatedVariants = variants.filter(v => getValue(v, type) === value);
                 const isEntirelyOOS = relatedVariants.length > 0 && relatedVariants.every(v => v.stockQuantity <= 0);
 
                 if (isEntirelyOOS) {
@@ -611,72 +490,84 @@
                 if ((currentSelection[type] || "") === value) {
                     box.classList.add('active');
                 } else {
-                    box.classList.remove('remove');
                     box.classList.remove('active');
                 }
             });
 
-            // BƯỚC 2: Tìm biến thể chính xác tuyệt đối sau khi đã nhảy cấu hình thông minh
+            // STEP 2: the exact variant for the current selection
             const exactMatch = variants.find(v =>
-                (v.cpu || "") === (currentSelection.cpu || "") &&
-                (v.ram || "") === (currentSelection.ram || "") &&
-                (v.storage || "") === (currentSelection.storage || "") &&
-                (v.screenSize || "") === (currentSelection.screenSize || "") &&
-                (v.color || "") === (currentSelection.color || "")
+                dims.every(d => getValue(v, d) === (currentSelection[d] || ""))
             );
 
-            // BƯỚC 3: Thay đổi thông tin hiển thị lên HTML
+            // STEP 3: update the page
             const priceEl = document.getElementById('variantPriceText');
+            const currencyEl = document.getElementById('variantCurrency');
+            const oldPriceEl = document.getElementById('variantOldPriceText');
+            const saveEl = document.getElementById('variantSaveText');
+            const badgeEl = document.getElementById('variantDiscountBadge');
             const skuEl = document.getElementById('variantSkuText');
             const imgEl = document.getElementById('variantMainImage');
-            const inputIdEl = document.getElementById('selectedVariantId');
             const btnSubmit = document.getElementById('btnActionSubmit');
             const txtStockStatus = document.getElementById('txtStockStatus');
-            const inputQty = document.getElementById('inputQuantity');
+            const warningEl = document.getElementById('lblQuantityWarning');
 
             if (exactMatch) {
                 document.getElementById('selectedVariantId').setAttribute('data-variant-id', exactMatch.productVariantId);
 
-                const oldPriceEl = document.getElementById('variantOldPriceText');
                 const isOnSale = exactMatch.finalPrice < exactMatch.price;
 
-                priceEl.innerText = new Intl.NumberFormat('vi-VN').format(exactMatch.finalPrice);
+                priceEl.innerText = fmtVnd.format(exactMatch.finalPrice);
+                currencyEl.classList.remove('d-none');
 
                 if (isOnSale) {
-                    oldPriceEl.innerText = new Intl.NumberFormat('vi-VN').format(exactMatch.price) + ' ₫';
+                    const pct = Math.round((1 - exactMatch.finalPrice / exactMatch.price) * 100);
+                    oldPriceEl.innerText = fmtVnd.format(exactMatch.price) + ' ₫';
+                    saveEl.innerText = 'Save ' + fmtVnd.format(exactMatch.price - exactMatch.finalPrice) + ' ₫';
+                    badgeEl.innerText = '-' + pct + '%';
                     oldPriceEl.classList.remove('d-none');
+                    saveEl.classList.remove('d-none');
+                    badgeEl.classList.remove('d-none');
                 } else {
                     oldPriceEl.classList.add('d-none');
+                    saveEl.classList.add('d-none');
+                    badgeEl.classList.add('d-none');
                 }
 
                 skuEl.innerText = exactMatch.sku;
                 if (exactMatch.imageUrl) imgEl.src = exactMatch.imageUrl;
 
-                // Đồng bộ biến số lượng kho tối đa của biến thể này vào hệ thống JS toàn cục
+                // selected configuration sheet
+                document.querySelectorAll('[data-spec]').forEach(el => {
+                    el.innerText = getValue(exactMatch, el.getAttribute('data-spec')) || '—';
+                });
+
                 maxAvailableStock = exactMatch.stockQuantity;
 
                 if (exactMatch.stockQuantity > 0) {
-                    txtStockStatus.innerText = `In Stock (Available: ${exactMatch.stockQuantity})`;
-                    txtStockStatus.className = "text-success fw-bold";
-
-                    // Kích hoạt hàm kiểm tra chéo số lượng xem ô input hiện tại có đang bị lố số lượng mới không
+                    txtStockStatus.innerText = `In stock (${exactMatch.stockQuantity} available)`;
+                    txtStockStatus.className = "text-success";
+                    btnSubmit.innerHTML = ADD_TO_CART_HTML;
+                    btnSubmit.disabled = false;
                     validateQuantity();
                 } else {
-                    // Nếu hết hàng hoàn toàn, vô hiệu hóa nút mua ngay tức khắc
                     btnSubmit.disabled = true;
-                    btnSubmit.innerHTML = '<i class="bi bi-x-circle-fill me-2"></i> OUT OF STOCK';
-                    txtStockStatus.innerText = "Out of Stock";
-                    txtStockStatus.className = "text-danger fw-bold";
-                    document.getElementById('lblQuantityWarning').classList.add('d-none');
+                    btnSubmit.innerHTML = '<i class="bi bi-x-circle-fill me-2"></i> Out of stock';
+                    txtStockStatus.innerText = "Out of stock";
+                    txtStockStatus.className = "text-danger";
+                    warningEl.classList.add('d-none');
                 }
             } else {
                 maxAvailableStock = 0;
                 priceEl.innerText = "Unavailable";
+                currencyEl.classList.add('d-none');
+                oldPriceEl.classList.add('d-none');
+                saveEl.classList.add('d-none');
+                badgeEl.classList.add('d-none');
                 btnSubmit.disabled = true;
-                btnSubmit.innerHTML = '<i class="bi bi-dash-circle-fill me-2"></i> NOT AVAILABLE';
-                txtStockStatus.innerText = "Unavailable Layout";
-                txtStockStatus.className = "text-secondary fw-bold";
-                document.getElementById('lblQuantityWarning').classList.add('d-none');
+                btnSubmit.innerHTML = '<i class="bi bi-dash-circle-fill me-2"></i> Not available';
+                txtStockStatus.innerText = "This combination is unavailable";
+                txtStockStatus.className = "text-secondary";
+                warningEl.classList.add('d-none');
             }
         }
 
@@ -703,7 +594,7 @@
                 error: function (xhr) {
                     btn.disabled = false;
                     if (xhr.status === 401 || xhr.status === 403) {
-                        // Chưa đăng nhập -> CartController có [Authorize]
+                        // Not signed in -> CartController is [Authorize]
                         window.location.href = '@Url.Action("Login", "Auth")?returnUrl=' + encodeURIComponent(window.location.pathname);
                     } else {
                         showToast("Error communicating with cart.", "error", "Connection Error");
@@ -712,7 +603,41 @@
             });
         }
 
-            document.getElementById("btnSubmitReview")?.addEventListener("click", function () {
+        // ---------- Review form ----------
+        function initReviewForm() {
+            const picker = document.getElementById('starPicker');
+            const select = document.getElementById('reviewRating');
+            const ratingText = document.getElementById('ratingText');
+            const comment = document.getElementById('reviewComment');
+            const counter = document.getElementById('commentCount');
+            const labels = ['', 'Terrible', 'Poor', 'Average', 'Good', 'Excellent'];
+
+            if (picker && select) {
+                const stars = picker.querySelectorAll('button');
+                const paint = (n, cls) => stars.forEach(s => s.classList.toggle(cls, parseInt(s.dataset.value) <= n));
+                const setValue = (n) => {
+                    select.value = n ? String(n) : '';
+                    paint(n, 'on');
+                    ratingText.innerText = n ? labels[n] : 'Select a rating';
+                };
+
+                stars.forEach(s => {
+                    s.addEventListener('click', () => setValue(parseInt(s.dataset.value)));
+                    s.addEventListener('mouseenter', () => paint(parseInt(s.dataset.value), 'hover'));
+                });
+                picker.addEventListener('mouseleave', () => stars.forEach(s => s.classList.remove('hover')));
+
+                setValue(parseInt(select.value) || 0);
+            }
+
+            if (comment && counter) {
+                const update = () => counter.innerText = comment.value.length;
+                comment.addEventListener('input', update);
+                update();
+            }
+        }
+
+        document.getElementById("btnSubmitReview")?.addEventListener("click", function () {
             const id = document.getElementById("reviewId").value;
             const isEdit = id && id !== "0";
             const url = isEdit ? '@Url.Action("Edit", "Reviews")' : '@Url.Action("Create", "Reviews")';

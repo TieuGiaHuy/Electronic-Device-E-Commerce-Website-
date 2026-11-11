@@ -1,4 +1,4 @@
-﻿@page "/staff_management"
+@page "/staff_management"
 @using AutoMapper
 @using BLL.DTOs.Pagination
 @using BLL.DTOs.Staff
@@ -14,7 +14,7 @@
 
 @attribute [Authorize(Roles = "Admin")]
 
-<PageTitle>AdminStaffs - StaffManager</PageTitle>
+<PageTitle>Manage Staff - TimeZone Admin</PageTitle>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 <div class="container py-5">
@@ -25,7 +25,7 @@
             <h1 class="fw-bold mb-1">Staff</h1>
         </div>
 
-        <button class="btn btn-danger px-4 py-2" @onclick="showCreate">
+        <button class="btn btn-primary px-4 py-2" @onclick="showCreate">
             <i class="bi bi-plus-lg"></i>
             Create Staff
         </button>
@@ -130,7 +130,7 @@
                                                @bind:event="oninput"
                                                @onchange="LoadStaffs">
                                         <label class="form-check-label fw-semibold" for="includeDeleted">
-                                            <i class="bi bi-trash text-danger me-1"></i>
+                                            <i class="bi bi-trash vx-text-accent me-1"></i>
                                             Include Deleted
                                         </label>
                                     </div>

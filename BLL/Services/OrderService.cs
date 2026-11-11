@@ -1,4 +1,4 @@
-﻿using BLL.DTOs.Order;
+using BLL.DTOs.Order;
 using BLL.DTOs.OrderItem;
 using BLL.Services.Interfaces;
 using DAL.Data;
@@ -353,7 +353,7 @@ namespace BLL.Services
         private OrderItemDto MapOrderItemToDto(OrderItem orderItem)
         {
             var productName = orderItem.ProductVariant?.Product?.ProductName ?? "N/A";
-            var variantDetails = $"{orderItem.ProductVariant?.Color ?? ""} {orderItem.ProductVariant?.Storage ?? ""}".Trim();
+            var variantDetails = orderItem.ProductVariant?.GetShortDescription() ?? string.Empty;
 
             return new OrderItemDto
             {

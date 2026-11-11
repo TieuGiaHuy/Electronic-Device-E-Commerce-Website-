@@ -1,4 +1,4 @@
-﻿using DAL.Enums;
+using DAL.Enums;
 using DAL.Models.Base;
 using DAL.Utilities;
 
@@ -7,18 +7,20 @@ namespace DAL.Models
     public class ProductVariant : IBaseEntity
     {
         public Guid ProductVariantId { get; set; }
-        //public string ProductCode { get; set; } = string.Empty;
         public string Sku { get; set; } = string.Empty;
+        /// <summary>Màu sắc (ví dụ màu mặt số, màu vỏ hoặc màu dây).</summary>
         public string Color { get; set; } = string.Empty;
-        public string? Cpu { get; set; }
-        public string? Ram { get; set; }
-        public string? Storage { get; set; }
-        public string? ScreenSize { get; set; }
         public decimal Price { get; set; }
         public int StockQuantity { get; set; }
         public string? ImageUrl { get; set; }
         public int ProductId { get; set; }
         virtual public Product? Product { get; set; }
+
+        /// <summary>
+        /// Các thông số kỹ thuật dạng Tên - Giá trị (bộ máy, đường kính mặt, dung lượng pin...).
+        /// Tự động nạp cùng biến thể (xem ProductVariantConfiguration).
+        /// </summary>
+        virtual public ICollection<VariantAttribute> Attributes { get; set; } = new List<VariantAttribute>();
 
         public bool IsDeleted { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -26,35 +28,26 @@ namespace DAL.Models
         public Guid? PromotionId { get; set; } = null;
         virtual public Promotion? Promotion { get; set; }
 
-
         public static ProductVariant Create(
-            //string productCode,
             string color,
-            string? cpu,
-            string? ram,
-            string? storage,
-            string? screenSize,
+            IEnumerable<KeyValuePair<string, string>>? attributes,
             decimal price,
             int stockQuantity,
             string? imageUrl,
-            int productId, Guid? promotionId)
+            int productId,
+            Guid? promotionId = null)
         {
             if (price < 0)
                 throw new ArgumentException("Price cannot be negative.", nameof(price));
             if (stockQuantity < 0)
                 throw new ArgumentException("Stock quantity cannot be negative.", nameof(stockQuantity));
 
-            string sku = SkuGenerator.Generate(productId, color, cpu, ram, storage, screenSize);
+            var attributeList = (attributes ?? Enumerable.Empty<KeyValuePair<string, string>>()).ToList();
 
             var productVariant = new ProductVariant
             {
-                //ProductCode = productCode,
-                Sku = sku,
+                Sku = SkuGenerator.Generate(productId, color, attributeList),
                 Color = color,
-                Cpu = cpu,
-                Ram = ram,
-                Storage = storage,
-                ScreenSize = screenSize,
                 Price = price,
                 StockQuantity = stockQuantity,
                 ImageUrl = imageUrl,
@@ -62,110 +55,89 @@ namespace DAL.Models
                 PromotionId = promotionId,
                 CreatedAt = DateTime.UtcNow
             };
+            productVariant.SetAttributes(attributeList);
             return productVariant;
         }
 
-        public static ProductVariant Create(
-            //string productCode, 
-            string color, 
-            string? cpu, 
-            string? ram, 
-            string? storage, 
-            string? screenSize, 
-            decimal price, 
-            int stockQuantity, 
-            string? imageUrl, 
-            int productId)
-        {
-            if (price < 0)
-                throw new ArgumentException("Price cannot be negative.", nameof(price));
-            if (stockQuantity < 0)
-                throw new ArgumentException("Stock quantity cannot be negative.", nameof(stockQuantity));
-
-            string sku = SkuGenerator.Generate(productId, color, cpu, ram, storage, screenSize);
-
-            var productVariant = new ProductVariant
-            {
-                //ProductCode = productCode,
-                Sku = sku,
-                Color = color,
-                Cpu = cpu,
-                Ram = ram,
-                Storage = storage,
-                ScreenSize = screenSize,
-                Price = price,
-                StockQuantity = stockQuantity,
-                ImageUrl = imageUrl,
-                ProductId = productId,
-                CreatedAt = DateTime.UtcNow
-            };
-            return productVariant;
-        }
-
+        /// <summary>
+        /// Cập nhật biến thể. Truyền promotionId = null sẽ gỡ khuyến mãi khỏi biến thể
+        /// (khớp với hành vi của overload có promotionId trước đây).
+        /// </summary>
         public void Update(
-            //string productCode, 
-            string color, 
-            string? cpu, 
-            string? ram, 
-            string? storage, 
-            string? screenSize, 
-            decimal price, 
-            int stockQuantity, 
-            string? imageUrl, 
-            int productId)
+            string color,
+            IEnumerable<KeyValuePair<string, string>>? attributes,
+            decimal price,
+            int stockQuantity,
+            string? imageUrl,
+            int productId,
+            Guid? promotionId)
         {
             if (price < 0)
                 throw new ArgumentException("Price cannot be negative.", nameof(price));
             if (stockQuantity < 0)
                 throw new ArgumentException("Stock quantity cannot be negative.", nameof(stockQuantity));
 
-            string sku = SkuGenerator.Generate(productId, color, cpu, ram, storage, screenSize);
+            var attributeList = (attributes ?? Enumerable.Empty<KeyValuePair<string, string>>()).ToList();
 
-            Sku = sku;
-            //ProductCode = productCode;
+            Sku = SkuGenerator.Generate(productId, color, attributeList);
             Color = color;
-            Cpu = cpu;
-            Ram = ram;
-            Storage = storage;
-            ScreenSize = screenSize;
-            Price = price;
-            StockQuantity = stockQuantity;
-            ImageUrl = imageUrl;
-            ProductId = productId;
-            UpdatedAt = DateTime.UtcNow;
-        }
-
-        public void Update(
-            //string productCode, 
-            string color, 
-            string? cpu, 
-            string? ram, 
-            string? storage, 
-            string? screenSize, 
-            decimal price, 
-            int stockQuantity, 
-            string? imageUrl, 
-            int productId, Guid? promotionId)
-        {
-            if (price < 0)
-                throw new ArgumentException("Price cannot be negative.", nameof(price));
-            if (stockQuantity < 0)
-                throw new ArgumentException("Stock quantity cannot be negative.", nameof(stockQuantity));
-
-            string sku = SkuGenerator.Generate(productId, color, cpu, ram, storage, screenSize);
-
-            Sku = sku;
-            Color = color;
-            Cpu = cpu;
-            Ram = ram;
-            Storage = storage;
-            ScreenSize = screenSize;
             Price = price;
             StockQuantity = stockQuantity;
             ImageUrl = imageUrl;
             ProductId = productId;
             PromotionId = promotionId;
+            SetAttributes(attributeList);
             UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Cập nhật biến thể và giữ nguyên khuyến mãi hiện có
+        /// (khớp với overload không có promotionId trước đây).
+        /// </summary>
+        public void Update(
+            string color,
+            IEnumerable<KeyValuePair<string, string>>? attributes,
+            decimal price,
+            int stockQuantity,
+            string? imageUrl,
+            int productId)
+        {
+            Update(color, attributes, price, stockQuantity, imageUrl, productId, PromotionId);
+        }
+
+        /// <summary>Thay toàn bộ thông số bằng danh sách mới (bỏ qua dòng thiếu tên hoặc giá trị).</summary>
+        public void SetAttributes(IEnumerable<KeyValuePair<string, string>>? attributes)
+        {
+            Attributes.Clear();
+            if (attributes == null) return;
+
+            int order = 0;
+            foreach (var kv in attributes)
+            {
+                if (string.IsNullOrWhiteSpace(kv.Key) || string.IsNullOrWhiteSpace(kv.Value))
+                    continue;
+                Attributes.Add(VariantAttribute.Create(kv.Key, kv.Value, order++));
+            }
+        }
+
+        /// <summary>Tra cứu nhanh giá trị thông số theo tên (không phân biệt hoa thường).</summary>
+        public string? GetAttribute(string name)
+        {
+            return Attributes
+                .FirstOrDefault(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase))
+                ?.Value;
+        }
+
+        /// <summary>
+        /// Mô tả ngắn dùng trong đơn hàng: màu kèm một kích thước đặc trưng
+        /// (đường kính mặt, kích thước màn hình hoặc độ rộng dây) nếu có.
+        /// </summary>
+        public string GetShortDescription()
+        {
+            var size = GetAttribute(WatchAttributeNames.CaseDiameter)
+                       ?? GetAttribute(WatchAttributeNames.ScreenSize)
+                       ?? GetAttribute("Độ rộng dây");
+            return $"{Color} {size}".Trim();
         }
 
         public void Delete()

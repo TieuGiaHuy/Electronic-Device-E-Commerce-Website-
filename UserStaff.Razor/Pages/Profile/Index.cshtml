@@ -2,50 +2,70 @@
 @model Staff.Razor.Pages.Profile.IndexModel
 @{
     ViewData["Title"] = "My Profile";
-    Layout = "~/Pages/Shared/_Layout.cshtml";
+    ViewData["ProfileTab"] = "profile";
+    ViewData["IsActive"] = Model.Input.IsActive;
+    Layout = "~/Pages/Profile/_ProfileLayout.cshtml";
 }
 
-<div class="row justify-content-center mt-4">
-    <div class="col-md-6">
-        <div class="card shadow-sm border-0">
-            <div class="card-header text-white" style="background-color: var(--color-primary);">
-                <h4 class="mb-0"><i class="bi bi-person-fill me-2"></i>My Profile</h4>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="vx-flash ok"><i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]</div>
+}
+
+<form method="post" class="vx-panel">
+    @Html.AntiForgeryToken()
+    <div class="vx-panel-head">
+        <h2>Personal information</h2>
+        <p>This is how your name appears across the staff portal.</p>
+    </div>
+
+    <div class="vx-panel-body">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="vx-field">
+            <label for="Input_FullName">Full name</label>
+            <input asp-for="Input.FullName" class="form-control" placeholder="Your full name" autocomplete="name" />
+            <span asp-validation-for="Input.FullName" class="text-danger small"></span>
+        </div>
+
+        <div class="vx-field">
+            <label>Work email</label>
+            <div class="vx-readonly">
+                <input class="form-control" value="@Model.Input.Email" readonly />
+                <i class="bi bi-lock"></i>
             </div>
-            <div class="card-body">
-                @if (TempData["SuccessMessage"] != null)
-                {
-                    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-                }
-                <form method="post">
-                    @Html.AntiForgeryToken()
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input class="form-control" value="@Model.Input.Email" readonly />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="FullName" class="form-label">Full Name</label>
-                        <input asp-for="Input.FullName" class="form-control" />
-                        <span asp-validation-for="Input.FullName" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <input class="form-control" value="@(Model.Input.IsActive ? "Active" : "Inactive")" readonly />
-                    </div>
-
-                    <div class="d-grid gap-2 mt-4 pt-2 border-top">
-                        <button type="submit" class="btn text-white mt-3" style="background-color: var(--color-primary);">Save Changes</button>
-                        <a asp-page="ChangePassword" class="btn btn-outline-secondary">Change Password</a>
-                        <a asp-page="/Auth/Logout" class="btn btn-outline-danger">Logout</a>
-                    </div>
-                </form>
-            </div>
+            <div class="vx-help">Your email is your sign-in and can't be changed here.</div>
         </div>
     </div>
-</div>
+
+    <div class="vx-panel-foot">
+        <span class="hint">Changes apply to your account immediately.</span>
+        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check2 me-1"></i> Save changes</button>
+    </div>
+</form>
+
+<section class="vx-panel">
+    <div class="vx-panel-head">
+        <h2>Account details</h2>
+        <p>Read-only information about your staff account.</p>
+    </div>
+    <div class="vx-panel-body">
+        <dl class="vx-info">
+            <div>
+                <dt>Status</dt>
+                <dd>@(Model.Input.IsActive ? "Active" : "Inactive")</dd>
+            </div>
+            <div>
+                <dt>Member since</dt>
+                <dd>@Model.Input.CreatedAt.ToString("dd MMM yyyy")</dd>
+            </div>
+            <div>
+                <dt>Last updated</dt>
+                <dd>@(Model.Input.UpdatedAt?.ToString("dd MMM yyyy, HH:mm") ?? "Never")</dd>
+            </div>
+        </dl>
+    </div>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

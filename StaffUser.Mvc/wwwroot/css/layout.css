@@ -1,257 +1,35 @@
-:root {
-    --color-primary: #E24B4A;
-    --color-primary-hover: #A32D2D;
-    --color-primary-active: #791F1F;
-    --color-banner-bg: #FCEBEB;
-}
+/* TechZone storefront shell — header, category chips, footer */
+body { background: var(--vx-bg); margin-bottom: 0; }
 
-body {
-    background-color: var(--color-background-secondary, #F5F5F5);
-}
+/* ---------- Header ---------- */
+.customer-navbar { position: sticky; top: 0; z-index: 1030; padding: .75rem 0; background: rgba(255,255,255,.86); backdrop-filter: saturate(180%) blur(12px); border-bottom: 1px solid var(--vx-line); }
+.customer-brand { display: inline-flex; align-items: center; gap: .6rem; font-weight: 700; font-size: 1.2rem; letter-spacing: -.02em; color: var(--vx-ink) !important; text-decoration: none !important; }
+.customer-brand:hover { color: var(--vx-ink) !important; }
 
-/* ---------- Top nav (red, full-page frame: no radius) ---------- */
-.customer-navbar {
-    background-color: var(--color-primary);
-    padding: 12px 0;
-    border-radius: 0;
-}
+.customer-search { height: 42px; border-radius: 999px 0 0 999px !important; border: 1px solid var(--vx-line); border-right: 0; background: var(--vx-line-soft); padding-left: 1.1rem; font-size: .9rem; }
+.customer-search:focus { background: #fff; }
+.customer-search-btn { width: 48px; height: 42px; border: 1px solid var(--vx-accent); border-radius: 0 999px 999px 0; background: var(--vx-accent); color: #fff; display: grid; place-items: center; transition: background .15s; }
+.customer-search-btn:hover { background: var(--vx-accent-hover); border-color: var(--vx-accent-hover); }
 
-.customer-brand {
-    color: #FFFFFF;
-    font-weight: 500;
-    font-size: 18px;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-}
+.customer-icon-link { display: inline-flex; align-items: center; gap: .4rem; padding: .5rem .8rem; border-radius: var(--vx-radius-sm); color: var(--vx-text) !important; font-size: .88rem; font-weight: 500; text-decoration: none !important; transition: background .15s, color .15s; }
+.customer-icon-link i { font-size: 1.05rem; color: var(--vx-muted); }
+.customer-icon-link:hover { background: var(--vx-line-soft); color: var(--vx-ink) !important; }
+.customer-icon-link:hover i { color: var(--vx-accent); }
+.customer-cart-badge { position: relative; }
+.customer-cart-count { position: absolute; top: 2px; right: 2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--vx-accent); color: #fff; font-size: .68rem; font-weight: 700; display: grid; place-items: center; }
+.customer-auth-link { display: inline-flex; align-items: center; padding: .5rem 1rem; border-radius: 999px; background: var(--vx-ink); color: #fff !important; font-size: .85rem; font-weight: 600; text-decoration: none !important; transition: background .15s; }
+.customer-auth-link:hover { background: var(--vx-accent); }
+.navbar-toggler { color: var(--vx-ink) !important; }
+.navbar-toggler-icon { filter: invert(1) brightness(.3); }
 
-.customer-brand:hover {
-    color: #FFFFFF;
-}
+/* ---------- Category chips ---------- */
+.customer-subnav { background: var(--vx-surface); border-bottom: 1px solid var(--vx-line); }
+.customer-subnav .d-flex { gap: .4rem; padding: .55rem 0; }
+.customer-subnav-link { flex: 0 0 auto; display: inline-flex; align-items: center; padding: .4rem .9rem; border-radius: 999px; color: var(--vx-text) !important; font-size: .83rem; font-weight: 500; white-space: nowrap; text-decoration: none !important; border: 1px solid transparent; transition: background .15s, color .15s; }
+.customer-subnav-link:hover { background: var(--vx-accent-soft); color: var(--vx-accent-active) !important; }
 
-.customer-brand i {
-    font-size: 22px;
-}
-
-/* Search bar: 8px radius per design system */
-.customer-search {
-    border-radius: 8px;
-    border: none;
-    font-size: 13px;
-    padding: 8px 16px;
-}
-
-.customer-search:focus {
-    box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.4);
-}
-
-.customer-search-btn {
-    border-radius: 0 8px 8px 0;
-    background-color: var(--color-primary-hover);
-    border: none;
-    color: #FFFFFF;
-    padding: 8px 16px;
-}
-
-.customer-search-btn:hover {
-    background-color: var(--color-primary-active);
-    color: #FFFFFF;
-}
-
-.customer-icon-link {
-    color: #FFFFFF;
-    text-decoration: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 11px;
-    gap: 2px;
-    min-width: 56px;
-}
-
-.customer-icon-link i {
-    font-size: 19px;
-}
-
-.customer-icon-link:hover {
-    color: rgba(255, 255, 255, 0.85);
-}
-
-.customer-cart-badge {
-    position: relative;
-}
-
-.customer-cart-count {
-    position: absolute;
-    top: -4px;
-    right: 8px;
-    background-color: #FFFFFF;
-    color: var(--color-primary-active);
-    font-size: 10px;
-    font-weight: 500;
-    border-radius: 999px; /* badge: full pill per design system */
-    min-width: 16px;
-    height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 4px;
-}
-
-/* ---------- Category sub-bar (darker red, lighter text) ---------- */
-.customer-subnav {
-    background-color: var(--color-primary-hover);
-}
-
-.customer-subnav-link {
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 13px;
-    font-weight: 400;
-    text-decoration: none;
-    padding: 10px 16px;
-    display: inline-block;
-    white-space: nowrap;
-}
-
-.customer-subnav-link:hover {
-    color: #FFFFFF;
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.customer-content {
-    padding: 24px 0 40px;
-}
-
-.customer-footer {
-    background-color: #FFFFFF;
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
-    padding: 20px 0;
-    font-size: 13px;
-    color: var(--color-text-secondary, #888888);
-}
-
-.customer-footer a {
-    color: var(--color-text-secondary, #888888);
-    text-decoration: none;
-}
-
-.customer-footer a:hover {
-    color: var(--color-primary-hover);
-}
-
-.customer-auth-link {
-    color: #FFFFFF;
-    font-size: 13px;
-    font-weight: 500;
-    text-decoration: none;
-    padding: 6px 14px;
-    border-radius: 8px;
-}
-
-.customer-auth-link:hover {
-    background-color: rgba(255, 255, 255, 0.15);
-    color: #FFFFFF;
-}
-
-/* ---------- Custom Toast Styles ---------- */
-.toast-container {
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.custom-toast {
-    min-width: 320px;
-    max-width: 400px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-left: 4px solid var(--color-primary);
-    border-radius: 8px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    padding: 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transform: translateX(120%);
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
-    opacity: 0;
-}
-
-.custom-toast.show {
-    transform: translateX(0);
-    opacity: 1;
-}
-
-.custom-toast-icon {
-    font-size: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.custom-toast-content {
-    flex-grow: 1;
-}
-
-.custom-toast-title {
-    font-weight: 700;
-    color: #212529;
-    margin-bottom: 2px;
-    font-size: 0.88rem;
-}
-
-.custom-toast-message {
-    color: #6c757d;
-    font-size: 0.8rem;
-    margin: 0;
-    line-height: 1.4;
-}
-
-.custom-toast-close {
-    background: none;
-    border: none;
-    color: #adb5bd;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
-    transition: color 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.custom-toast-close:hover {
-    color: #495057;
-}
-
-.custom-toast.toast-success {
-    border-left-color: #2ec4b6;
-}
-
-.custom-toast.toast-success .custom-toast-icon {
-    color: #2ec4b6;
-}
-
-.custom-toast.toast-error {
-    border-left-color: #e63946;
-}
-
-.custom-toast.toast-error .custom-toast-icon {
-    color: #e63946;
-}
-
-.custom-toast.toast-info {
-    border-left-color: #0077b6;
-}
-
-.custom-toast.toast-info .custom-toast-icon {
-    color: #0077b6;
-}
+/* ---------- Content + footer ---------- */
+.customer-content { padding-top: 1.75rem; padding-bottom: 3rem; min-height: 60vh; }
+.customer-footer { background: var(--vx-surface); border-top: 1px solid var(--vx-line); padding: 1.75rem 0; color: var(--vx-muted); font-size: .85rem; }
+.customer-footer a { color: var(--vx-muted); text-decoration: none; }
+.customer-footer a:hover { color: var(--vx-accent); }

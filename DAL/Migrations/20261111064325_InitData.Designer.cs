@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260711075811_InitData")]
+    [Migration("20261111064325_InitData")]
     partial class InitData
     {
         /// <inheritdoc />
@@ -399,11 +399,6 @@ namespace DAL.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("color");
 
-                    b.Property<string>("Cpu")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("cpu");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
@@ -429,16 +424,6 @@ namespace DAL.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("promotion_id");
 
-                    b.Property<string>("Ram")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("ram");
-
-                    b.Property<string>("ScreenSize")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("screen_size");
-
                     b.Property<string>("Sku")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -448,11 +433,6 @@ namespace DAL.Migrations
                     b.Property<int>("StockQuantity")
                         .HasColumnType("int")
                         .HasColumnName("stock_quantity");
-
-                    b.Property<string>("Storage")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("storage");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2")
@@ -629,6 +609,42 @@ namespace DAL.Migrations
                     b.ToTable("staffs", (string)null);
                 });
 
+            modelBuilder.Entity("DAL.Models.VariantAttribute", b =>
+                {
+                    b.Property<Guid>("VariantAttributeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("variant_attribute_id");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int")
+                        .HasColumnName("display_order");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("ProductVariantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("product_variant_id");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("value");
+
+                    b.HasKey("VariantAttributeId")
+                        .HasName("pk_variant_attributes");
+
+                    b.HasIndex("ProductVariantId")
+                        .HasDatabaseName("IX_VariantAttribute_ProductVariantId");
+
+                    b.ToTable("variant_attributes", (string)null);
+                });
+
             modelBuilder.Entity("DAL.Models.CartItem", b =>
                 {
                     b.HasOne("DAL.Models.ProductVariant", "ProductVariant")
@@ -726,6 +742,18 @@ namespace DAL.Migrations
                     b.Navigation("Promotion");
                 });
 
+            modelBuilder.Entity("DAL.Models.VariantAttribute", b =>
+                {
+                    b.HasOne("DAL.Models.ProductVariant", "ProductVariant")
+                        .WithMany("Attributes")
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_variant_attributes_product_variants_product_variant_id");
+
+                    b.Navigation("ProductVariant");
+                });
+
             modelBuilder.Entity("DAL.Models.Order", b =>
                 {
                     b.Navigation("OrderItems");
@@ -734,6 +762,11 @@ namespace DAL.Migrations
             modelBuilder.Entity("DAL.Models.Product", b =>
                 {
                     b.Navigation("ProductVariants");
+                });
+
+            modelBuilder.Entity("DAL.Models.ProductVariant", b =>
+                {
+                    b.Navigation("Attributes");
                 });
 #pragma warning restore 612, 618
         }

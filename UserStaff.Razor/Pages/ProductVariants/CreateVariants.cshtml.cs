@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+using AutoMapper;
+using BLL.DTOs.ProductVariant;
 using BLL.DTOs.ProductVariant.Staff;
 using BLL.Services.Interfaces;
 using DAL.Models;
@@ -48,8 +49,14 @@ namespace Staff.Razor.Pages.ProductVariants
                 // VÒNG LẶP DUYỆT QUA TẤT CẢ BIẾN THỂ ĐƯỢC SINH TỰ ĐỘNG ĐỂ LƯU DATABASE
                 foreach (var item in Variants)
                 {
+                    // Chỉ giữ các thông số có đủ Tên và Giá trị
+                    var attributes = (item.Attributes ?? new List<VariantAttributeDto>())
+                        .Where(a => !string.IsNullOrWhiteSpace(a.Name) && !string.IsNullOrWhiteSpace(a.Value))
+                        .Select(a => new KeyValuePair<string, string>(a.Name!.Trim(), a.Value!.Trim()))
+                        .ToList();
+
                     var newVariant = ProductVariant.Create(
-                        item.Color, item.Cpu, item.Ram, item.Storage, item.ScreenSize, item.Price, item.StockQuantity, null, ProductId);
+                        item.Color, attributes, item.Price, item.StockQuantity, null, ProductId);
 
                     ProductVariantStaffCreateDto variantDto = _mapper.Map<ProductVariantStaffCreateDto>(newVariant);
 
@@ -86,10 +93,9 @@ namespace Staff.Razor.Pages.ProductVariants
     public class VariantInputViewModel
     {
         public string Color { get; set; } = string.Empty;
-        public string? Cpu { get; set; }
-        public string? Ram { get; set; }
-        public string? Storage { get; set; }
-        public string? ScreenSize { get; set; }
+
+        // Thông số động (Tên - Giá trị) của biến thể này, ví dụ: Bộ máy = Automatic
+        public List<VariantAttributeDto> Attributes { get; set; } = new();
 
         [Required]
         [Range(0, double.MaxValue)]

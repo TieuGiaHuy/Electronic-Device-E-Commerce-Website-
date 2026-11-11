@@ -1,3 +1,4 @@
+using BLL.DTOs.ProductVariant;
 using DAL.Enums;
 namespace BLL.DTOs.ProductVariant.Customer
 {
@@ -6,10 +7,11 @@ namespace BLL.DTOs.ProductVariant.Customer
         public Guid ProductVariantId { get; set; }
         public string Sku { get; set; } = string.Empty;
         public string Color { get; set; } = string.Empty;
-        public string? Cpu { get; set; }
-        public string? Ram { get; set; }
-        public string? Storage { get; set; }
-        public string? ScreenSize { get; set; }
+        /// <summary>Các thông số kỹ thuật (Tên - Giá trị), theo thứ tự hiển thị.</summary>
+        public List<VariantAttributeDto> Attributes { get; set; } = new();
+
+        public string? GetAttribute(string name) =>
+            Attributes.FirstOrDefault(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase))?.Value;
         public decimal Price { get; set; }
         public int StockQuantity { get; set; }
         public string? ImageUrl { get; set; }

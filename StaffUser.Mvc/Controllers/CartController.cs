@@ -1,4 +1,4 @@
-﻿using BLL.DTOs.CartItem;
+using BLL.DTOs.CartItem;
 using BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -55,10 +55,7 @@ namespace Customer.Mvc.Controllers
                     productVariantId = v.ProductVariantId,
                     sku = v.Sku,
                     color = v.Color,
-                    cpu = v.Cpu,
-                    ram = v.Ram,
-                    storage = v.Storage,
-                    screenSize = v.ScreenSize,
+                    attributes = v.Attributes.Select(a => new { name = a.Name, value = a.Value }),
                     price = v.Price,
                     finalPrice = v.GetPrice(),
                     isOnSale = v.GetPrice() < v.Price,

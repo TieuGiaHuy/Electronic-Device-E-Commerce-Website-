@@ -52,13 +52,13 @@ using (var scope = app.Services.CreateScope())
     await db.Database.MigrateAsync();
     db.EnsureSeedData();
 
-    if (!await db.Staffs.AnyAsync(s => s.Email == "admin@electronexus.com"))
+    if (!await db.Staffs.AnyAsync(s => s.Email == "admin@timezone.vn"))
     {
         var adminPassword = BCrypt.Net.BCrypt.HashPassword("Admin@123");
         var admin = new DAL.Models.Staff
         {
             FullName = "Administrator",
-            Email = "admin@electronexus.com",
+            Email = "admin@timezone.vn",
             PasswordHash = adminPassword,
             Role = DAL.Enums.RoleEnum.Admin,
             IsActive = true,

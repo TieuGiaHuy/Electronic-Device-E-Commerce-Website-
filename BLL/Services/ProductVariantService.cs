@@ -1,3 +1,4 @@
+using BLL.DTOs.ProductVariant;
 using BLL.DTOs.ProductVariant.Staff;
 using BLL.Services.Interfaces;
 using DAL.Models;
@@ -23,10 +24,7 @@ namespace BLL.Services
                 Sku = pv.Sku,
                 //ProductCode = pv.ProductCode,s
                 Color = pv.Color,
-                Cpu = pv.Cpu,
-                Ram = pv.Ram,
-                Storage = pv.Storage,
-                ScreenSize = pv.ScreenSize,
+                Attributes = ToAttributeDtos(pv),
                 Price = pv.Price,
                 StockQuantity = pv.StockQuantity,
                 ImageUrl = pv.ImageUrl,
@@ -50,10 +48,7 @@ namespace BLL.Services
                     Sku = productVariant.Sku,
                     //ProductCode = productVariant.ProductCode,
                     Color = productVariant.Color,
-                    Cpu = productVariant.Cpu,
-                    Ram = productVariant.Ram,
-                    Storage = productVariant.Storage,
-                    ScreenSize = productVariant.ScreenSize,
+                    Attributes = ToAttributeDtos(productVariant),
                     Price = productVariant.Price,
                     StockQuantity = productVariant.StockQuantity,
                     ImageUrl = productVariant.ImageUrl,
@@ -72,10 +67,7 @@ namespace BLL.Services
             var newVariant = ProductVariant.Create(
                 //productVariant.ProductCode,
                 productVariant.Color,
-                productVariant.Cpu,
-                productVariant.Ram,
-                productVariant.Storage,
-                productVariant.ScreenSize,
+                ToAttributePairs(productVariant.Attributes),
                 productVariant.Price,
                 productVariant.StockQuantity,
                 productVariant.ImageUrl,
@@ -89,10 +81,7 @@ namespace BLL.Services
                 ProductVariantId = createdVariant.ProductVariantId,
                 Sku = createdVariant.Sku,
                 Color = createdVariant.Color,
-                Cpu = createdVariant.Cpu,
-                Ram = createdVariant.Ram,
-                Storage = createdVariant.Storage,
-                ScreenSize = createdVariant.ScreenSize,
+                Attributes = ToAttributeDtos(createdVariant),
                 Price = createdVariant.Price,
                 StockQuantity = createdVariant.StockQuantity,
                 ImageUrl = createdVariant.ImageUrl,
@@ -114,10 +103,7 @@ namespace BLL.Services
             existingVariant.Update(
                 //productVariant.ProductCode,
                 productVariant.Color,
-                productVariant.Cpu,
-                productVariant.Ram,
-                productVariant.Storage,
-                productVariant.ScreenSize,
+                ToAttributePairs(productVariant.Attributes),
                 productVariant.Price,
                 productVariant.StockQuantity,
                 productVariant.ImageUrl,
@@ -141,10 +127,7 @@ namespace BLL.Services
                 ProductVariantId = v.ProductVariantId,
                 Sku = v.Sku,
                 Color = v.Color,
-                Cpu = v.Cpu,
-                Ram = v.Ram,
-                Storage = v.Storage,
-                ScreenSize = v.ScreenSize,
+                Attributes = ToAttributeDtos(v),
                 Price = v.Price,
                 StockQuantity = v.StockQuantity,
                 ImageUrl = v.ImageUrl,
@@ -160,6 +143,22 @@ namespace BLL.Services
         public async Task<bool> StockInAsync(Guid variantId, int increaseAmount)
         {
             return await _productVariantRepository.StockInAsync(variantId, increaseAmount);
+        }
+
+        private static List<VariantAttributeDto> ToAttributeDtos(ProductVariant variant)
+        {
+            return variant.Attributes
+                .OrderBy(a => a.DisplayOrder)
+                .Select(a => new VariantAttributeDto { Name = a.Name, Value = a.Value })
+                .ToList();
+        }
+
+        private static List<KeyValuePair<string, string>> ToAttributePairs(IEnumerable<VariantAttributeDto>? attributes)
+        {
+            return (attributes ?? Enumerable.Empty<VariantAttributeDto>())
+                .Where(a => !string.IsNullOrWhiteSpace(a.Name) && !string.IsNullOrWhiteSpace(a.Value))
+                .Select(a => new KeyValuePair<string, string>(a.Name!.Trim(), a.Value!.Trim()))
+                .ToList();
         }
     }
 }

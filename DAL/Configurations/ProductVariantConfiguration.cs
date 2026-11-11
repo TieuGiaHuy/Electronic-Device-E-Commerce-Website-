@@ -1,4 +1,4 @@
-﻿using DAL.Models;
+using DAL.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -12,14 +12,14 @@ namespace DAL.Configurations
             builder.Property(pv => pv.Sku).IsRequired().HasMaxLength(50);
             //builder.Property(pv => pv.ProductCode).IsRequired().HasMaxLength(50);
             builder.Property(pv => pv.Color).IsRequired().HasMaxLength(50);
-            builder.Property(pv => pv.Cpu).HasMaxLength(100);
-            builder.Property(pv => pv.Ram).HasMaxLength(50);
-            builder.Property(pv => pv.Storage).HasMaxLength(50);
-            builder.Property(pv => pv.ScreenSize).HasMaxLength(50);
             builder.Property(pv => pv.Price).IsRequired().HasColumnType("decimal(18,2)");
             builder.Property(pv => pv.StockQuantity).IsRequired();
             builder.Property(pv => pv.ImageUrl).HasMaxLength(200);
             builder.Property(pv => pv.PromotionId);
+
+            // Luôn nạp kèm các thông số (VariantAttribute) mỗi khi nạp biến thể,
+            // kể cả khi biến thể được Include từ Product, CartItem hoặc OrderItem.
+            builder.Navigation(pv => pv.Attributes).AutoInclude();
 
             // Check xóa mềm
             builder.HasQueryFilter(pv => !pv.IsDeleted);

@@ -1,0 +1,53 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var displayName = User.Identity?.Name ?? "Customer";
+    var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? string.Empty;
+    var seed = displayName.Contains('@') ? displayName.Split('@')[0] : displayName;
+    var initials = string.Concat(seed.Split(new[] { ' ', '.', '_', '-' }, StringSplitOptions.RemoveEmptyEntries)
+        .Take(2).Select(w => char.ToUpperInvariant(w[0])));
+    if (string.IsNullOrEmpty(initials)) { initials = "U"; }
+    var tab = ViewData["ProfileTab"] as string ?? "profile";
+}
+
+<div class="vx-prof">
+    <header class="vx-prof-head">
+        <div class="vx-prof-cover"></div>
+        <div class="vx-prof-id">
+            <div class="vx-avatar" aria-hidden="true">@initials</div>
+            <div class="vx-prof-who">
+                <h1 class="vx-prof-name">@displayName</h1>
+                @if (!string.IsNullOrEmpty(email))
+                {
+                    <p class="vx-prof-email">@email</p>
+                }
+            </div>
+            <div class="vx-prof-chips">
+                <span class="vx-chip"><i class="bi bi-person-check"></i> Customer</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="vx-prof-layout">
+        <nav class="vx-prof-nav" aria-label="Account">
+            <span class="vx-prof-nav-label">Account</span>
+            <a class="vx-prof-link @(tab == "profile" ? "active" : "")" asp-controller="Profile" asp-action="Index"><i class="bi bi-person"></i> Profile</a>
+            <a class="vx-prof-link @(tab == "security" ? "active" : "")" asp-controller="Profile" asp-action="ChangePassword"><i class="bi bi-shield-lock"></i> Security</a>
+
+            <span class="vx-prof-nav-label">Shopping</span>
+            <a class="vx-prof-link" asp-controller="Orders" asp-action="Index"><i class="bi bi-bag-check"></i> My orders</a>
+            <a class="vx-prof-link" asp-controller="Reviews" asp-action="Index"><i class="bi bi-chat-square-text"></i> Reviews</a>
+
+            <div class="vx-prof-sep"></div>
+            <a class="vx-prof-link danger" asp-controller="Auth" asp-action="Logout"><i class="bi bi-box-arrow-right"></i> Log out</a>
+        </nav>
+
+        <div class="vx-prof-main">
+            @RenderBody()
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await RenderSectionAsync("Scripts", required: false)
+}

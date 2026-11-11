@@ -1,12 +1,14 @@
-﻿@page "/Auth/AccessDenied"
+@page "/Auth/AccessDenied"
 @{
-    ViewData["Title"] = "Access Denied";
+    ViewData["Title"] = "Access denied";
     Layout = "~/Pages/Shared/_AuthLayout.cshtml";
 }
 
-<div class="text-center">
-    <i class="bi bi-shield-lock-fill text-danger" style="font-size: 3rem;"></i>
-    <h4 class="fw-bold mt-3">You do not have permission to access this page</h4>
-    <p class="text-muted small">Your account does not have sufficient privileges (Staff/Admin) to view this content.</p>
-    <a href="/Auth/Login" class="btn btn-auth-primary px-4 py-2 mt-2">Back to Login</a>
+<div class="vx-auth-icon warn"><i class="bi bi-shield-lock"></i></div>
+
+<div class="vx-auth-title">
+    <h1>Access denied</h1>
+    <p>Your account doesn't have the Staff or Admin permission needed to view this page.</p>
 </div>
+
+<a href="/Auth/Login" class="btn btn-primary">Back to sign in</a>

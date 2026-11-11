@@ -16,20 +16,20 @@
 
 @attribute [Authorize(Roles = "Admin")]
 
-<PageTitle>Manage Products - ElectroNexus Admin</PageTitle>
+<PageTitle>Manage Products - TimeZone Admin</PageTitle>
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-dark m-0">Manage Products</h2>
-            <p class="text-muted m-0">Create, view, edit details, and delete phones, laptops, and other electronic devices.</p>
+            <p class="text-muted m-0">Create, view, edit details, and delete watches, smartwatches, straps and accessories.</p>
         </div>
     </div>
 
     <!-- Stats Quick Summary Cards -->
     <div class="row mb-4">
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm p-3 bg-white d-flex flex-row align-items-center justify-content-between" style="border-radius: 12px; border-left: 4px solid #d70018 !important;">
+            <div class="card border-0 shadow-sm p-3 bg-white d-flex flex-row align-items-center justify-content-between" style="border-radius: 12px; border-left: 4px solid var(--vx-accent) !important;">
                 <div>
                     <h6 class="text-muted text-uppercase mb-1 fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Products</h6>
                     <h3 class="fw-bold text-dark m-0">@products.Count</h3>
@@ -98,7 +98,7 @@
                         <input type="text" class="form-control admin-form-control py-1.5" style="width: 220px;" placeholder="Search products..." @bind="searchKeyword" @bind:event="oninput" />
                         
                         <!-- Add New Product Button -->
-                        <button class="btn btn-cps d-flex align-items-center gap-2 py-1.5 px-3 fw-semibold shadow-sm text-white border-0" @onclick="OpenAddProductModal" style="background-color: #d70018;">
+                        <button class="btn btn-cps d-flex align-items-center gap-2 py-1.5 px-3 fw-semibold shadow-sm text-white border-0" @onclick="OpenAddProductModal" style="background-color: var(--vx-accent);">
                             <span>+</span> Add Product
                         </button>
                     </div>
@@ -107,7 +107,7 @@
                 @if (isLoading)
                 {
                     <div class="text-center py-5">
-                        <div class="spinner-border text-danger" role="status">
+                        <div class="spinner-border vx-text-accent" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                         <p class="text-muted mt-2">Loading product list...</p>
@@ -211,7 +211,7 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="admin-form-label fw-semibold mb-1" for="productName">Product Name <span class="text-danger">*</span></label>
-                                <InputText id="productName" class="form-control admin-form-control" placeholder="e.g., iPhone 15 Pro Max" @bind-Value="formModel.ProductName" />
+                                <InputText id="productName" class="form-control admin-form-control" placeholder="e.g., Heritage 40 Automatic" @bind-Value="formModel.ProductName" />
                                 <ValidationMessage For="@(() => formModel.ProductName)" class="text-danger" style="font-size: 0.8rem;" />
                             </div>
 
@@ -258,7 +258,7 @@
                     </div>
                     <div class="modal-footer border-0 p-3 justify-content-end bg-light" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
                         <button type="button" class="btn btn-secondary px-4 py-2 border" @onclick="CloseProductModal">Cancel</button>
-                        <button type="submit" class="btn btn-danger px-4 py-2 text-white border-0" style="background-color: #d70018;" disabled="@(!categories.Any())">
+                        <button type="submit" class="btn btn-primary px-4 py-2 text-white border-0" style="background-color: var(--vx-accent);" disabled="@(!categories.Any())">
                             @(isEditing ? "Update Product" : "Add Product")
                         </button>
                     </div>

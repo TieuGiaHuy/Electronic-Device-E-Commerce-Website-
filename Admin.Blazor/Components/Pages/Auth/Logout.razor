@@ -1,13 +1,29 @@
 @page "/auth/logout"
+@layout AuthLayout
+@using Admin.Blazor.Components.Layout
 @using Microsoft.AspNetCore.Authorization
 @inject NavigationManager Navigation
 
 @attribute [AllowAnonymous]
 
+<PageTitle>Log out - TimeZone Admin</PageTitle>
+
+<div class="vx-auth-icon"><i class="bi bi-box-arrow-right"></i></div>
+
+<div class="vx-auth-title">
+    <h1>Log out of the admin console?</h1>
+    <p>You'll need to sign in again to manage the store.</p>
+</div>
+
+<div class="d-grid gap-2">
+    <button type="button" class="btn btn-primary" @onclick="ConfirmLogout">Yes, log me out</button>
+    <a href="/" class="btn btn-outline-secondary">Stay signed in</a>
+</div>
+
 @code {
-    protected override void OnInitialized()
+    private void ConfirmLogout()
     {
-        // Redirect to Razor Page handler that does the actual signout
+        // The Razor Page handler performs the actual sign-out
         Navigation.NavigateTo("/auth/logout-handler", forceLoad: true);
     }
 }

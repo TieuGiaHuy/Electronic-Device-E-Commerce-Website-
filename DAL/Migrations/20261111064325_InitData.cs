@@ -183,10 +183,6 @@ namespace DAL.Migrations
                     product_variant_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     sku = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     color = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    cpu = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    ram = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    storage = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    screen_size = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     stock_quantity = table.Column<int>(type: "int", nullable: false),
                     image_url = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
@@ -263,6 +259,27 @@ namespace DAL.Migrations
                         principalTable: "product_variants",
                         principalColumn: "product_variant_id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "variant_attributes",
+                columns: table => new
+                {
+                    variant_attribute_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    product_variant_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    value = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    display_order = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_variant_attributes", x => x.variant_attribute_id);
+                    table.ForeignKey(
+                        name: "fk_variant_attributes_product_variants_product_variant_id",
+                        column: x => x.product_variant_id,
+                        principalTable: "product_variants",
+                        principalColumn: "product_variant_id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -372,6 +389,11 @@ namespace DAL.Migrations
                 table: "staffs",
                 column: "email",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VariantAttribute_ProductVariantId",
+                table: "variant_attributes",
+                column: "product_variant_id");
         }
 
         /// <inheritdoc />
@@ -388,6 +410,9 @@ namespace DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "staffs");
+
+            migrationBuilder.DropTable(
+                name: "variant_attributes");
 
             migrationBuilder.DropTable(
                 name: "orders");

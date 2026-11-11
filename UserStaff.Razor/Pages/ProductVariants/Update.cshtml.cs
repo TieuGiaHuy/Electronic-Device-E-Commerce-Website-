@@ -1,4 +1,4 @@
-﻿using BLL.DTOs.Product;
+using BLL.DTOs.Product;
 using BLL.DTOs.Product.Staff;
 using BLL.DTOs.ProductVariant;
 using BLL.DTOs.ProductVariant.Staff;
@@ -42,10 +42,7 @@ namespace Staff.Razor.Pages.ProductVariants
                     ProductId = variantDto.ProductId,
                     PromotionId = variantDto.PromotionId,
                     Color = variantDto.Color,
-                    Cpu = variantDto.Cpu,
-                    Ram = variantDto.Ram,
-                    Storage = variantDto.Storage,
-                    ScreenSize = variantDto.ScreenSize,
+                    Attributes = variantDto.Attributes,
                     Price = variantDto.Price,
                     StockQuantity = variantDto.StockQuantity,
                     ImageUrl = variantDto.ImageUrl

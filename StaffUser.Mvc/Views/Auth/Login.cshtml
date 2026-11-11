@@ -1,34 +1,49 @@
 @model BLL.DTOs.Auth.LoginDto
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Sign in";
     Layout = "~/Views/Shared/_AuthLayout.cshtml";
 }
 
-<div class="auth-card-header">
-    <h4>Welcome Back</h4>
-    <p>Sign in to track orders and manage your account</p>
+<div class="vx-auth-title">
+    <h1>Welcome back</h1>
+    <p>Sign in to track orders and manage your account.</p>
 </div>
 
-<form asp-action="Login" asp-controller="Auth" method="post">
+<form asp-action="Login" asp-controller="Auth" method="post" novalidate>
     @Html.AntiForgeryToken()
-    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
-    <div class="mb-3">
-        <label for="Email" class="form-label small fw-semibold">Email</label>
-        <input asp-for="Email" class="form-control" id="Email" placeholder="Enter your email" />
+    <div asp-validation-summary="ModelOnly" class="vx-flash err mb-3"></div>
+
+    <div class="vx-field">
+        <label for="Email">Email</label>
+        <div class="vx-input">
+            <i class="bi bi-envelope lead"></i>
+            <input asp-for="Email" class="form-control" id="Email" placeholder="you@example.com" autocomplete="email" />
+        </div>
         <span asp-validation-for="Email" class="text-danger small"></span>
     </div>
-    <div class="mb-3">
-        <label for="Password" class="form-label small fw-semibold">Password</label>
-        <input asp-for="Password" class="form-control" type="password" id="Password" placeholder="Enter your password" />
+
+    <div class="vx-field">
+        <label for="Password">Password</label>
+        <div class="vx-input">
+            <i class="bi bi-lock lead"></i>
+            <input asp-for="Password" class="form-control" type="password" id="Password" placeholder="Enter your password" autocomplete="current-password" />
+            <button type="button" class="vx-pw-toggle" data-target="Password" aria-label="Show password"><i class="bi bi-eye"></i></button>
+        </div>
         <span asp-validation-for="Password" class="text-danger small"></span>
     </div>
-    <div class="mb-3 form-check">
-        <input asp-for="RememberMe" class="form-check-input" id="RememberMe" />
-        <label class="form-check-label small" for="RememberMe">Remember me</label>
+
+    <div class="vx-auth-row">
+        <label class="vx-check" for="RememberMe">
+            <input asp-for="RememberMe" id="RememberMe" /> Remember me
+        </label>
+        <a asp-action="ForgotPassword" asp-controller="Auth" class="auth-link">Forgot password?</a>
     </div>
-    <button type="submit" class="btn btn-auth-primary w-100 py-2">Sign In</button>
-    <div class="text-center mt-3 d-flex justify-content-between">
-        <a asp-action="ForgotPassword" asp-controller="Auth" class="auth-link">Forgot Password?</a>
-        <a asp-action="Register" asp-controller="Auth" class="auth-link">Create account</a>
-    </div>
+
+    <button type="submit" class="btn btn-primary">Sign in</button>
+
+    <p class="vx-auth-alt">New to TimeZone? <a asp-action="Register" asp-controller="Auth">Create an account</a></p>
 </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

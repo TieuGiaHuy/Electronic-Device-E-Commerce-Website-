@@ -1,4 +1,4 @@
-﻿@page "/categories"
+@page "/categories"
 @rendermode InteractiveServer
 @using BLL.DTOs.Category
 @using BLL.Services.Interfaces
@@ -10,13 +10,13 @@
 
 @attribute [Authorize(Roles = "Admin")]
 
-<PageTitle>Manage Categories - ElectroNexus Admin</PageTitle>
+<PageTitle>Manage Categories - TimeZone Admin</PageTitle>
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-dark m-0">Manage Categories</h2>
-            <p class="text-muted m-0">View, create, edit, and delete electronic device categories.</p>
+            <p class="text-muted m-0">View, create, edit, and delete watch categories.</p>
         </div>
     </div>
 
@@ -50,7 +50,7 @@
                 @if (isLoading)
                 {
                     <div class="text-center py-5">
-                        <div class="spinner-border text-danger" role="status">
+                        <div class="spinner-border vx-text-accent" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                         <p class="text-muted mt-2">Loading category list...</p>
@@ -114,7 +114,7 @@
                     
                     <div class="mb-3">
                         <label class="admin-form-label" for="categoryName">Category Name <span class="text-danger">*</span></label>
-                        <InputText id="categoryName" class="form-control admin-form-control" placeholder="Enter category name (e.g. Phone)" @bind-Value="formModel.Name" />
+                        <InputText id="categoryName" class="form-control admin-form-control" placeholder="Enter category name (e.g. Smartwatch)" @bind-Value="formModel.Name" />
                         <ValidationMessage For="@(() => formModel.Name)" class="text-danger" style="font-size: 0.8rem; display: block; margin-top: 0.25rem;" />
                     </div>
 

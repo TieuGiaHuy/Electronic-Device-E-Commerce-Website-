@@ -1,57 +1,61 @@
 @model BLL.DTOs.Customer.CustomerProfileDto
 @{
     ViewData["Title"] = "My Profile";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["ProfileTab"] = "profile";
+    Layout = "~/Views/Profile/_ProfileLayout.cshtml";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-6">
-        <div class="card shadow-sm border-0">
-            <div class="card-header text-white" style="background-color: var(--color-primary);">
-                <h4 class="mb-0"><i class="bi bi-person-fill me-2"></i>My Profile</h4>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="vx-flash ok"><i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]</div>
+}
+
+<div class="vx-points">
+    <small>TimeZone points</small>
+    <strong>@Model.Points.ToString("N0")</strong>
+    <span>Earned from your purchases</span>
+    <i class="bi bi-stars"></i>
+</div>
+
+<form asp-action="Index" method="post" class="vx-panel">
+    @Html.AntiForgeryToken()
+    <div class="vx-panel-head">
+        <h2>Personal information</h2>
+        <p>Keep your contact details up to date so we can reach you about your orders.</p>
+    </div>
+
+    <div class="vx-panel-body">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="row g-3">
+            <div class="col-md-6 vx-field">
+                <label for="FullName">Full name</label>
+                <input asp-for="FullName" class="form-control" placeholder="Your full name" autocomplete="name" />
+                <span asp-validation-for="FullName" class="text-danger small"></span>
             </div>
-            <div class="card-body">
-                @if (TempData["SuccessMessage"] != null)
-                {
-                    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-                }
 
-                <form asp-action="Index" method="post">
-                    @Html.AntiForgeryToken()
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="col-md-6 vx-field">
+                <label for="PhoneNumber">Phone number</label>
+                <input asp-for="PhoneNumber" class="form-control" placeholder="e.g. 0901 234 567" autocomplete="tel" />
+                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+            </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input class="form-control" value="@Model.Email" readonly />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="FullName" class="form-label">Full Name</label>
-                        <input asp-for="FullName" class="form-control" />
-                        <span asp-validation-for="FullName" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="PhoneNumber" class="form-label">Phone Number</label>
-                        <input asp-for="PhoneNumber" class="form-control" />
-                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Points</label>
-                        <input class="form-control" value="@Model.Points" readonly />
-                    </div>
-
-                    <div class="d-grid gap-2 mt-4 pt-2 border-top">
-                        <button type="submit" class="btn text-white mt-3" style="background-color: var(--color-primary);">Save Changes</button>
-                        <a asp-action="ChangePassword" class="btn btn-outline-secondary">Change Password</a>
-                        <a asp-controller="Auth" asp-action="Logout" class="btn btn-outline-danger">Logout</a>
-                    </div>
-                </form>
+            <div class="col-12 vx-field">
+                <label>Email address</label>
+                <div class="vx-readonly">
+                    <input class="form-control" value="@Model.Email" readonly />
+                    <i class="bi bi-lock"></i>
+                </div>
+                <div class="vx-help">Your email is your sign-in and can't be changed here.</div>
             </div>
         </div>
     </div>
-</div>
+
+    <div class="vx-panel-foot">
+        <span class="hint">Changes apply to your account immediately.</span>
+        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check2 me-1"></i> Save changes</button>
+    </div>
+</form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
